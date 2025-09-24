@@ -1744,7 +1744,7 @@ describe('Object Type Test', () => {
     const arkFile = projectScene.getFile(fileId);
     const classA = arkFile?.getClassWithName('ClassA');
     const defaultClass = arkFile?.getDefaultClass();
-    const objectTypeStr = '@ES2015/BuiltinClass: Object';
+    const objectTypeStr = '@built-in/lib.es5.d.ts: Object';
     const objectConstructorTypeStr = '@built-in/lib.es2015.core.d.ts: ObjectConstructor';
     const builtInObjectTypeStr = '@built-in/lib.es5.d.ts: Object';
 

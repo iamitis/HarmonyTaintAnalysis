@@ -36,14 +36,13 @@ import {
     UnionType,
     UnknownType
 } from '../base/Type';
-import { AbstractInvokeExpr } from '../base/Expr';
 import { TypeInference } from '../common/TypeInference';
-import { ArkInstanceFieldRef } from '../base/Ref';
-import { GLOBAL_THIS_NAME, PROMISE } from '../common/TSConst';
+import { ArkInstanceFieldRef, GlobalRef } from '../base/Ref';
+import { CONSTRUCTOR_NAME, GLOBAL_THIS_NAME, PROMISE } from '../common/TSConst';
 import { SdkUtils } from '../common/SdkUtils';
 import { IRInference } from '../common/IRInference';
 import { Local } from '../base/Local';
-import { CALL_SIGNATURE_NAME, NAME_PREFIX } from '../common/Const';
+import { ANONYMOUS_CLASS_PREFIX, CALL_SIGNATURE_NAME, NAME_PREFIX } from '../common/Const';
 import { ArkClass } from '../model/ArkClass';
 import { ValueInference } from './ValueInference';
 
@@ -71,9 +70,9 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
      */
     public doInfer(model: ArkModel): any {
         try {
-            this.postInfer(model);
-            const result = this.infer(model);
             this.preInfer(model);
+            const result = this.infer(model);
+            this.postInfer(model);
             return result;
         } catch (error) {
             logger.warn('infer model failed:' + (error as Error).message);
@@ -211,6 +210,15 @@ export class MethodInference extends ArkModelInference {
             return;
         }
         //useGolbals
+        body.getUsedGlobals()?.forEach((value, key) => {
+            if (value instanceof GlobalRef && !value.getRef()) {
+                const arkExport = ModelUtils.findGlobalRef(key, method);
+                if (arkExport instanceof Local) {
+                    arkExport.getUsedStmts().push(...value.getUsedStmts());
+                    value.setRef(arkExport);
+                }
+            }
+        });
         const cfg = body.getCfg();
         const modifiedStmts: InferStmtResult[] = []
         const workList = cfg.getStmts();
@@ -233,6 +241,17 @@ export class MethodInference extends ArkModelInference {
             cfg.insertAfter(m.replacedStmts!, m.oldStmt);
             cfg.remove(m.oldStmt);
         })
+    }
+
+    public postInfer(method: ArkMethod): void {
+        if (!method.getBody() || method.getName() === CONSTRUCTOR_NAME ||
+            !TypeInference.isUnclearType(method.getImplementationSignature()?.getMethodSubSignature().getReturnType())) {
+            return;
+        }
+        const returnType = TypeInference.inferReturnType(method);
+        if (returnType) {
+            method.getImplementationSignature()?.getMethodSubSignature().setReturnType(returnType);
+        }
     }
 }
 
@@ -273,17 +292,15 @@ export class StmtInference extends ArkModelInference {
 
     private isTypeCanBeOverride(type: Type, rightOp: Value): boolean {
         if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType
-            || type instanceof UnclearReferenceType || type instanceof AnyType || type instanceof FunctionType) {
-            return true;
-        }
-        if (rightOp instanceof AbstractInvokeExpr && ctors.includes(rightOp.getMethodSignature().getMethodSubSignature().getMethodName())) {
+            || type instanceof UnclearReferenceType || type instanceof FunctionType) {
             return true;
         }
         return false;
     }
 
     private union(leftType: Type, rightType: Type): Type {
-        if (leftType.toString() === rightType.toString()) {
+        if (leftType.toString() === rightType.toString() || TypeInference.checkType(rightType, t => t instanceof AnyType ||
+            (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
             return leftType;
         } else if (leftType instanceof UnionType) {
             const isExist = leftType.getTypes().find(t => t.toString() === rightType.toString());

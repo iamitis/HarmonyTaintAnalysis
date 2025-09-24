@@ -791,7 +791,7 @@ export class ArkConditionExpr extends AbstractBinopExpr {
         return this;
     }
 
-    protected setType() {
+    public fillType(): void {
         this.type = BooleanType.getInstance();
     }
 }

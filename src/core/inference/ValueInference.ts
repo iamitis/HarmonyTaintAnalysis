@@ -46,7 +46,7 @@ import {
     ArkInstanceInvokeExpr,
     ArkInstanceOfExpr,
     ArkNewArrayExpr,
-    ArkNewExpr,
+    ArkNewExpr, ArkNormalBinopExpr,
     ArkPtrInvokeExpr,
     ArkStaticInvokeExpr,
     RelationalBinaryOperator
@@ -174,7 +174,7 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
 
     public preInfer(value: ArkInstanceFieldRef, stmt?: Stmt): boolean {
         return IRInference.needInfer(value.getFieldSignature().getDeclaringSignature().getDeclaringFileSignature()) ||
-            TypeInference.isUnclearType(value.getType());
+            TypeInference.isUnclearType(value.getType()) || value.getFieldSignature().isStatic();
     }
 
     public infer(value: ArkInstanceFieldRef, stmt: Stmt): Value | undefined {
@@ -407,14 +407,28 @@ export class ArkNewArrayExprInference extends ValueInference<ArkNewArrayExpr> {
     }
 }
 
+
 @Bind()
-export class ArkConditionExprInference extends ValueInference<ArkConditionExpr> {
+export class ArkNormalBinOpExprInference extends ValueInference<ArkNormalBinopExpr> {
     public getValueName(): string {
-        return 'ArkConditionExpr';
+        return 'ArkNormalBinopExpr';
     }
 
-    public preInfer(value: ArkConditionExpr): boolean {
-        return TypeInference.isUnclearType(value.getType());
+    public preInfer(value: ArkNormalBinopExpr): boolean {
+        // return TypeInference.isUnclearType(value.getType());
+        return true;
+    }
+
+    public infer(value: ArkNormalBinopExpr): Value | undefined {
+        // value.setType();
+        return undefined;
+    }
+}
+
+@Bind()
+export class ArkConditionExprInference extends ArkNormalBinOpExprInference {
+    public getValueName(): string {
+        return 'ArkConditionExpr';
     }
 
     public infer(value: ArkConditionExpr): Value | undefined {
@@ -428,9 +442,11 @@ export class ArkConditionExprInference extends ValueInference<ArkConditionExpr> 
                 value.setOp2(ValueUtil.getUndefinedConst());
             }
         }
+        value.fillType();
         return undefined;
     }
 }
+
 
 @Bind()
 export class ArkInstanceOfExprInference extends ValueInference<ArkInstanceOfExpr> {
@@ -514,7 +530,7 @@ export class ArkTSFieldRefInference extends FieldRefInference {
     }
 
     private isAnonClassThisRef(stmtDef: Value, arkMethod: ArkMethod): boolean {
-        return arkMethod.getName() === INSTANCE_INIT_METHOD_NAME &&
+        return (arkMethod.getName() === INSTANCE_INIT_METHOD_NAME || arkMethod.getName() === CONSTRUCTOR_NAME) &&
             stmtDef instanceof ArkInstanceFieldRef &&
             stmtDef.getBase().getName() === THIS_NAME &&
             arkMethod.getDeclaringArkClass().isAnonymousClass() &&

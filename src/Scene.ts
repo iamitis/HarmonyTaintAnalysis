@@ -1079,11 +1079,12 @@ export class Scene {
     public inferTypes(): void {
 
         this.filesMap.forEach(file => {
-            try {
-                IRInference.inferFile(file);
-            } catch (error) {
-                logger.error('Error inferring types of project file:', file.getFileSignature(), error);
-            }
+            // try {
+            //     IRInference.inferFile(file);
+            // } catch (error) {
+            //     logger.error('Error inferring types of project file:', file.getFileSignature(), error);
+            // }
+            InferenceManager.getInstance().getInference(file.getLanguage()).doInfer(file);
         });
         if (this.buildStage < SceneBuildStage.TYPE_INFERRED) {
             this.getMethodsMap(true);
