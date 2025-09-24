@@ -742,7 +742,7 @@ function getArkFileFormMap(projectName: string, filePath: string, scene: Scene):
     return null;
 }
 
-function findExportInfoInfile(fromInfo: FromInfo, file: ArkFile): ExportInfo | undefined {
+export function findExportInfoInfile(fromInfo: FromInfo, file: ArkFile): ExportInfo | undefined {
     const exportName = fromInfo.isDefault() ? DEFAULT : fromInfo.getOriginName();
     let exportInfo = file.getExportInfoBy(exportName);
     if (exportInfo) {

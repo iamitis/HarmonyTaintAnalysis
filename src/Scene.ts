@@ -32,7 +32,11 @@ import { fetchDependenciesFromFile, parseJsonText } from './utils/json5parser';
 import { getAllFiles } from './utils/getAllFiles';
 import { FileUtils, getFileRecursively } from './utils/FileUtils';
 import { ArkExport, ExportInfo, ExportType } from './core/model/ArkExport';
-import { addInitInConstructor, buildDefaultConstructor, replaceSuper2Constructor } from './core/model/builder/ArkMethodBuilder';
+import {
+    addInitInConstructor,
+    buildDefaultConstructor,
+    replaceSuper2Constructor
+} from './core/model/builder/ArkMethodBuilder';
 import { DEFAULT_ARK_CLASS_NAME, STATIC_INIT_METHOD_NAME } from './core/common/Const';
 import { CallGraph } from './callgraph/model/CallGraph';
 import { CallGraphBuilder } from './callgraph/model/builder/CallGraphBuilder';
@@ -43,6 +47,7 @@ import { BUILD_PROFILE_JSON5, OH_PACKAGE_JSON5 } from './core/common/EtsConst';
 import { SdkUtils } from './core/common/SdkUtils';
 import { PointerAnalysisConfig } from './callgraph/pointerAnalysis/PointerAnalysisConfig';
 import { ValueUtil } from './core/common/ValueUtil';
+import { InferenceManager } from './core/inference/Inference';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'Scene');
 
@@ -98,7 +103,8 @@ export class Scene {
     private unhandledFilePaths: Set<string> = new Set<string>();
     private unhandledSdkFilePaths: string[] = [];
 
-    constructor() { }
+    constructor() {
+    }
 
     /*
      * Set all static field to be null, then all related objects could be freed by GC.
@@ -1086,6 +1092,16 @@ export class Scene {
         SdkUtils.dispose();
     }
 
+    public inferTypesV2(): void {
+
+        this.filesMap.forEach(file => InferenceManager.getInstance().getInference(file.getLanguage()).doInfer(file));
+        if (this.buildStage < SceneBuildStage.TYPE_INFERRED) {
+            this.getMethodsMap(true);
+            this.buildStage = SceneBuildStage.TYPE_INFERRED;
+        }
+        SdkUtils.dispose();
+    }
+
     /**
      * Iterate all assignment statements in methods,
      * and set the type of left operand based on the type of right operand
@@ -1185,7 +1201,8 @@ export class Scene {
                     // 遗留问题：只统计了项目文件的namespace，没统计sdk文件内部的引入
                     const importNameSpaceClasses = classMap.get(importNameSpace.getNamespaceSignature())!;
                     importClasses.push(...importNameSpaceClasses.filter(c => !importClasses.includes(c) && c.getName() !== DEFAULT_ARK_CLASS_NAME));
-                } catch { }
+                } catch {
+                }
             }
         }
         const fileClasses = classMap.get(file.getFileSignature())!;
@@ -1318,7 +1335,8 @@ export class Scene {
                     // 遗留问题：只统计了项目文件，没统计sdk文件内部的引入
                     const importNameSpaceClasses = globalVariableMap.get(importNameSpace.getNamespaceSignature())!;
                     importLocals.push(...importNameSpaceClasses.filter(c => !importLocals.includes(c) && c.getName() !== DEFAULT_ARK_CLASS_NAME));
-                } catch { }
+                } catch {
+                }
             }
         }
         const fileLocals = globalVariableMap.get(file.getFileSignature())!;

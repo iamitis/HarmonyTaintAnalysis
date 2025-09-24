@@ -386,6 +386,10 @@ export class ClosureFieldRef extends AbstractRef {
         return this.type;
     }
 
+    public setType(type: Type): void {
+        this.type = type;
+    }
+
     public getFieldName(): string {
         return this.fieldName;
     }

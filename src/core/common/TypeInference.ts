@@ -350,7 +350,7 @@ export class TypeInference {
         }
     }
 
-    private static getLocalFromMethodBody(name: string, arkMethod: ArkMethod): Local | null {
+    public static getLocalFromMethodBody(name: string, arkMethod: ArkMethod): Local | null {
         const local = arkMethod?.getBody()?.getLocals().get(name);
         if (local) {
             return local;
@@ -459,7 +459,7 @@ export class TypeInference {
         return leftType || null;
     }
 
-    private static setValueType(value: Value, type: Type): void {
+    public static setValueType(value: Value, type: Type): void {
         if (value instanceof Local || value instanceof ArkParameterRef) {
             value.setType(type);
         } else if (value instanceof AbstractFieldRef) {
@@ -623,7 +623,7 @@ export class TypeInference {
         }
     }
 
-    private static inferReturnType(arkMethod: ArkMethod): Type | null {
+    public static inferReturnType(arkMethod: ArkMethod): Type | null {
         const typeMap: Map<string, Type> = new Map();
         for (let returnValue of arkMethod.getReturnValues()) {
             const type = returnValue.getType();
@@ -787,6 +787,7 @@ export class TypeInference {
             if (arkClass.getCategory() === ClassCategory.ENUM) {
                 propertyType = this.getEnumValueType(property);
             } else {
+                this.repairFieldType(property, arkClass);
                 propertyType = this.replaceTypeWithReal(property.getType(), baseType.getRealGenericTypes());
             }
         } else if (property) {
@@ -799,6 +800,16 @@ export class TypeInference {
             return fieldType ? [null, fieldType] : null;
         }
         return null;
+    }
+
+    private static repairFieldType(property: ArkField, arkClass: ArkClass): void {
+        const propertyType = property.getType();
+        if (TypeInference.isUnclearType(propertyType)) {
+            const newType = TypeInference.inferUnclearedType(propertyType, arkClass);
+            if (newType) {
+                property.getSignature().setType(newType);
+            }
+        }
     }
 
     public static getEnumValueType(property: ArkField): EnumValueType | null {

@@ -790,6 +790,10 @@ export class ArkConditionExpr extends AbstractBinopExpr {
         this.type = BooleanType.getInstance();
         return this;
     }
+
+    protected setType() {
+        this.type = BooleanType.getInstance();
+    }
 }
 
 export class ArkNormalBinopExpr extends AbstractBinopExpr {
@@ -859,6 +863,10 @@ export class ArkInstanceOfExpr extends AbstractExpr {
         return this.checkType;
     }
 
+    public setCheckType(type: Type): void {
+        this.checkType = type;
+    }
+
     public getType(): Type {
         return BooleanType.getInstance();
     }
@@ -914,6 +922,10 @@ export class ArkCastExpr extends AbstractExpr {
 
     public getType(): Type {
         return this.type;
+    }
+
+    public setType(type: Type): void {
+        this.type = type;
     }
 
     public inferType(arkMethod: ArkMethod): AbstractExpr {
