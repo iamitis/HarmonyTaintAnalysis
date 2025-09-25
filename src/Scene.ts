@@ -230,7 +230,8 @@ export class Scene {
         });
         if (this.buildStage < SceneBuildStage.SDK_INFERRED) {
             this.sdkArkFilesMap.forEach(file => {
-                IRInference.inferFile(file);
+                // IRInference.inferFile(file);
+                InferenceManager.getInstance().getInference(file.getLanguage()).doInfer(file);
                 SdkUtils.mergeGlobalAPI(file, this.sdkGlobalMap);
             });
             this.sdkArkFilesMap.forEach(file => {

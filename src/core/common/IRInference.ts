@@ -505,6 +505,21 @@ export class IRInference {
                 declaredClass = globalClass;
             }
         }
+        if (methodName === CONSTRUCTOR_NAME) {
+            const constructor = declaredClass?.getMethodWithName('construct-signature');
+            if (constructor) {
+                const methodSignature = constructor.matchMethodSignature(expr.getArgs());
+                TypeInference.inferSignatureReturnType(methodSignature, constructor);
+                expr.setMethodSignature(this.replaceMethodSignature(expr.getMethodSignature(), methodSignature));
+                expr.setRealGenericTypes(IRInference.getRealTypes(expr, declaredClass, baseType, constructor));
+                return expr;
+            }
+        } else if (methodName === Builtin.ITERATOR_NEXT &&
+            baseType.getClassSignature().getDeclaringFileSignature().getProjectName() === Builtin.DUMMY_PROJECT_NAME) {
+            expr.getMethodSignature().getMethodSubSignature().setReturnType(Builtin.ITERATOR_RESULT_CLASS_TYPE);
+            expr.setRealGenericTypes(baseType.getRealGenericTypes());
+            return expr;
+        }
         const method = declaredClass ? ModelUtils.findPropertyInClass(methodName, declaredClass) : null;
         if (method instanceof ArkMethod) {
             const methodSignature = method.matchMethodSignature(expr.getArgs());
@@ -517,24 +532,6 @@ export class IRInference {
             return expr;
         } else if (method instanceof ArkField) {
             return this.changePtrInvokeExpr(method, scene, expr) ?? expr;
-        } else if (methodName === CONSTRUCTOR_NAME) {
-            const constructor = declaredClass?.getMethodWithName('construct-signature') ??
-                declaredClass?.getMethodWithName(CALL_SIGNATURE_NAME);
-            if (constructor) {
-                const methodSignature = constructor.matchMethodSignature(expr.getArgs());
-                TypeInference.inferSignatureReturnType(methodSignature, constructor);
-                expr.setMethodSignature(this.replaceMethodSignature(expr.getMethodSignature(), methodSignature));
-                expr.setRealGenericTypes(IRInference.getRealTypes(expr, declaredClass, baseType, constructor));
-            } else {
-                const subSignature = new MethodSubSignature(methodName, [], new ClassType(baseType.getClassSignature()));
-                expr.setMethodSignature(new MethodSignature(baseType.getClassSignature(), subSignature));
-            }
-            return expr;
-        } else if (methodName === Builtin.ITERATOR_NEXT &&
-            baseType.getClassSignature().getDeclaringFileSignature().getProjectName() === Builtin.DUMMY_PROJECT_NAME) {
-            expr.getMethodSignature().getMethodSubSignature().setReturnType(Builtin.ITERATOR_RESULT_CLASS_TYPE);
-            expr.setRealGenericTypes(baseType.getRealGenericTypes());
-            return expr;
         }
         return null;
     }

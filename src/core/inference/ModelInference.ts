@@ -26,9 +26,10 @@ import { fileSignatureCompare, NamespaceSignature } from '../model/ArkSignature'
 import { findArkExport, findExportInfoInfile, ModelUtils } from '../common/ModelUtils';
 import { ArkMethod } from '../model/ArkMethod';
 import {
-    AnyType,
+    AliasType,
+    AnyType, ArrayType,
     ClassType,
-    FunctionType,
+    FunctionType, GenericType,
     NullType,
     Type,
     UnclearReferenceType,
@@ -137,6 +138,7 @@ export class ImportInfoInference extends ArkModelInference {
         if (arkExport) {
             exportInfo.setExportClauseType(arkExport.getExportType());
         }
+        this.exportInfo = exportInfo;
         return exportInfo;
     }
 
@@ -155,11 +157,14 @@ export class FileInference extends ArkModelInference {
     private importInfoInference: ImportInfoInference;
     private classInference: ClassInference;
 
-
     constructor(importInfoInference: ImportInfoInference, classInference: ClassInference) {
         super();
         this.importInfoInference = importInfoInference;
         this.classInference = classInference;
+    }
+
+    public getClassInference(): ClassInference {
+        return this.classInference;
     }
 
     public preInfer(file: ArkFile): void {
@@ -179,6 +184,10 @@ export class ClassInference extends ArkModelInference {
     constructor(methodInference: MethodInference) {
         super();
         this.methodInference = methodInference;
+    }
+
+    public getMethodInference(): MethodInference {
+        return this.methodInference;
     }
 
     public preInfer(arkClass: ArkClass): void {
@@ -220,7 +229,7 @@ export class MethodInference extends ArkModelInference {
             }
         });
         const cfg = body.getCfg();
-        const modifiedStmts: InferStmtResult[] = []
+        const modifiedStmts: InferStmtResult[] = [];
         const workList = cfg.getStmts();
         while (workList.length > 0) {
             const stmt = workList.shift();
@@ -290,27 +299,40 @@ export class StmtInference extends ArkModelInference {
         valueInference.doInfer(value, stmt);
     }
 
-    private isTypeCanBeOverride(type: Type, rightOp: Value): boolean {
+    private isTypeCanBeOverride(type: Type): boolean {
         if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType
-            || type instanceof UnclearReferenceType || type instanceof FunctionType) {
+            || type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
             return true;
+        } else if (type instanceof ClassType || type instanceof AliasType) {
+            return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof ArrayType) {
+            return TypeInference.checkType(type.getBaseType(), t => t instanceof UnclearReferenceType || t instanceof GenericType);
         }
         return false;
     }
 
-    private union(leftType: Type, rightType: Type): Type {
-        if (leftType.toString() === rightType.toString() || TypeInference.checkType(rightType, t => t instanceof AnyType ||
+    private union(type1: Type, type2: Type): Type {
+        const leftType = TypeInference.replaceAliasType(type1);
+        const rightType = TypeInference.replaceAliasType(type2);
+        if (TypeInference.checkType(rightType, t => t instanceof AnyType ||
             (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
-            return leftType;
+            return type1;
+        } else if (this.isSameType(leftType, rightType)) {
+            return leftType === type1 ? type1 : type2;
         } else if (leftType instanceof UnionType) {
-            const isExist = leftType.getTypes().find(t => t.toString() === rightType.toString());
-            if (!isExist) {
-                leftType.getTypes().push(rightType);
+            const isExist = leftType.getTypes().find(t => this.isSameType(t, rightType));
+            if (isExist) {
+                return type1;
             }
-            return leftType;
-        } else {
-            return new UnionType([leftType, rightType]);
         }
+        return new UnionType([type1, type2]);
+    }
+
+    private isSameType(type1: Type, type2: Type): boolean {
+        if (type1 instanceof ClassType && type2 instanceof ClassType) {
+            return type1.getClassSignature() === type2.getClassSignature();
+        }
+        return type1.constructor === type2.constructor;
     }
 
     private typeSpread(stmt: Stmt, method: ArkMethod) {
@@ -319,7 +341,7 @@ export class StmtInference extends ArkModelInference {
             const leftOp = stmt.getLeftOp();
             let leftType = leftOp.getType();
             if (!TypeInference.isUnclearType(rightType)) {
-                if (this.isTypeCanBeOverride(leftType, stmt.getRightOp())) {
+                if (this.isTypeCanBeOverride(leftType)) {
                     leftType = rightType;
                 } else {
                     leftType = this.union(leftType, rightType);

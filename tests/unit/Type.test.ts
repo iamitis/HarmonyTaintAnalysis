@@ -386,7 +386,7 @@ describe('Alias Type With Import Test', () => {
         assert.isNotNull(method);
         const localA = method!.getBody()?.getLocals().get('a');
         assert.isDefined(localA);
-        assert.equal(localA!.getType().toString(), '@type/test.ts: %dflt.aliasTypeWithImport()#NumberAType[]');
+        assert.equal(localA!.getType().toString(), '@type/test.ts: %dflt.aliasTypeWithImport()#NumberAType[]|number[]');
     });
 
     it('type alias should not in locals', () => {
@@ -1811,7 +1811,7 @@ describe('Object Type Test', () => {
         assert.isAtLeast(stmtsDefault!.length, 7);
         assert.isTrue(stmtsDefault![6] instanceof ArkAssignStmt);
         assert.isTrue((stmtsDefault![6] as ArkAssignStmt).getRightOp() instanceof ArkStaticFieldRef);
-        assert.equal(((stmtsDefault![6] as ArkAssignStmt).getRightOp() as ArkStaticFieldRef).getFieldSignature().toString(), `${objectTypeStr}.[static]prototype`);
+        assert.equal(((stmtsDefault![6] as ArkAssignStmt).getRightOp() as ArkStaticFieldRef).getFieldSignature().toString(), `@built-in/lib.es5.d.ts: ObjectConstructor.prototype`);
         assert.isTrue(stmtsDefault![7] instanceof ArkAssignStmt);
         assert.isTrue((stmtsDefault![7] as ArkAssignStmt).getRightOp() instanceof ArkStaticInvokeExpr);
         assert.equal(((stmtsDefault![7] as ArkAssignStmt).getRightOp() as ArkStaticInvokeExpr).getMethodSignature().toString(), `@built-in/lib.es5.d.ts: ObjectConstructor.create(any)`);

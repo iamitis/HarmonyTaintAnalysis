@@ -691,7 +691,7 @@ export abstract class AbstractBinopExpr extends AbstractExpr {
         return op;
     }
 
-    protected setType(): void {
+    public setType(): void {
         let op1Type = this.parseType(this.op1.getType());
         let op2Type = this.parseType(this.op2.getType());
         let type = UnknownType.getInstance();

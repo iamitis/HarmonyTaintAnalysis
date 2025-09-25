@@ -16,7 +16,7 @@
 
 import { ArkAssignStmt, Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
-import { Inference, InferenceFlow, InferLanguage } from './Inference';
+import { Inference, InferenceFlow, InferenceManager, InferLanguage } from './Inference';
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
 import {
     AliasType,
@@ -55,9 +55,11 @@ import { ModelUtils } from '../common/ModelUtils';
 import { Local } from '../base/Local';
 import { Bind } from './InferenceBuilder';
 import { Builtin } from '../common/Builtin';
-import { ArkClass } from '../model/ArkClass';
+import { ArkClass, ClassCategory } from '../model/ArkClass';
 import { Constant } from '../base/Constant';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
+import { ClassSignature } from '../model/ArkSignature';
+import { FileInference } from './ModelInference';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ValueInference');
 
@@ -198,6 +200,35 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
     }
 }
 
+@Bind()
+export class StaticFieldRefInference extends ValueInference<ArkStaticFieldRef> {
+    public getValueName(): string {
+        return 'ArkStaticFieldRef';
+    }
+
+    public preInfer(value: ArkStaticFieldRef, stmt?: Stmt): boolean {
+        return IRInference.needInfer(value.getFieldSignature().getDeclaringSignature().getDeclaringFileSignature()) ||
+            TypeInference.isUnclearType(value.getType());
+    }
+
+    public infer(value: ArkStaticFieldRef, stmt: Stmt): Value | undefined {
+        const baseSignature = value.getFieldSignature().getDeclaringSignature();
+        const baseName = baseSignature instanceof ClassSignature ? baseSignature.getClassName() : baseSignature.getNamespaceName();
+        const arkClass = stmt.getCfg().getDeclaringMethod().getDeclaringArkClass();
+        const baseType = TypeInference.inferBaseType(baseName, arkClass);
+        if (!baseType) {
+            return undefined;
+        }
+        const newFieldSignature = IRInference.generateNewFieldSignature(value, arkClass, baseType);
+        if (newFieldSignature) {
+            value.setFieldSignature(newFieldSignature);
+            if (newFieldSignature.isStatic()) {
+                return new ArkStaticFieldRef(newFieldSignature);
+            }
+        }
+    }
+}
+
 
 @Bind()
 export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvokeExpr> {
@@ -221,6 +252,16 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
         const arkMethod = stmt.getCfg().getDeclaringMethod();
         if (result) {
             IRInference.inferArgs(value, arkMethod);
+            for (const arg of value.getArgs()) {
+                const argType = arg.getType();
+                if (!(argType instanceof FunctionType)) {
+                    continue;
+                }
+                const callBack = arkMethod.getDeclaringArkFile().getScene().getMethod(argType.getMethodSignature());
+                if (callBack && callBack.getBody()) {
+                    this.invokeCallBack(callBack, new Set([arkMethod]));
+                }
+            }
         }
         if (result instanceof ArkInstanceInvokeExpr && result.getBase().getName() === SUPER_NAME) {
             const thisLocal = arkMethod.getBody()?.getLocals().get(THIS_NAME);
@@ -230,6 +271,23 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
             }
         }
         return !result || result === value ? undefined : result;
+    }
+
+    private invokeCallBack(callback: ArkMethod, visited: Set<ArkMethod>): void {
+        const paramLength = callback.getImplementationSignature()?.getParamLength();
+        if (!paramLength || paramLength === 0) {
+            return;
+        }
+        if (visited.has(callback)) {
+            return;
+        } else {
+            visited.add(callback);
+        }
+        const inference = InferenceManager.getInstance().getInference(callback.getDeclaringArkFile().getLanguage());
+        if (inference instanceof FileInference) {
+            const methodInference = inference.getClassInference().getMethodInference();
+            methodInference.doInfer(callback);
+        }
     }
 
     public getMethodName(expr: AbstractInvokeExpr, arkMethod: ArkMethod): string {
@@ -415,12 +473,11 @@ export class ArkNormalBinOpExprInference extends ValueInference<ArkNormalBinopEx
     }
 
     public preInfer(value: ArkNormalBinopExpr): boolean {
-        // return TypeInference.isUnclearType(value.getType());
-        return true;
+        return TypeInference.isUnclearType(value.getType());
     }
 
     public infer(value: ArkNormalBinopExpr): Value | undefined {
-        // value.setType();
+        value.setType();
         return undefined;
     }
 }
@@ -429,6 +486,10 @@ export class ArkNormalBinOpExprInference extends ValueInference<ArkNormalBinopEx
 export class ArkConditionExprInference extends ArkNormalBinOpExprInference {
     public getValueName(): string {
         return 'ArkConditionExpr';
+    }
+
+    public preInfer(value: ArkConditionExpr): boolean {
+        return true;
     }
 
     public infer(value: ArkConditionExpr): Value | undefined {

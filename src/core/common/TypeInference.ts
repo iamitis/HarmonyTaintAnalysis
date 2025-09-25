@@ -79,7 +79,7 @@ import { ModelUtils } from './ModelUtils';
 import { Builtin } from './Builtin';
 import { MethodSignature, MethodSubSignature, NamespaceSignature } from '../model/ArkSignature';
 import {
-    ANONYMOUS_METHOD_PREFIX,
+    ANONYMOUS_METHOD_PREFIX, CALL_SIGNATURE_NAME,
     INSTANCE_INIT_METHOD_NAME,
     LEXICAL_ENV_NAME_PREFIX,
     STATIC_INIT_METHOD_NAME,
@@ -94,6 +94,7 @@ import { SdkUtils } from './SdkUtils';
 import { ModifierType } from '../model/ArkBaseModel';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'TypeInference');
+const unknownFileName: string[] = [UNKNOWN_FILE_NAME, Builtin.DUMMY_FILE_NAME];
 
 export class TypeInference {
     public static inferTypeInArkField(arkField: ArkField): void {
@@ -150,8 +151,11 @@ export class TypeInference {
             visited.add(leftOpType);
         }
         let type;
-        if (leftOpType instanceof ClassType && leftOpType.getClassSignature().getDeclaringFileSignature().getFileName() === UNKNOWN_FILE_NAME) {
-            type = TypeInference.inferUnclearRefName(leftOpType.getClassSignature().getClassName(), declaringArkClass);
+        if (leftOpType instanceof ClassType && unknownFileName.includes(leftOpType.getClassSignature().getDeclaringFileSignature().getFileName())) {
+            const realTypes = leftOpType.getRealGenericTypes();
+            this.inferRealGenericTypes(realTypes, declaringArkClass);
+            let newType = TypeInference.inferUnclearRefName(leftOpType.getClassSignature().getClassName(), declaringArkClass);
+            type = newType ? this.replaceTypeWithReal(newType, realTypes) : null;
         } else if (leftOpType instanceof UnionType || leftOpType instanceof IntersectionType || leftOpType instanceof TupleType) {
             let types = leftOpType.getTypes();
             for (let i = 0; i < types.length; i++) {
@@ -474,10 +478,8 @@ export class TypeInference {
             return true;
         } else if (
             type instanceof ClassType &&
-            (type.getClassSignature().getDeclaringFileSignature().getFileName() === UNKNOWN_FILE_NAME ||
-                (type.getClassSignature().getClassName() === PROMISE && !type.getRealGenericTypes()) ||
-                (type.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
-                    type.getRealGenericTypes()?.find(t => t instanceof GenericType)))
+            (unknownFileName.includes(type.getClassSignature().getDeclaringFileSignature().getFileName()) ||
+                (type.getClassSignature().getClassName() === PROMISE && !type.getRealGenericTypes()))
         ) {
             return true;
         } else if (type instanceof UnionType || type instanceof IntersectionType || type instanceof TupleType) {
