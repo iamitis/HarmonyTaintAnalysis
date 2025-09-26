@@ -386,7 +386,7 @@ describe('Alias Type With Import Test', () => {
         assert.isNotNull(method);
         const localA = method!.getBody()?.getLocals().get('a');
         assert.isDefined(localA);
-        assert.equal(localA!.getType().toString(), '@type/test.ts: %dflt.aliasTypeWithImport()#NumberAType[]|number[]');
+        assert.equal(localA!.getType().toString(), '@type/test.ts: %dflt.aliasTypeWithImport()#NumberAType[]');
     });
 
     it('type alias should not in locals', () => {

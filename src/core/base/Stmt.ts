@@ -575,7 +575,7 @@ export class ArkAliasTypeDefineStmt extends Stmt {
         return str;
     }
 
-    public getExprs(): AliasTypeExpr[] {
+    public getUses(): AliasTypeExpr[] {
         return [this.getAliasTypeExpr()];
     }
 

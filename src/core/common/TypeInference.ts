@@ -79,7 +79,7 @@ import { ModelUtils } from './ModelUtils';
 import { Builtin } from './Builtin';
 import { MethodSignature, MethodSubSignature, NamespaceSignature } from '../model/ArkSignature';
 import {
-    ANONYMOUS_METHOD_PREFIX, CALL_SIGNATURE_NAME,
+    ANONYMOUS_METHOD_PREFIX,
     INSTANCE_INIT_METHOD_NAME,
     LEXICAL_ENV_NAME_PREFIX,
     STATIC_INIT_METHOD_NAME,

@@ -46,7 +46,8 @@ import {
     ArkInstanceInvokeExpr,
     ArkInstanceOfExpr,
     ArkNewArrayExpr,
-    ArkNewExpr, ArkNormalBinopExpr,
+    ArkNewExpr,
+    ArkNormalBinopExpr,
     ArkPtrInvokeExpr,
     ArkStaticInvokeExpr,
     RelationalBinaryOperator
@@ -55,7 +56,7 @@ import { ModelUtils } from '../common/ModelUtils';
 import { Local } from '../base/Local';
 import { Bind } from './InferenceBuilder';
 import { Builtin } from '../common/Builtin';
-import { ArkClass, ClassCategory } from '../model/ArkClass';
+import { ArkClass } from '../model/ArkClass';
 import { Constant } from '../base/Constant';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ClassSignature } from '../model/ArkSignature';

@@ -49,9 +49,9 @@ import {
     AliasClassSignature,
     BaseSignature,
     ClassSignature,
-    FieldSignature, FileSignature,
-    MethodSignature,
-    MethodSubSignature
+    FieldSignature,
+    FileSignature,
+    MethodSignature
 } from '../model/ArkSignature';
 import { CONSTRUCTOR_NAME, FUNCTION, IMPORT, SUPER_NAME, THIS_NAME } from './TSConst';
 import { Builtin } from './Builtin';
@@ -70,7 +70,8 @@ import { Constant } from '../base/Constant';
 import {
     ANONYMOUS_CLASS_PREFIX,
     CALL_SIGNATURE_NAME,
-    DEFAULT_ARK_CLASS_NAME, LEXICAL_ENV_NAME_PREFIX,
+    DEFAULT_ARK_CLASS_NAME,
+    LEXICAL_ENV_NAME_PREFIX,
     NAME_DELIMITER,
     NAME_PREFIX,
     UNKNOWN_CLASS_NAME,

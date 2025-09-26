@@ -27,9 +27,12 @@ import { findArkExport, findExportInfoInfile, ModelUtils } from '../common/Model
 import { ArkMethod } from '../model/ArkMethod';
 import {
     AliasType,
-    AnyType, ArrayType,
+    AnyType,
+    ArrayType,
     ClassType,
-    FunctionType, GenericType,
+    FunctionType,
+    GenericType,
+    LiteralType,
     NullType,
     Type,
     UnclearReferenceType,
@@ -43,9 +46,10 @@ import { CONSTRUCTOR_NAME, GLOBAL_THIS_NAME, PROMISE } from '../common/TSConst';
 import { SdkUtils } from '../common/SdkUtils';
 import { IRInference } from '../common/IRInference';
 import { Local } from '../base/Local';
-import { ANONYMOUS_CLASS_PREFIX, CALL_SIGNATURE_NAME, NAME_PREFIX } from '../common/Const';
+import { ANONYMOUS_CLASS_PREFIX, NAME_PREFIX } from '../common/Const';
 import { ArkClass } from '../model/ArkClass';
 import { ValueInference } from './ValueInference';
+import { Builtin } from '../common/Builtin';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ModelInference');
 
@@ -265,8 +269,6 @@ export class MethodInference extends ArkModelInference {
 }
 
 
-const ctors: string[] = [CALL_SIGNATURE_NAME, 'construct-signature'];
-
 export class StmtInference extends ArkModelInference {
     private valueInferences: Map<string, ValueInference<any>>;
 
@@ -314,11 +316,9 @@ export class StmtInference extends ArkModelInference {
     private union(type1: Type, type2: Type): Type {
         const leftType = TypeInference.replaceAliasType(type1);
         const rightType = TypeInference.replaceAliasType(type2);
-        if (TypeInference.checkType(rightType, t => t instanceof AnyType ||
+        if (this.isSameType(leftType, rightType) || TypeInference.checkType(rightType, t => t instanceof AnyType ||
             (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
             return type1;
-        } else if (this.isSameType(leftType, rightType)) {
-            return leftType === type1 ? type1 : type2;
         } else if (leftType instanceof UnionType) {
             const isExist = leftType.getTypes().find(t => this.isSameType(t, rightType));
             if (isExist) {
@@ -331,6 +331,8 @@ export class StmtInference extends ArkModelInference {
     private isSameType(type1: Type, type2: Type): boolean {
         if (type1 instanceof ClassType && type2 instanceof ClassType) {
             return type1.getClassSignature() === type2.getClassSignature();
+        } else if (type1 instanceof LiteralType) {
+            return typeof type1.getLiteralName() === type2.toString();
         }
         return type1.constructor === type2.constructor;
     }
@@ -340,7 +342,9 @@ export class StmtInference extends ArkModelInference {
             const rightType = stmt.getRightOp().getType();
             const leftOp = stmt.getLeftOp();
             let leftType = leftOp.getType();
-            if (!TypeInference.isUnclearType(rightType)) {
+            if (!TypeInference.isUnclearType(rightType) || (rightType instanceof ClassType &&
+                rightType.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
+                rightType.getRealGenericTypes()?.find(t => !(t instanceof GenericType)))) {
                 if (this.isTypeCanBeOverride(leftType)) {
                     leftType = rightType;
                 } else {

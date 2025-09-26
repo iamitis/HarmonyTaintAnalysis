@@ -1147,6 +1147,9 @@ export class AliasTypeExpr extends AbstractExpr {
      * @returns Always returns empty array because her is the alias type definition which has no relationship with value flow.
      */
     public getUses(): Value[] {
+        if (this.originalObject instanceof Local) {
+            return [this.originalObject];
+        }
         return [];
     }
 
