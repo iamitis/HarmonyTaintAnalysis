@@ -1064,6 +1064,7 @@ export type AliasTypeOriginalModel = Type | ImportInfo | Local | ArkClass | ArkM
  ```
  */
 export class AliasTypeExpr extends AbstractExpr {
+    private originalType?: Type;
     private originalObject: AliasTypeOriginalModel;
     private readonly transferWithTypeOf: boolean = false;
     private realGenericTypes?: Type[];
@@ -1094,6 +1095,14 @@ export class AliasTypeExpr extends AbstractExpr {
 
     public getRealGenericTypes(): Type[] | undefined {
         return this.realGenericTypes;
+    }
+
+    public getOriginalType(): Type | undefined {
+        return this.originalType;
+    }
+
+    public setOriginalType(type: Type) {
+        return this.originalType = type;
     }
 
     public getType(): Type {

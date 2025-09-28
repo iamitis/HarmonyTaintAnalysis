@@ -28,9 +28,9 @@ import {
     LexicalEnvType,
     NullType,
     StringType,
-    Type,
+    Type, UnclearReferenceType,
     UndefinedType,
-    UnionType
+    UnionType, UnknownType
 } from '../base/Type';
 import { TypeInference } from '../common/TypeInference';
 import { IRInference } from '../common/IRInference';
@@ -61,6 +61,9 @@ import { Constant } from '../base/Constant';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ClassSignature } from '../model/ArkSignature';
 import { FileInference } from './ModelInference';
+import { AbstractTypeExpr, KeyofTypeExpr, TypeQueryExpr } from '../base/TypeExpr';
+import { ImportInfo } from '../model/ArkImport';
+import { ArkField } from '../model/ArkField';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ValueInference');
 
@@ -620,11 +623,49 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
     }
 
     public preInfer(value: AliasTypeExpr): boolean {
-        return TypeInference.isUnclearType(value.getType());
+        return value.getOriginalType() === undefined;
     }
 
     public infer(value: AliasTypeExpr, stmt: Stmt): Value | undefined {
-        IRInference.inferAliasTypeExpr(value, stmt.getCfg().getDeclaringMethod());
+        let originalObject = value.getOriginalObject();
+        const arkMethod = stmt.getCfg().getDeclaringMethod();
+        TypeInference.inferRealGenericTypes(value.getRealGenericTypes(), arkMethod.getDeclaringArkClass());
+        let type;
+        if (originalObject instanceof Local) {
+            // type = ModelUtils.findDeclaredLocal(originalObject, stmt.getCfg().getDeclaringMethod(), 1)?.getType() ??
+            //     TypeInference.inferBaseType(originalObject.getName(), arkMethod.getDeclaringArkClass());
+            let originalLocal = ModelUtils.findArkModelByRefName(originalObject.getName(), arkMethod.getDeclaringArkClass());
+            if (AliasTypeExpr.isAliasTypeOriginalModel(originalLocal)) {
+                originalObject = originalLocal;
+                value.setOriginalObject(originalLocal);
+            }
+        }
+        if (originalObject instanceof ImportInfo) {
+            const arkExport = originalObject.getLazyExportInfo()?.getArkExport();
+            const importClauseName = originalObject.getImportClauseName();
+            if (importClauseName.includes('.') && arkExport instanceof ArkClass) {
+                type = TypeInference.inferUnclearRefName(importClauseName, arkExport);
+            } else if (arkExport) {
+                type = TypeInference.parseArkExport2Type(arkExport);
+            }
+        } else if (originalObject instanceof TypeQueryExpr) {
+            IRInference.inferTypeQueryExpr(originalObject, arkMethod);
+            type = originalObject.getType();
+        } else if (originalObject instanceof KeyofTypeExpr) {
+            IRInference.inferKeyofTypeExpr(originalObject, arkMethod);
+            type = originalObject.getType();
+        } else if (originalObject instanceof Type) {
+            type = TypeInference.inferUnclearedType(originalObject, arkMethod.getDeclaringArkClass());
+        } else if (originalObject instanceof ArkField) {
+            value.setOriginalObject(originalObject);
+            type = originalObject.getType();
+        } else {
+            type = TypeInference.parseArkExport2Type(originalObject);
+        }
+        if (type) {
+            TypeInference.replaceTypeWithReal(type, value.getRealGenericTypes());
+            value.setOriginalType(type);
+        }
         return undefined;
     }
 }

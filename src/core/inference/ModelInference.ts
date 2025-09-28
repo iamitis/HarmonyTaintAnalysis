@@ -33,7 +33,7 @@ import {
     FunctionType,
     GenericType,
     LiteralType,
-    NullType,
+    NullType, StringType,
     Type,
     UnclearReferenceType,
     UndefinedType,
@@ -50,6 +50,7 @@ import { ANONYMOUS_CLASS_PREFIX, NAME_PREFIX } from '../common/Const';
 import { ArkClass } from '../model/ArkClass';
 import { ValueInference } from './ValueInference';
 import { Builtin } from '../common/Builtin';
+import { KeyofTypeExpr } from '../base/TypeExpr';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ModelInference');
 
@@ -333,6 +334,8 @@ export class StmtInference extends ArkModelInference {
             return type1.getClassSignature() === type2.getClassSignature();
         } else if (type1 instanceof LiteralType) {
             return typeof type1.getLiteralName() === type2.toString();
+        } else if (type1 instanceof KeyofTypeExpr) {
+            return type2 instanceof KeyofTypeExpr || type2 instanceof StringType;
         }
         return type1.constructor === type2.constructor;
     }
@@ -371,7 +374,10 @@ export class StmtInference extends ArkModelInference {
             }
             IRInference.inferRightWithSdkType(returnType, stmt.getOp().getType(), method.getDeclaringArkClass());
         } else if (stmt instanceof ArkAliasTypeDefineStmt && TypeInference.isUnclearType(stmt.getAliasType().getOriginalType())) {
-            stmt.getAliasType().setOriginalType(stmt.getAliasTypeExpr().getType());
+            const originalType = stmt.getAliasTypeExpr().getOriginalType();
+            if (originalType) {
+                stmt.getAliasType().setOriginalType(originalType);
+            }
         }
     }
 
