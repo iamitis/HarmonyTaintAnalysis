@@ -737,7 +737,7 @@ describe('Alias Type With Generic Type Test', () => {
     it('alias type of global type', () => {
         const alias = defaultClass?.getMethodWithName('globalType')?.getBody()?.getAliasTypeMap()?.get('GlobalTypeBoolean');
         assert.isDefined(alias);
-        assert.equal(alias![1].getExprs()[0].getOriginalObject().toString(), '@type/test.ts: %dflt.[static]%dflt()#GlobalType<T>');
+        assert.equal(alias![1].getExprs()[0].getOriginalObject().toString(), '@type/test.ts: %dflt.[static]%dflt()#GlobalType<boolean>');
     });
 });
 

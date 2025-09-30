@@ -172,7 +172,8 @@ export class TypeInference {
                 type = leftOpType;
             }
         } else if (leftOpType instanceof AliasType) {
-            let baseType = this.inferUnclearedType(leftOpType.getOriginalType(), declaringArkClass, visited);
+            const defArkClass = declaringArkClass.getDeclaringArkFile().getScene().getMethod(leftOpType.getSignature().getDeclaringMethodSignature())?.getDeclaringArkClass();
+            let baseType = this.inferUnclearedType(leftOpType.getOriginalType(), defArkClass ?? declaringArkClass, visited);
             if (baseType) {
                 leftOpType.setOriginalType(baseType);
                 type = leftOpType;
@@ -379,7 +380,7 @@ export class TypeInference {
         } else if (arkExport instanceof ArkNamespace) {
             return AnnotationNamespaceType.getInstance(arkExport.getSignature());
         } else if (arkExport instanceof ArkMethod) {
-            return new FunctionType(arkExport.getSignature());
+            return new FunctionType(arkExport.getSignature(), arkExport.getGenericTypes());
         } else if (arkExport instanceof Local) {
             if (arkExport.getType() instanceof UnknownType || arkExport.getType() instanceof UnclearReferenceType) {
                 return null;
@@ -508,7 +509,7 @@ export class TypeInference {
         }
         if (check(type)) {
             return true;
-        } else if (type instanceof ClassType) {
+        } else if (type instanceof ClassType || type instanceof FunctionType) {
             return !!type.getRealGenericTypes()?.find(t => this.checkType(t, check, visited));
         } else if (type instanceof UnionType || type instanceof IntersectionType || type instanceof TupleType) {
             return !!type.getTypes().find(t => this.checkType(t, check, visited));
@@ -705,7 +706,7 @@ export class TypeInference {
         let type = null;
         for (let i = 0; i < singleNames.length; i++) {
             let genericName: string = EMPTY_STRING;
-            const name = singleNames[i].replace(/<(\w+)>/, (match, group1) => {
+            const name = singleNames[i].replace(/<(.+)>/, (match, group1) => {
                 genericName = group1;
                 return EMPTY_STRING;
             });

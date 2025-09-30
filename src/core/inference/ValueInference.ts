@@ -20,11 +20,11 @@ import { Inference, InferenceFlow, InferenceManager, InferLanguage } from './Inf
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
 import {
     AliasType,
-    AnnotationNamespaceType,
+    AnnotationNamespaceType, AnyType,
     ArrayType,
     BooleanType,
     ClassType,
-    FunctionType,
+    FunctionType, GenericType,
     LexicalEnvType,
     NullType,
     StringType,
@@ -629,7 +629,7 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
     public infer(value: AliasTypeExpr, stmt: Stmt): Value | undefined {
         let originalObject = value.getOriginalObject();
         const arkMethod = stmt.getCfg().getDeclaringMethod();
-        TypeInference.inferRealGenericTypes(value.getRealGenericTypes(), arkMethod.getDeclaringArkClass());
+
         let type;
         if (originalObject instanceof Local) {
             // type = ModelUtils.findDeclaredLocal(originalObject, stmt.getCfg().getDeclaringMethod(), 1)?.getType() ??
@@ -663,8 +663,13 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
             type = TypeInference.parseArkExport2Type(originalObject);
         }
         if (type) {
-            TypeInference.replaceTypeWithReal(type, value.getRealGenericTypes());
+            const realGenericTypes = value.getRealGenericTypes();
+            if (TypeInference.checkType(type, t => t instanceof GenericType || t instanceof AnyType) && realGenericTypes && realGenericTypes.length > 0) {
+                TypeInference.inferRealGenericTypes(realGenericTypes, arkMethod.getDeclaringArkClass());
+                type = TypeInference.replaceTypeWithReal(type, realGenericTypes);
+            }
             value.setOriginalType(type);
+            value.setOriginalObject(type);
         }
         return undefined;
     }

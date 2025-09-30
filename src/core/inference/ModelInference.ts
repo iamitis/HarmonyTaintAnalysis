@@ -31,9 +31,9 @@ import {
     ArrayType,
     ClassType,
     FunctionType,
-    GenericType,
+    GenericType, IntersectionType,
     LiteralType,
-    NullType, StringType,
+    NullType, StringType, TupleType,
     Type,
     UnclearReferenceType,
     UndefinedType,
@@ -325,6 +325,11 @@ export class StmtInference extends ArkModelInference {
             if (isExist) {
                 return type1;
             }
+        } else if (leftType instanceof IntersectionType) {
+            const isExist = leftType.getTypes().find(t => !this.isSameType(t, rightType));
+            if (!isExist) {
+                return type1;
+            }
         }
         return new UnionType([type1, type2]);
     }
@@ -336,6 +341,8 @@ export class StmtInference extends ArkModelInference {
             return typeof type1.getLiteralName() === type2.toString();
         } else if (type1 instanceof KeyofTypeExpr) {
             return type2 instanceof KeyofTypeExpr || type2 instanceof StringType;
+        } else if (type1 instanceof TupleType) {
+            return type2 instanceof TupleType || type2 instanceof ArrayType;
         }
         return type1.constructor === type2.constructor;
     }
