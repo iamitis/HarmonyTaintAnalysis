@@ -770,7 +770,7 @@ export const SourceAliasTypeWithGenericType = `function aliasTypeWithGenericType
 `;
 
 export const SourceAliasTypeWithClassType = `function aliasTypeWithClassType(): void {
-  type StringClass = ClassWithGeneric<string>;
+  type StringClass = ClassWithGeneric<string><string>;
 }
 `;
 

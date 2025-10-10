@@ -184,6 +184,9 @@ export class TypeInference {
                 leftOpType.setOpType(baseType);
                 type = leftOpType;
             }
+        } else if (leftOpType instanceof TypeQueryExpr) {
+            this.inferRealGenericTypes(leftOpType.getGenerateTypes(), declaringArkClass);
+            type = leftOpType;
         } else if (leftOpType instanceof TupleType) {
             this.inferRealGenericTypes(leftOpType.getTypes(), declaringArkClass);
             type = leftOpType;
@@ -493,7 +496,7 @@ export class TypeInference {
         } else if (type instanceof KeyofTypeExpr) {
             return this.isUnclearType(type.getOpType());
         } else if (type instanceof TypeQueryExpr) {
-            return this.isUnclearType(type.getType());
+            return this.isUnclearType(type.getType()) || !!type.getGenerateTypes()?.find(t => this.checkType(t, e => e instanceof UnclearReferenceType || e instanceof GenericType));
         }
         return false;
     }

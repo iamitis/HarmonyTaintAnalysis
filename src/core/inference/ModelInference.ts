@@ -31,9 +31,12 @@ import {
     ArrayType,
     ClassType,
     FunctionType,
-    GenericType, IntersectionType,
+    GenericType,
+    IntersectionType,
     LiteralType,
-    NullType, StringType, TupleType,
+    NullType,
+    StringType,
+    TupleType,
     Type,
     UnclearReferenceType,
     UndefinedType,
@@ -50,7 +53,7 @@ import { ANONYMOUS_CLASS_PREFIX, NAME_PREFIX } from '../common/Const';
 import { ArkClass } from '../model/ArkClass';
 import { ValueInference } from './ValueInference';
 import { Builtin } from '../common/Builtin';
-import { KeyofTypeExpr } from '../base/TypeExpr';
+import { AbstractTypeExpr, KeyofTypeExpr } from '../base/TypeExpr';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ModelInference');
 
@@ -297,6 +300,10 @@ export class StmtInference extends ArkModelInference {
         if (!valueInference) {
             logger.warn(name + 'not found valueInference');
             return;
+        }
+        const type = value.getType();
+        if (type instanceof AbstractTypeExpr) {
+            type.getUses().forEach(sub => this.inferValue(sub, stmt));
         }
         value.getUses().forEach(sub => this.inferValue(sub, stmt));
         valueInference.doInfer(value, stmt);

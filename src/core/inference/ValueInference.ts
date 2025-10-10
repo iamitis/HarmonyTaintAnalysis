@@ -547,8 +547,10 @@ export class ArkCastExprInference extends ValueInference<ArkCastExpr> {
         const type = TypeInference.inferUnclearedType(value.getType(), arkClass);
         if (type) {
             IRInference.inferRightWithSdkType(type, value.getOp().getType(), arkClass);
+            value.setType(type);
+        } else if (!TypeInference.isUnclearType(value.getOp().getType())) {
+            value.setType(value.getOp().getType());
         }
-        value.setType(type ?? value.getOp().getType());
         return undefined;
     }
 }
@@ -631,13 +633,13 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
         const arkMethod = stmt.getCfg().getDeclaringMethod();
 
         let type;
+        let originalLocal;
         if (originalObject instanceof Local) {
             // type = ModelUtils.findDeclaredLocal(originalObject, stmt.getCfg().getDeclaringMethod(), 1)?.getType() ??
             //     TypeInference.inferBaseType(originalObject.getName(), arkMethod.getDeclaringArkClass());
-            let originalLocal = ModelUtils.findArkModelByRefName(originalObject.getName(), arkMethod.getDeclaringArkClass());
+            originalLocal = ModelUtils.findArkModelByRefName(originalObject.getName(), arkMethod.getDeclaringArkClass());
             if (AliasTypeExpr.isAliasTypeOriginalModel(originalLocal)) {
                 originalObject = originalLocal;
-                value.setOriginalObject(originalLocal);
             }
         }
         if (originalObject instanceof ImportInfo) {
@@ -648,16 +650,9 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
             } else if (arkExport) {
                 type = TypeInference.parseArkExport2Type(arkExport);
             }
-        } else if (originalObject instanceof TypeQueryExpr) {
-            IRInference.inferTypeQueryExpr(originalObject, arkMethod);
-            type = originalObject.getType();
-        } else if (originalObject instanceof KeyofTypeExpr) {
-            IRInference.inferKeyofTypeExpr(originalObject, arkMethod);
-            type = originalObject.getType();
         } else if (originalObject instanceof Type) {
             type = TypeInference.inferUnclearedType(originalObject, arkMethod.getDeclaringArkClass());
         } else if (originalObject instanceof ArkField) {
-            value.setOriginalObject(originalObject);
             type = originalObject.getType();
         } else {
             type = TypeInference.parseArkExport2Type(originalObject);
@@ -669,7 +664,9 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
                 type = TypeInference.replaceTypeWithReal(type, realGenericTypes);
             }
             value.setOriginalType(type);
-            value.setOriginalObject(type);
+            if (AliasTypeExpr.isAliasTypeOriginalModel(originalLocal)) {
+                value.setOriginalObject(originalLocal);
+            }
         }
         return undefined;
     }
