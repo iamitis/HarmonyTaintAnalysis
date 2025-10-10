@@ -20,17 +20,19 @@ import { Inference, InferenceFlow, InferenceManager, InferLanguage } from './Inf
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
 import {
     AliasType,
-    AnnotationNamespaceType, AnyType,
+    AnnotationNamespaceType,
+    AnyType,
     ArrayType,
     BooleanType,
     ClassType,
-    FunctionType, GenericType,
+    FunctionType,
+    GenericType,
     LexicalEnvType,
     NullType,
     StringType,
-    Type, UnclearReferenceType,
+    Type,
     UndefinedType,
-    UnionType, UnknownType
+    UnionType
 } from '../base/Type';
 import { TypeInference } from '../common/TypeInference';
 import { IRInference } from '../common/IRInference';
@@ -61,7 +63,6 @@ import { Constant } from '../base/Constant';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ClassSignature } from '../model/ArkSignature';
 import { FileInference } from './ModelInference';
-import { AbstractTypeExpr, KeyofTypeExpr, TypeQueryExpr } from '../base/TypeExpr';
 import { ImportInfo } from '../model/ArkImport';
 import { ArkField } from '../model/ArkField';
 
