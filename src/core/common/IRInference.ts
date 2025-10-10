@@ -51,7 +51,7 @@ import {
     ClassSignature,
     FieldSignature,
     FileSignature,
-    MethodSignature
+    MethodSignature, MethodSubSignature
 } from '../model/ArkSignature';
 import { CONSTRUCTOR_NAME, FUNCTION, IMPORT, SUPER_NAME, THIS_NAME } from './TSConst';
 import { Builtin } from './Builtin';
@@ -507,14 +507,18 @@ export class IRInference {
             }
         }
         if (methodName === CONSTRUCTOR_NAME) {
-            const constructor = declaredClass?.getMethodWithName('construct-signature');
+            const constructor = declaredClass?.getMethodWithName('construct-signature') ??
+                declaredClass?.getMethodWithName(CONSTRUCTOR_NAME);
             if (constructor) {
                 const methodSignature = constructor.matchMethodSignature(expr.getArgs());
                 TypeInference.inferSignatureReturnType(methodSignature, constructor);
                 expr.setMethodSignature(this.replaceMethodSignature(expr.getMethodSignature(), methodSignature));
                 expr.setRealGenericTypes(IRInference.getRealTypes(expr, declaredClass, baseType, constructor));
-                return expr;
+            } else {
+                const subSignature = new MethodSubSignature(methodName, [], new ClassType(baseType.getClassSignature()));
+                expr.setMethodSignature(new MethodSignature(baseType.getClassSignature(), subSignature));
             }
+            return expr;
         } else if (methodName === Builtin.ITERATOR_NEXT &&
             baseType.getClassSignature().getDeclaringFileSignature().getProjectName() === Builtin.DUMMY_PROJECT_NAME) {
             expr.getMethodSignature().getMethodSubSignature().setReturnType(Builtin.ITERATOR_RESULT_CLASS_TYPE);

@@ -298,7 +298,7 @@ export class StmtInference extends ArkModelInference {
         const name = value.constructor.name;
         const valueInference = this.valueInferences.get(name);
         if (!valueInference) {
-            logger.warn(name + 'not found valueInference');
+            logger.debug(name + ' valueInference not found');
             return;
         }
         const type = value.getType();
