@@ -24,6 +24,8 @@ import { ArkMethod } from '../../model/ArkMethod';
 import { MethodSignature } from '../../model/ArkSignature';
 import { InferenceBuilder } from '../InferenceBuilder';
 import { InferLanguage } from '../Inference';
+import { ValueInference } from '../ValueInference';
+import { ArkAliasTypeDefineStmt, Stmt } from '../../base/Stmt';
 
 class ArkTsFileInference extends FileInference {
     /**
@@ -77,6 +79,24 @@ class ArkTsMethodInference extends MethodInference {
     }
 }
 
+export class ArkTsStmtInference extends StmtInference {
+
+    constructor(valueInferences: ValueInference<any>[]) {
+        super(valueInferences);
+    }
+
+    public typeSpread(stmt: Stmt, method: ArkMethod) {
+        super.typeSpread(stmt, method);
+        if (stmt instanceof ArkAliasTypeDefineStmt && TypeInference.isUnclearType(stmt.getAliasType().getOriginalType())) {
+            const originalType = stmt.getAliasTypeExpr().getOriginalType();
+            if (originalType) {
+                stmt.getAliasType().setOriginalType(originalType);
+            }
+        }
+    }
+
+}
+
 
 export class ArkTsInferenceBuilder extends InferenceBuilder {
 
@@ -116,7 +136,7 @@ export class ArkTsInferenceBuilder extends InferenceBuilder {
         if (!this.stmtInference) {
             const valueInferences = this.getValueInferences(InferLanguage.COMMON);
             this.getValueInferences(InferLanguage.ARK_TS1_1).forEach(e => valueInferences.push(e));
-            this.stmtInference = new StmtInference(valueInferences);
+            this.stmtInference = new ArkTsStmtInference(valueInferences);
         }
         return this.stmtInference;
     }

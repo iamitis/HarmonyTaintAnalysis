@@ -20,6 +20,7 @@ import { Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
 import { ArkTsInferenceBuilder } from './arkts/ArkTsInference';
 import { InferenceBuilder } from './InferenceBuilder';
+import { AbcInferenceBuilder } from './abc/AbcInference';
 
 
 export type ArkModel = ArkBaseModel | ArkFile | Stmt;
@@ -93,6 +94,8 @@ export class InferenceManager {
         if (!inference) {
             if (inferLanguage === InferLanguage.ARK_TS1_1) {
                 inference = new ArkTsInferenceBuilder().buildFileInference();
+            } else if (inferLanguage === InferLanguage.ABC) {
+                inference = new AbcInferenceBuilder().buildFileInference();
             } else {
                 inference = new InferenceBuilder().buildFileInference();
             }
@@ -104,6 +107,8 @@ export class InferenceManager {
     private changeToInferLanguage(lang: Language) {
         if (lang === Language.ARKTS1_1 || lang === Language.TYPESCRIPT || lang === Language.JAVASCRIPT) {
             return InferLanguage.ARK_TS1_1;
+        } else if (lang === Language.ABC) {
+            return InferLanguage.ABC;
         }
         return InferLanguage.COMMON;
     }

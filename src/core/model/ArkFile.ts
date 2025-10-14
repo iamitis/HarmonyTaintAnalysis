@@ -48,6 +48,7 @@ export enum Language {
     ARKTS1_2 = 2,
     JAVASCRIPT = 3,
     CXX = 4,
+    ABC = 5,
     UNKNOWN = -1,
 }
 

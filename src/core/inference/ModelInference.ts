@@ -16,7 +16,7 @@
 
 import { ModifierType } from '../model/ArkBaseModel';
 import { ArkFile } from '../model/ArkFile';
-import { ArkAliasTypeDefineStmt, ArkAssignStmt, ArkReturnStmt, Stmt } from '../base/Stmt';
+import { ArkAssignStmt, ArkReturnStmt, Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
 import { ArkModel, Inference, InferenceFlow } from './Inference';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
@@ -309,7 +309,7 @@ export class StmtInference extends ArkModelInference {
         valueInference.doInfer(value, stmt);
     }
 
-    private isTypeCanBeOverride(type: Type): boolean {
+    public isTypeCanBeOverride(type: Type): boolean {
         if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType
             || type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
             return true;
@@ -321,7 +321,7 @@ export class StmtInference extends ArkModelInference {
         return false;
     }
 
-    private union(type1: Type, type2: Type): Type {
+    public union(type1: Type, type2: Type): Type {
         const leftType = TypeInference.replaceAliasType(type1);
         const rightType = TypeInference.replaceAliasType(type2);
         if (this.isSameType(leftType, rightType) || TypeInference.checkType(rightType, t => t instanceof AnyType ||
@@ -354,7 +354,7 @@ export class StmtInference extends ArkModelInference {
         return type1.constructor === type2.constructor;
     }
 
-    private typeSpread(stmt: Stmt, method: ArkMethod) {
+    public typeSpread(stmt: Stmt, method: ArkMethod) {
         if (stmt instanceof ArkAssignStmt) {
             const rightType = stmt.getRightOp().getType();
             const leftOp = stmt.getLeftOp();
@@ -387,11 +387,6 @@ export class StmtInference extends ArkModelInference {
                 }
             }
             IRInference.inferRightWithSdkType(returnType, stmt.getOp().getType(), method.getDeclaringArkClass());
-        } else if (stmt instanceof ArkAliasTypeDefineStmt && TypeInference.isUnclearType(stmt.getAliasType().getOriginalType())) {
-            const originalType = stmt.getAliasTypeExpr().getOriginalType();
-            if (originalType) {
-                stmt.getAliasType().setOriginalType(originalType);
-            }
         }
     }
 
