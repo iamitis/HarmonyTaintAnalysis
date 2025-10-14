@@ -330,7 +330,7 @@ const CASE1_EXPECT = `class %dflt {
       %2 = new @built-in/lib.es5.d.ts: RegExp
       %2 = instanceinvoke %2.<@built-in/lib.es5.d.ts: RegExpConstructor.construct-signature(string, string)>('\\d{2}\\.\\d{2,}', 'i')
       lrcTimeRegex2 = %2
-      lyric = instanceinvoke text.<@%unk/%unk: .split()>('\n')
+      lyric = instanceinvoke text.<@built-in/lib.es2015.symbol.wellknown.d.ts: String.split(@built-in/lib.es2015.symbol.wellknown.d.ts: %AC5, number)>('\n')
       return
   }
 

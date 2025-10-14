@@ -168,10 +168,18 @@ export abstract class AbstractFieldRef extends AbstractRef {
 
 export class ArkInstanceFieldRef extends AbstractFieldRef {
     private base: Local; // which obj this field belong to
+    private dynamic?: boolean;
 
-    constructor(base: Local, fieldSignature: FieldSignature) {
+    constructor(base: Local, fieldSignature: FieldSignature, dynamic: boolean = false) {
         super(fieldSignature);
         this.base = base;
+        if (dynamic) {
+            this.dynamic = dynamic;
+        }
+    }
+
+    public isDynamic(): boolean {
+        return this.dynamic || false;
     }
 
     /**

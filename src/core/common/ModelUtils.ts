@@ -412,6 +412,7 @@ export class ModelUtils {
         let property: ArkExport | ArkField | null =
             arkClass.getMethodWithName(name) ??
             arkClass.getStaticMethodWithName(name) ??
+            arkClass.getMethodWithName('Get-' + name) ??
             arkClass.getFieldWithName(name) ??
             arkClass.getStaticFieldWithName(name);
         if (property) {

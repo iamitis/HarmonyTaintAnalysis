@@ -28,7 +28,7 @@ import {
     FunctionType,
     GenericType,
     LexicalEnvType,
-    NullType,
+    NullType, NumberType,
     StringType,
     Type,
     UndefinedType,
@@ -187,11 +187,11 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
     public infer(value: ArkInstanceFieldRef, stmt: Stmt): Value | undefined {
         const baseType = TypeInference.replaceAliasType(value.getBase().getType());
         const arkMethod = stmt.getCfg().getDeclaringMethod();
-        if (baseType instanceof ArrayType) {
+        if (baseType instanceof ArrayType && value.isDynamic()) {
             const index = TypeInference.getLocalFromMethodBody(value.getFieldName(), arkMethod);
             if (index) {
                 return new ArkArrayRef(value.getBase(), index);
-            } else if (value.getFieldName() !== 'length') {
+            } else {
                 return new ArkArrayRef(value.getBase(), ValueUtil.createConst(value.getFieldName()));
             }
         }
@@ -324,6 +324,13 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
             const arrayClass = arkMethod.getDeclaringArkFile().getScene().getSdkGlobal(Builtin.ARRAY);
             if (arrayClass instanceof ArkClass) {
                 baseType = new ClassType(arrayClass.getSignature(), [baseType.getBaseType()]);
+            }
+        } else if (baseType instanceof StringType || baseType instanceof NumberType || baseType instanceof BooleanType) {
+            const name = baseType.getName();
+            const className = name.charAt(0).toUpperCase() + name.slice(1);
+            const arrayClass = arkMethod.getDeclaringArkFile().getScene().getSdkGlobal(className);
+            if (arrayClass instanceof ArkClass) {
+                baseType = new ClassType(arrayClass.getSignature());
             }
         }
         let methodName = this.getMethodName(expr, arkMethod);

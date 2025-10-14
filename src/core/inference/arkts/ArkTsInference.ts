@@ -47,11 +47,8 @@ class ArkTsImportInference extends ImportInfoInference {
 
 class ArkTsClassInference extends ClassInference {
     public preInfer(arkClass: ArkClass): void {
-        TypeInference.inferGenericType(arkClass.getGenericsTypes(), arkClass);
         super.preInfer(arkClass);
-    }
-
-    public infer(arkClass: ArkClass): void {
+        TypeInference.inferGenericType(arkClass.getGenericsTypes(), arkClass);
         arkClass.getFields()
             .filter(p => TypeInference.isUnclearType(p.getType()))
             .forEach(f => {
@@ -60,7 +57,6 @@ class ArkTsClassInference extends ClassInference {
                     f.getSignature().setType(newType);
                 }
             })
-        super.infer(arkClass);
     }
 }
 
