@@ -1782,38 +1782,48 @@ export class ArkValueTransformer {
 
     private compoundAssignmentToValueAndStmts(binaryExpression: ts.BinaryExpression): ValueAndStmts {
         const stmts: Stmt[] = [];
-        let {
-            value: leftValue,
-            valueOriginalPositions: leftPositions,
-            stmts: leftStmts,
-        } = this.tsNodeToSingleAddressValueAndStmts(binaryExpression.left);
+        const {
+            value: leftValueOrig,
+            valueOriginalPositions: leftPositionsOrig,
+            stmts: leftStmts
+        } = this.tsNodeToValueAndStmts(binaryExpression.left);
         leftStmts.forEach(stmt => stmts.push(stmt));
-        let {
+        let leftValue: Value;
+        let leftPositions: FullPosition[];
+        if (leftValueOrig instanceof AbstractFieldRef) {
+            const tempLocal = this.generateTempLocal();
+            const readRefStmt = new ArkAssignStmt(tempLocal, leftValueOrig);
+            stmts.push(readRefStmt);
+            leftValue = tempLocal;
+            leftPositions = [leftPositionsOrig[0]];
+        } else {
+            leftValue = leftValueOrig;
+            leftPositions = leftPositionsOrig;
+        }
+        const {
             value: rightValue,
             valueOriginalPositions: rightPositions,
-            stmts: rightStmts,
+            stmts: rightStmts
         } = this.tsNodeToSingleAddressValueAndStmts(binaryExpression.right);
         rightStmts.forEach(stmt => stmts.push(stmt));
-
-        let leftOpValue: Value;
-        let leftOpPositions: FullPosition[];
         const operator = this.compoundAssignmentTokenToBinaryOperator(binaryExpression.operatorToken.kind);
         if (operator) {
             const exprValue = new ArkNormalBinopExpr(leftValue, rightValue, operator);
             const exprValuePosition = FullPosition.buildFromNode(binaryExpression, this.sourceFile);
-            const assignStmt = new ArkAssignStmt(leftValue, exprValue);
-            assignStmt.setOperandOriginalPositions([...leftPositions, exprValuePosition, ...leftPositions, ...rightPositions]);
+            const assignTarget = leftValueOrig instanceof AbstractFieldRef ? leftValueOrig : leftValue;
+            const assignStmt = new ArkAssignStmt(assignTarget, exprValue);
+            assignStmt.setOperandOriginalPositions([
+                ...(assignTarget === leftValueOrig ? leftPositionsOrig : leftPositions),
+                exprValuePosition,
+                ...leftPositions,
+                ...rightPositions
+            ]);
             stmts.push(assignStmt);
-            leftOpValue = leftValue;
-            leftOpPositions = leftPositions;
-        } else {
-            leftOpValue = ValueUtil.getUndefinedConst();
-            leftOpPositions = [leftPositions[0]];
         }
         return {
-            value: leftOpValue,
-            valueOriginalPositions: leftOpPositions,
-            stmts: stmts,
+            value: leftValueOrig,
+            valueOriginalPositions: leftPositionsOrig,
+            stmts: stmts
         };
     }
 

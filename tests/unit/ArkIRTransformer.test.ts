@@ -60,6 +60,7 @@ import {
     SPREAD_PARAMETERS2_EXPECT_IR,
     SPREAD_PARAMETERS3_EXPECT_IR,
     UnaryExpression_Expect_IR,
+    INCREMENT_EXPECT_IR,
 } from '../resources/arkIRTransformer/expression/ExpressionExpectIR';
 import {
     CompoundAssignment_Expect_IR,
@@ -121,6 +122,7 @@ import {
     FOR_STATEMENT_EXPECT_CASE4,
     FOR_STATEMENT_EXPECT_CASE5,
     FOR_STATEMENT_EXPECT_CASE6,
+    FOR_STATEMENT_EXPECT_CASE7,
 } from '../resources/arkIRTransformer/loopStatement/LoopExpect';
 import { ArkIRFilePrinter } from '../../src/save/arkir/ArkIRFilePrinter';
 import { ClosureFieldRef } from '../../src/core/base/Ref';
@@ -470,6 +472,10 @@ describe('expression Test', () => {
         testMethodIR(scene, 'Destructuring.ts', DEFAULT_ARK_CLASS_NAME, 'destructuring2', DESTRUCTURING2_EXPECT_IR);
         testMethodIR(scene, 'Destructuring.ts', DEFAULT_ARK_CLASS_NAME, 'destructuring3', DESTRUCTURING3_EXPECT_IR);
     });
+
+    it('test increment expression', async () => {
+        testMethodIR(scene, 'IncrementExpressionTest.ts', DEFAULT_ARK_CLASS_NAME, 'incrementExpression', INCREMENT_EXPECT_IR);
+    });
 });
 
 describe('assignment Test', () => {
@@ -498,6 +504,7 @@ describe('loop statement Test', () => {
         testBlocks(scene, 'ForStatementSample.ts', 'case4', FOR_STATEMENT_EXPECT_CASE4.blocks);
         testBlocks(scene, 'ForStatementSample.ts', 'case5', FOR_STATEMENT_EXPECT_CASE5.blocks);
         testBlocks(scene, 'ForStatementSample.ts', 'case6', FOR_STATEMENT_EXPECT_CASE6.blocks);
+        testBlocks(scene, 'ForStatementSample.ts', 'case7', FOR_STATEMENT_EXPECT_CASE7.blocks);
     });
 
 });

@@ -318,7 +318,7 @@ export class Scene {
             for (const cls of ModelUtils.getAllClassesInFile(file)) {
                 buildDefaultConstructor(cls);
                 const constructor = cls.getMethodWithName(CONSTRUCTOR_NAME);
-                if (constructor !== null) {
+                if (constructor !== null && !cls.isDefaultArkClass()) {
                     replaceSuper2Constructor(constructor);
                     addInitInConstructor(constructor);
                 }
