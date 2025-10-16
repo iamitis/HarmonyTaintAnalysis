@@ -15,18 +15,19 @@
 
 
 import { ClassInference, FileInference, ImportInfoInference, MethodInference, StmtInference } from './ModelInference';
-import { InferLanguage } from './Inference';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ValueInference } from './ValueInference';
 
 const valueCtors: Map<Function, InferLanguage> = new Map<Function, InferLanguage>();
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'InferenceBuilder');
 
-function loadValueInference(files: string[]) {
-    files.forEach(file => import(file));
+export enum InferLanguage {
+    COMMON = 0,
+    ARK_TS1_1 = 1,
+    ARK_TS1_2 = 2,
+    CXX = 21,
+    ABC = 51
 }
-
-loadValueInference(['./ValueInference', './arkts/ArkTsInference']);
 
 export function Bind(lang: InferLanguage = InferLanguage.COMMON) {
     return function <T extends { new(): ValueInference<any> }>(constructor: T) {
@@ -36,6 +37,7 @@ export function Bind(lang: InferLanguage = InferLanguage.COMMON) {
     }
 }
 
+import('./ValueInference');
 
 export class InferenceBuilder {
 

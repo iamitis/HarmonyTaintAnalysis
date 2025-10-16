@@ -18,8 +18,7 @@ import { ImportInfo } from '../../model/ArkImport';
 import { ModelUtils } from '../../common/ModelUtils';
 import { ArkMethod } from '../../model/ArkMethod';
 import { FileSignature, MethodSignature } from '../../model/ArkSignature';
-import { InferenceBuilder } from '../InferenceBuilder';
-import { InferLanguage } from '../Inference';
+import { InferenceBuilder, InferLanguage } from '../InferenceBuilder';
 import { SdkUtils } from '../../common/SdkUtils';
 
 

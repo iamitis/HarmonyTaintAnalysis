@@ -22,8 +22,7 @@ import { ArkClass } from '../../model/ArkClass';
 import { TypeInference } from '../../common/TypeInference';
 import { ArkMethod } from '../../model/ArkMethod';
 import { MethodSignature } from '../../model/ArkSignature';
-import { InferenceBuilder } from '../InferenceBuilder';
-import { InferLanguage } from '../Inference';
+import { InferenceBuilder, InferLanguage } from '../InferenceBuilder';
 import { ValueInference } from '../ValueInference';
 import { ArkAliasTypeDefineStmt, Stmt } from '../../base/Stmt';
 

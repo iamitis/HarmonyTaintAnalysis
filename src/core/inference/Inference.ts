@@ -19,20 +19,13 @@ import { ArkFile, Language } from '../model/ArkFile';
 import { Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
 import { ArkTsInferenceBuilder } from './arkts/ArkTsInference';
-import { InferenceBuilder } from './InferenceBuilder';
+import { InferenceBuilder, InferLanguage } from './InferenceBuilder';
 import { AbcInferenceBuilder } from './abc/AbcInference';
 
 
 export type ArkModel = ArkBaseModel | ArkFile | Stmt;
 type ArkIR = ArkModel | Value;
 
-export enum InferLanguage {
-    COMMON = 0,
-    ARK_TS1_1 = 1,
-    ARK_TS1_2 = 2,
-    CXX = 21,
-    ABC = 51
-}
 
 /**
  * Interface defining the core inference operation

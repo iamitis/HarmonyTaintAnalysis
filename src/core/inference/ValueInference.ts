@@ -16,7 +16,7 @@
 
 import { ArkAssignStmt, Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
-import { Inference, InferenceFlow, InferenceManager, InferLanguage } from './Inference';
+import { Inference, InferenceFlow, InferenceManager } from './Inference';
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
 import {
     AliasType,
@@ -28,7 +28,8 @@ import {
     FunctionType,
     GenericType,
     LexicalEnvType,
-    NullType, NumberType,
+    NullType,
+    NumberType,
     StringType,
     Type,
     UndefinedType,
@@ -56,7 +57,7 @@ import {
 } from '../base/Expr';
 import { ModelUtils } from '../common/ModelUtils';
 import { Local } from '../base/Local';
-import { Bind } from './InferenceBuilder';
+import { Bind, InferLanguage } from './InferenceBuilder';
 import { Builtin } from '../common/Builtin';
 import { ArkClass } from '../model/ArkClass';
 import { Constant } from '../base/Constant';
