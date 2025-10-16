@@ -994,7 +994,7 @@ class BigIntClass {
       return %5
 
     label2:
-      %6 = instanceinvoke num.<@%unk/%unk: .toString()>()
+      %6 = instanceinvoke num.<@built-in/lib.es5.d.ts: Object.toString()>()
       return %6
   }
 

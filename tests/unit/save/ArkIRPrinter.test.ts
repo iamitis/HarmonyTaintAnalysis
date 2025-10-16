@@ -66,7 +66,7 @@ const CASE1_EXPECT = `class %dflt {
 
     label3:
       %4 = sampleData[i]
-      %5 = instanceinvoke %4.<@%unk/%unk: .toString()>()
+      %5 = instanceinvoke %4.<@built-in/lib.es5.d.ts: Object.toString()>()
       %6 = %5 + ' 是偶数'
       instanceinvoke logger.<@%unk/%unk: .info()>(%6)
       goto label5
@@ -80,7 +80,7 @@ const CASE1_EXPECT = `class %dflt {
       if count < %10 goto label7 label15
 
     label7:
-      %11 = instanceinvoke count.<@%unk/%unk: .toString()>()
+      %11 = instanceinvoke count.<@built-in/lib.es5.d.ts: Object.toString()>()
       %12 = '当前计数: ' + %11
       instanceinvoke logger.<@%unk/%unk: .info()>(%12)
       count = count + 1
@@ -101,7 +101,7 @@ const CASE1_EXPECT = `class %dflt {
       goto label8
 
     label10:
-      %13 = instanceinvoke j.<@%unk/%unk: .toString()>()
+      %13 = instanceinvoke j.<@built-in/lib.es5.d.ts: Object.toString()>()
       %14 = '当前内层循环计数: ' + %13
       instanceinvoke logger.<@%unk/%unk: .info()>(%14)
       goto label16
@@ -114,7 +114,7 @@ const CASE1_EXPECT = `class %dflt {
       if k < 3 goto label12 label14
 
     label12:
-      %15 = instanceinvoke k.<@%unk/%unk: .toString()>()
+      %15 = instanceinvoke k.<@built-in/lib.es5.d.ts: Object.toString()>()
       %16 = '外层循环计数: ' + %15
       instanceinvoke logger.<@%unk/%unk: .info()>(%16)
       %17 = 'Department name: ' + k
@@ -131,7 +131,7 @@ const CASE1_EXPECT = `class %dflt {
 
     label4:
       %7 = sampleData[i]
-      %8 = instanceinvoke %7.<@%unk/%unk: .toString()>()
+      %8 = instanceinvoke %7.<@built-in/lib.es5.d.ts: Object.toString()>()
       %9 = %8 + ' 是奇数'
       instanceinvoke logger.<@%unk/%unk: .info()>(%9)
       goto label5

@@ -440,6 +440,10 @@ export class ModelUtils {
                 return property;
             }
         }
+        const objectClass = arkClass.getDeclaringArkFile().getScene().getSdkGlobal('Object');
+        if (objectClass instanceof ArkClass && arkClass !== objectClass) {
+            return this.findPropertyInClass(name, objectClass);
+        }
         return null;
     }
 

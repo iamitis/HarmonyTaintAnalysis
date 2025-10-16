@@ -1727,10 +1727,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },
@@ -1818,10 +1818,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },
@@ -2764,10 +2764,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },
@@ -2800,10 +2800,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },
@@ -3628,10 +3628,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },
@@ -3664,10 +3664,10 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "",
+                            "name": "Object",
                             "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
                             },
                             "declaringNamespace": null
                           },

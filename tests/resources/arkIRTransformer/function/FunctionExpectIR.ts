@@ -1223,7 +1223,7 @@ export const ClosureClassMethod_Expect_IR = {
                         text: 'count = count + item'
                     },
                     {
-                        text: '%5 = instanceinvoke count.<@%unk/%unk: .toString()>()'
+                        text: '%5 = instanceinvoke count.<@built-in/lib.es5.d.ts: Object.toString()>()'
                     }
                 ]
             },
@@ -1346,7 +1346,7 @@ export const ClosureNamespaceFunction_Expect_IR = {
                 },
                 usedStmts: [
                     {
-                        text: '%1 = instanceinvoke outerInput.<@%unk/%unk: .toString()>()'
+                        text: '%1 = instanceinvoke outerInput.<@built-in/lib.es5.d.ts: Object.toString()>()'
                     }
                 ]
             },
