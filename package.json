@@ -15,8 +15,7 @@
     "coverage": "vitest run --coverage",
     "heapdump": "npm run build && node --expose-gc out/tests/HeapDumpTest.js",
     "gendoc": "npx typedoc",
-    "postinstall": "node script/npmInstall.js",
-    "copyCollectionDefintion": "ts-node script/typescriptCollectionDefinitionCopy.ts"
+    "postinstall": "node script/npmInstall.js"
   },
   "dependencies": {
     "commander": "13.1.0",
