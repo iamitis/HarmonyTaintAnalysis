@@ -81,8 +81,7 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
         try {
             this.preInfer(model);
             const result = this.infer(model);
-            this.postInfer(model);
-            return result;
+            return this.postInfer(model, result);
         } catch (error) {
             logger.warn('infer model failed:' + (error as Error).message);
         }
@@ -102,8 +101,9 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
      * Post-inference hook method for cleanup and finalization
      * Can be overridden by subclasses to add custom post-processing logic
      * @param model - The ArkModel instance that was processed
+     * @param result
      */
-    public postInfer(model: ArkModel): void {
+    public postInfer(model: ArkModel, result?: any): any {
         // Default implementation does nothing
         // Subclasses can override to add post-inference logic
     }
@@ -111,7 +111,6 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
 
 export class ImportInfoInference extends ArkModelInference {
     protected fromFile: ArkFile | null = null;
-    private exportInfo: ExportInfo | null = null;
 
     /**
      * get arkFile and assign to from file
@@ -146,18 +145,20 @@ export class ImportInfoInference extends ArkModelInference {
         if (arkExport) {
             exportInfo.setExportClauseType(arkExport.getExportType());
         }
-        this.exportInfo = exportInfo;
+
         return exportInfo;
     }
 
     /**
      * cleanup fromFile and exportInfo
      * @param fromInfo
+     * @param exportInfo
      */
-    public postInfer(fromInfo: ImportInfo): void {
-        fromInfo.setExportInfo(this.exportInfo);
+    public postInfer(fromInfo: ImportInfo, exportInfo: ExportInfo | null): void {
+        if (exportInfo) {
+            fromInfo.setExportInfo(exportInfo);
+        }
         this.fromFile = null;
-        this.exportInfo = null;
     }
 }
 
@@ -221,10 +222,11 @@ export class MethodInference extends ArkModelInference {
         this.stmtInference = stmtInference;
     }
 
-    public infer(method: ArkMethod): void {
+    public infer(method: ArkMethod): InferStmtResult[] {
+        const modifiedStmts: InferStmtResult[] = [];
         const body = method.getBody();
         if (!body) {
-            return;
+            return modifiedStmts;
         }
         //useGolbals
         body.getUsedGlobals()?.forEach((value, key) => {
@@ -236,9 +238,8 @@ export class MethodInference extends ArkModelInference {
                 }
             }
         });
-        const cfg = body.getCfg();
-        const modifiedStmts: InferStmtResult[] = [];
-        const workList = cfg.getStmts();
+
+        const workList = body.getCfg().getStmts();
         while (workList.length > 0) {
             const stmt = workList.shift();
             if (!stmt) {
@@ -254,13 +255,17 @@ export class MethodInference extends ArkModelInference {
             }
             inferResult.impactedStmts?.filter(s => s !== stmt && !workList.includes(s)).forEach(e => workList.push(e));
         }
-        modifiedStmts.forEach(m => {
-            cfg.insertAfter(m.replacedStmts!, m.oldStmt);
-            cfg.remove(m.oldStmt);
-        })
+        return modifiedStmts;
     }
 
-    public postInfer(method: ArkMethod): void {
+    public postInfer(method: ArkMethod, modifiedStmts: InferStmtResult[]): void {
+        const cfg = method.getCfg();
+        if (modifiedStmts.length > 0 && cfg) {
+            modifiedStmts.forEach(m => {
+                cfg.insertAfter(m.replacedStmts!, m.oldStmt);
+                cfg.remove(m.oldStmt);
+            });
+        }
         if (!method.getBody() || method.getName() === CONSTRUCTOR_NAME ||
             !TypeInference.isUnclearType(method.getImplementationSignature()?.getMethodSubSignature().getReturnType())) {
             return;
@@ -282,10 +287,14 @@ export class StmtInference extends ArkModelInference {
         valueInferences.forEach(v => this.valueInferences.set(v.getValueName(), v));
     }
 
-    public infer(stmt: Stmt): InferStmtResult | undefined {
-        const method = stmt.getCfg().getDeclaringMethod();
+    public infer(stmt: Stmt): Type | undefined {
         const defType = stmt.getDef()?.getType();
         stmt.getDefAndUses().forEach(value => this.inferValue(value, stmt));
+        return defType;
+    }
+
+    public postInfer(stmt: Stmt, defType: Type | undefined): InferStmtResult | undefined {
+        const method = stmt.getCfg().getDeclaringMethod();
         this.typeSpread(stmt, method);
         const finalDef = stmt.getDef();
         if (defType !== finalDef?.getType() && finalDef instanceof Local &&
