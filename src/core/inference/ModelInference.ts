@@ -44,7 +44,7 @@ import {
     UnknownType
 } from '../base/Type';
 import { TypeInference } from '../common/TypeInference';
-import { ArkInstanceFieldRef, ArkStaticFieldRef, GlobalRef } from '../base/Ref';
+import { ArkStaticFieldRef, GlobalRef } from '../base/Ref';
 import { CONSTRUCTOR_NAME, GLOBAL_THIS_NAME, PROMISE } from '../common/TSConst';
 import { SdkUtils } from '../common/SdkUtils';
 import { IRInference } from '../common/IRInference';
