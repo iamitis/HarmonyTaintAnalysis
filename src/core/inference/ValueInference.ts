@@ -554,7 +554,7 @@ export class ArkCastExprInference extends ValueInference<ArkCastExpr> {
     public infer(value: ArkCastExpr, stmt: Stmt): Value | undefined {
         const arkClass = stmt.getCfg().getDeclaringMethod().getDeclaringArkClass();
         const type = TypeInference.inferUnclearedType(value.getType(), arkClass);
-        if (type) {
+        if (type && !TypeInference.isUnclearType(type)) {
             IRInference.inferRightWithSdkType(type, value.getOp().getType(), arkClass);
             value.setType(type);
         } else if (!TypeInference.isUnclearType(value.getOp().getType())) {
@@ -644,8 +644,6 @@ export class AliasTypeExprInference extends ValueInference<AliasTypeExpr> {
         let type;
         let originalLocal;
         if (originalObject instanceof Local) {
-            // type = ModelUtils.findDeclaredLocal(originalObject, stmt.getCfg().getDeclaringMethod(), 1)?.getType() ??
-            //     TypeInference.inferBaseType(originalObject.getName(), arkMethod.getDeclaringArkClass());
             originalLocal = ModelUtils.findArkModelByRefName(originalObject.getName(), arkMethod.getDeclaringArkClass());
             if (AliasTypeExpr.isAliasTypeOriginalModel(originalLocal)) {
                 originalObject = originalLocal;

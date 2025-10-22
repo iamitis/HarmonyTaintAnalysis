@@ -44,7 +44,7 @@ import {
     UnknownType
 } from '../base/Type';
 import { TypeInference } from '../common/TypeInference';
-import { ArkInstanceFieldRef, GlobalRef } from '../base/Ref';
+import { ArkInstanceFieldRef, ArkStaticFieldRef, GlobalRef } from '../base/Ref';
 import { CONSTRUCTOR_NAME, GLOBAL_THIS_NAME, PROMISE } from '../common/TSConst';
 import { SdkUtils } from '../common/SdkUtils';
 import { IRInference } from '../common/IRInference';
@@ -178,7 +178,7 @@ export class FileInference extends ArkModelInference {
 
     public preInfer(file: ArkFile): void {
         file.getImportInfos().filter(i => i.getExportInfo() === undefined)
-            .forEach(info => this.importInfoInference.doInfer(info))
+            .forEach(info => this.importInfoInference.doInfer(info));
 
     }
 
@@ -303,7 +303,12 @@ export class StmtInference extends ArkModelInference {
         }
     }
 
-    private inferValue(value: Value, stmt: Stmt) {
+    private inferValue(value: Value, stmt: Stmt, visited: Set<Value> = new Set()): void {
+        if (visited.has(value)) {
+            return;
+        } else {
+            visited.add(value);
+        }
         const name = value.constructor.name;
         const valueInference = this.valueInferences.get(name);
         if (!valueInference) {
@@ -312,9 +317,9 @@ export class StmtInference extends ArkModelInference {
         }
         const type = value.getType();
         if (type instanceof AbstractTypeExpr) {
-            type.getUses().forEach(sub => this.inferValue(sub, stmt));
+            type.getUses().forEach(sub => this.inferValue(sub, stmt, visited));
         }
-        value.getUses().forEach(sub => this.inferValue(sub, stmt));
+        value.getUses().forEach(sub => this.inferValue(sub, stmt, visited));
         valueInference.doInfer(value, stmt);
     }
 
@@ -322,8 +327,10 @@ export class StmtInference extends ArkModelInference {
         if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType
             || type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
             return true;
-        } else if (type instanceof ClassType || type instanceof AliasType) {
+        } else if (type instanceof ClassType) {
             return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof AliasType) {
+            return this.isTypeCanBeOverride(type.getOriginalType()) || !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
         } else if (type instanceof ArrayType) {
             return TypeInference.checkType(type.getBaseType(), t => t instanceof UnclearReferenceType || t instanceof GenericType);
         }
@@ -378,7 +385,7 @@ export class StmtInference extends ArkModelInference {
                 }
                 TypeInference.setValueType(leftOp, leftType);
             }
-            if (leftOp instanceof ArkInstanceFieldRef) {
+            if (leftOp instanceof ArkStaticFieldRef) {
                 const declaringSignature = leftOp.getFieldSignature().getDeclaringSignature();
                 if (declaringSignature instanceof NamespaceSignature && declaringSignature.getNamespaceName() === GLOBAL_THIS_NAME) {
                     SdkUtils.computeGlobalThis(leftOp, method);
