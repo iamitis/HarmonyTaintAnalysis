@@ -16,7 +16,7 @@
 
 import { ArkAssignStmt, Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
-import { Inference, InferenceFlow, InferenceManager } from './Inference';
+import { Inference, InferenceFlow } from './Inference';
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
 import {
     AliasType,
@@ -63,7 +63,6 @@ import { ArkClass } from '../model/ArkClass';
 import { Constant } from '../base/Constant';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ClassSignature } from '../model/ArkSignature';
-import { FileInference } from './ModelInference';
 import { ImportInfo } from '../model/ArkImport';
 import { ArkField } from '../model/ArkField';
 
@@ -250,50 +249,19 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
 
     public infer(value: ArkInstanceInvokeExpr, stmt: Stmt): Value | undefined {
         const arkMethod = stmt.getCfg().getDeclaringMethod();
-        const result = this.inferInvokeExpr(value.getBase().getType(), value, arkMethod);
-        return this.process(result, value, stmt);
-    }
-
-    public process(result: AbstractInvokeExpr | null, value: AbstractInvokeExpr, stmt: Stmt): AbstractInvokeExpr | undefined {
-        const arkMethod = stmt.getCfg().getDeclaringMethod();
-        if (result) {
-            IRInference.inferArgs(value, arkMethod);
-            for (const arg of value.getArgs()) {
-                const argType = arg.getType();
-                if (!(argType instanceof FunctionType)) {
-                    continue;
-                }
-                const callBack = arkMethod.getDeclaringArkFile().getScene().getMethod(argType.getMethodSignature());
-                if (callBack && callBack.getBody()) {
-                    this.invokeCallBack(callBack, new Set([arkMethod]));
-                }
-            }
-        }
-        if (result instanceof ArkInstanceInvokeExpr && result.getBase().getName() === SUPER_NAME) {
-            const thisLocal = arkMethod.getBody()?.getLocals().get(THIS_NAME);
-            if (thisLocal) {
-                result.setBase(thisLocal);
-                thisLocal.addUsedStmt(stmt);
-            }
-        }
+        const result = InstanceInvokeExprInference.inferInvokeExpr(value.getBase().getType(), value, arkMethod, this.getMethodName(value, arkMethod));
         return !result || result === value ? undefined : result;
     }
 
-    private invokeCallBack(callback: ArkMethod, visited: Set<ArkMethod>): void {
-        const paramLength = callback.getImplementationSignature()?.getParamLength();
-        if (!paramLength || paramLength === 0) {
-            return;
+    public postInfer(value: ArkInstanceInvokeExpr, newValue: Value, stmt: Stmt): void {
+        if (value instanceof ArkInstanceInvokeExpr && value.getBase().getName() === SUPER_NAME) {
+            const thisLocal = stmt.getCfg().getDeclaringMethod().getBody()?.getLocals().get(THIS_NAME);
+            if (thisLocal) {
+                value.setBase(thisLocal);
+                thisLocal.addUsedStmt(stmt);
+            }
         }
-        if (visited.has(callback)) {
-            return;
-        } else {
-            visited.add(callback);
-        }
-        const inference = InferenceManager.getInstance().getInference(callback.getDeclaringArkFile().getLanguage());
-        if (inference instanceof FileInference) {
-            const methodInference = inference.getClassInference().getMethodInference();
-            methodInference.doInfer(callback);
-        }
+        super.postInfer(value, newValue, stmt);
     }
 
     public getMethodName(expr: AbstractInvokeExpr, arkMethod: ArkMethod): string {
@@ -308,7 +276,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
         return methodName;
     }
 
-    public inferInvokeExpr(baseType: Type, expr: AbstractInvokeExpr, arkMethod: ArkMethod): AbstractInvokeExpr | null {
+    public static inferInvokeExpr(baseType: Type, expr: AbstractInvokeExpr, arkMethod: ArkMethod, methodName: string): AbstractInvokeExpr | null {
         if (baseType instanceof AliasType) {
             baseType = TypeInference.replaceAliasType(baseType);
         } else if (baseType instanceof UnionType) {
@@ -316,7 +284,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
                 if (type instanceof UndefinedType || type instanceof NullType) {
                     continue;
                 }
-                let result = this.inferInvokeExpr(type, expr, arkMethod);
+                let result = this.inferInvokeExpr(type, expr, arkMethod, methodName);
                 if (result) {
                     return result;
                 }
@@ -334,7 +302,6 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
                 baseType = new ClassType(arrayClass.getSignature());
             }
         }
-        let methodName = this.getMethodName(expr, arkMethod);
         const scene = arkMethod.getDeclaringArkFile().getScene();
         if (baseType instanceof ClassType) {
             return IRInference.inferInvokeExprWithDeclaredClass(expr, baseType, methodName, scene);
@@ -395,9 +362,9 @@ export class StaticInvokeExprInference extends InstanceInvokeExprInference {
             return undefined;
         }
         const baseType = this.getBaseType(expr, arkMethod);
-        const result = baseType ? super.inferInvokeExpr(baseType, expr, arkMethod) :
+        const result = baseType ? InstanceInvokeExprInference.inferInvokeExpr(baseType, expr, arkMethod, methodName) :
             IRInference.inferStaticInvokeExprByMethodName(methodName, arkMethod, expr);
-        return super.process(result, expr, stmt);
+        return !result || result === expr ? undefined : result;
     }
 
     private getBaseType(expr: ArkStaticInvokeExpr, arkMethod: ArkMethod): Type | null {
@@ -620,9 +587,10 @@ export class ArkTsInstanceInvokeExprInference extends InstanceInvokeExprInferenc
     public infer(value: ArkInstanceInvokeExpr, stmt: Stmt): Value | undefined {
         const arkMethod = stmt.getCfg().getDeclaringMethod();
         TypeInference.inferRealGenericTypes(value.getRealGenericTypes(), arkMethod.getDeclaringArkClass());
-        const result = super.inferInvokeExpr(value.getBase().getType(), value, arkMethod) ??
+        const result =
+            InstanceInvokeExprInference.inferInvokeExpr(value.getBase().getType(), value, arkMethod, super.getMethodName(value, arkMethod)) ??
             IRInference.processExtendFunc(value, arkMethod, super.getMethodName(value, arkMethod));
-        return super.process(result, value, stmt);
+        return !result || result === value ? undefined : result;
     }
 }
 

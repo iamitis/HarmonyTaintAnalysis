@@ -364,7 +364,7 @@ export class IRInference {
         }
     }
 
-    private static inferArg(expr: AbstractInvokeExpr, argType: Type, paramType: Type, scene: Scene, realTypes: Type[]): void {
+    public static inferArg(expr: AbstractInvokeExpr, argType: Type, paramType: Type, scene: Scene, realTypes: Type[]): void {
         if (paramType instanceof UnionType) {
             paramType.getTypes().forEach(t => this.inferArg(expr, argType, t, scene, realTypes));
         } else if (paramType instanceof AliasType) {

@@ -84,14 +84,14 @@ export class ArkTsStmtInference extends StmtInference {
         super(valueInferences);
     }
 
-    public typeSpread(stmt: Stmt, method: ArkMethod) {
-        super.typeSpread(stmt, method);
+    public typeSpread(stmt: Stmt, method: ArkMethod): Stmt[] {
         if (stmt instanceof ArkAliasTypeDefineStmt && TypeInference.isUnclearType(stmt.getAliasType().getOriginalType())) {
             const originalType = stmt.getAliasTypeExpr().getOriginalType();
             if (originalType) {
                 stmt.getAliasType().setOriginalType(originalType);
             }
         }
+        return super.typeSpread(stmt, method);
     }
 
 }

@@ -18,7 +18,7 @@ import { ModifierType } from '../model/ArkBaseModel';
 import { ArkFile } from '../model/ArkFile';
 import { ArkAssignStmt, ArkReturnStmt, Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
-import { ArkModel, Inference, InferenceFlow } from './Inference';
+import { ArkModel, Inference, InferenceFlow, InferenceManager } from './Inference';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ExportInfo } from '../model/ArkExport';
 import { ImportInfo } from '../model/ArkImport';
@@ -295,11 +295,29 @@ export class StmtInference extends ArkModelInference {
 
     public postInfer(stmt: Stmt, defType: Type | undefined): InferStmtResult | undefined {
         const method = stmt.getCfg().getDeclaringMethod();
-        this.typeSpread(stmt, method);
+        const impactedStmts = this.typeSpread(stmt, method);
         const finalDef = stmt.getDef();
         if (defType !== finalDef?.getType() && finalDef instanceof Local &&
             (method.getBody()?.getUsedGlobals()?.get(finalDef.getName()) || !finalDef.getName().startsWith(NAME_PREFIX))) {
-            return { oldStmt: stmt, impactedStmts: finalDef.getUsedStmts() };
+            finalDef.getUsedStmts().forEach(e => impactedStmts.push(e));
+        }
+        return impactedStmts.length > 0 ? { oldStmt: stmt, impactedStmts: impactedStmts } : undefined;
+    }
+
+    private invokeCallBack(callback: ArkMethod, visited: Set<ArkMethod>): void {
+        const paramLength = callback.getImplementationSignature()?.getParamLength();
+        if (!paramLength || paramLength === 0) {
+            return;
+        }
+        if (visited.has(callback)) {
+            return;
+        } else {
+            visited.add(callback);
+        }
+        const inference = InferenceManager.getInstance().getInference(callback.getDeclaringArkFile().getLanguage());
+        if (inference instanceof FileInference) {
+            const methodInference = inference.getClassInference().getMethodInference();
+            methodInference.doInfer(callback);
         }
     }
 
@@ -370,7 +388,39 @@ export class StmtInference extends ArkModelInference {
         return type1.constructor === type2.constructor;
     }
 
-    public typeSpread(stmt: Stmt, method: ArkMethod) {
+    public typeSpread(stmt: Stmt, method: ArkMethod): Stmt[] {
+        const impactedStmts: Stmt[] = [];
+        const invokeExpr = stmt.getInvokeExpr();
+        if (invokeExpr) {
+            const scene = method.getDeclaringArkFile().getScene();
+            const parameters = invokeExpr.getMethodSignature().getMethodSubSignature().getParameters();
+            let realTypes: Type[] = [];
+            const len = invokeExpr.getArgs().length;
+            for (let index = 0; index < len; index++) {
+                const arg = invokeExpr.getArg(index);
+                if (index >= parameters.length) {
+                    break;
+                }
+                const argType = arg.getType();
+                const paramType = parameters[index].getType();
+                IRInference.inferArg(invokeExpr, argType, paramType, scene, realTypes);
+                if (argType instanceof FunctionType) {
+                    const callBack = scene.getMethod(argType.getMethodSignature());
+                    if (callBack && callBack.getBody()) {
+                        this.invokeCallBack(callBack, new Set([method]));
+                    }
+                } else if (argType instanceof ClassType && argType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX) &&
+                    !TypeInference.isUnclearType(paramType) && arg instanceof Local) {
+                    if (scene.getOptions().isScanAbc) {
+                        arg.setType(paramType);
+                        arg.getUsedStmts().forEach(e => impactedStmts.push(e));
+                    }
+                }
+            }
+            if (realTypes.length > 0 && !invokeExpr.getRealGenericTypes()) {
+                invokeExpr.setRealGenericTypes(realTypes);
+            }
+        }
         if (stmt instanceof ArkAssignStmt) {
             const rightType = stmt.getRightOp().getType();
             const leftOp = stmt.getLeftOp();
@@ -404,6 +454,8 @@ export class StmtInference extends ArkModelInference {
             }
             IRInference.inferRightWithSdkType(returnType, stmt.getOp().getType(), method.getDeclaringArkClass());
         }
+
+        return impactedStmts;
     }
 
 }
