@@ -85,6 +85,7 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
         } catch (error) {
             logger.warn('infer model failed:' + (error as Error).message);
         }
+        return;
     }
 
     /**
@@ -342,8 +343,8 @@ export class StmtInference extends ArkModelInference {
     }
 
     public isTypeCanBeOverride(type: Type): boolean {
-        if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType
-            || type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
+        if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType ||
+            type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
             return true;
         } else if (type instanceof ClassType) {
             return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
@@ -410,6 +411,7 @@ export class StmtInference extends ArkModelInference {
                         this.invokeCallBack(callBack, new Set([method]));
                     }
                 } else if (argType instanceof ClassType && argType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX) &&
+                    argType.getClassSignature().getDeclaringFileSignature().getProjectName() === scene.getProjectName() &&
                     !TypeInference.isUnclearType(paramType) && arg instanceof Local) {
                     if (scene.getOptions().isScanAbc) {
                         arg.setType(paramType);

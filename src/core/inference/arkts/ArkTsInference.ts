@@ -57,7 +57,7 @@ class ArkTsClassInference extends ClassInference {
                 if (newType) {
                     f.getSignature().setType(newType);
                 }
-            })
+            });
     }
 }
 
@@ -72,7 +72,7 @@ class ArkTsMethodInference extends MethodInference {
         }
     }
 
-    private inferMethodSignature(ms: MethodSignature, arkMethod: ArkMethod) {
+    private inferMethodSignature(ms: MethodSignature, arkMethod: ArkMethod): void {
         ms.getMethodSubSignature().getParameters().forEach(p => TypeInference.inferParameterType(p, arkMethod));
         TypeInference.inferSignatureReturnType(ms, arkMethod);
     }

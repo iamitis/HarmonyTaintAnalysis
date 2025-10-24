@@ -231,6 +231,7 @@ export class StaticFieldRefInference extends ValueInference<ArkStaticFieldRef> {
                 return new ArkStaticFieldRef(newFieldSignature);
             }
         }
+        return undefined;
     }
 }
 
@@ -543,7 +544,6 @@ export class LocalInference extends ValueInference<Local> {
     }
 
     public infer(value: Local, stmt: Stmt): Value | undefined {
-        // IRInference.inferAliasTypeExpr(value, stmt.getCfg().getDeclaringMethod());
         const name = value.getName();
         const arkClass = stmt.getCfg().getDeclaringMethod().getDeclaringArkClass();
         if (name === THIS_NAME) {
@@ -577,7 +577,7 @@ export class ArkTSFieldRefInference extends FieldRefInference {
             stmtDef instanceof ArkInstanceFieldRef &&
             stmtDef.getBase().getName() === THIS_NAME &&
             arkMethod.getDeclaringArkClass().isAnonymousClass() &&
-            stmtDef.getFieldName().indexOf('.') === -1
+            stmtDef.getFieldName().indexOf('.') === -1;
     }
 }
 

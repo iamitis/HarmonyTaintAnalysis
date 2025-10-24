@@ -172,7 +172,8 @@ export class TypeInference {
                 type = leftOpType;
             }
         } else if (leftOpType instanceof AliasType) {
-            const defArkClass = declaringArkClass.getDeclaringArkFile().getScene().getMethod(leftOpType.getSignature().getDeclaringMethodSignature())?.getDeclaringArkClass();
+            const defArkClass = declaringArkClass.getDeclaringArkFile().getScene().getMethod(
+                leftOpType.getSignature().getDeclaringMethodSignature())?.getDeclaringArkClass();
             let baseType = this.inferUnclearedType(leftOpType.getOriginalType(), defArkClass ?? declaringArkClass, visited);
             if (baseType) {
                 leftOpType.setOriginalType(baseType);
@@ -496,7 +497,8 @@ export class TypeInference {
         } else if (type instanceof KeyofTypeExpr) {
             return this.isUnclearType(type.getOpType());
         } else if (type instanceof TypeQueryExpr) {
-            return this.isUnclearType(type.getType()) || !!type.getGenerateTypes()?.find(t => this.checkType(t, e => e instanceof UnclearReferenceType || e instanceof GenericType));
+            return this.isUnclearType(type.getType()) ||
+                !!type.getGenerateTypes()?.find(t => this.checkType(t, e => e instanceof UnclearReferenceType || e instanceof GenericType));
         }
         return false;
     }

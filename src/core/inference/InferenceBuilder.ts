@@ -34,7 +34,7 @@ export function Bind(lang: InferLanguage = InferLanguage.COMMON) {
         valueCtors.set(constructor, lang);
         logger.info('the ValueInference %s registered.', constructor.name);
         return constructor;
-    }
+    };
 }
 
 import('./ValueInference');
@@ -97,6 +97,6 @@ export class InferenceBuilder {
                     this.valueInferences.set(valueCtor, valueInference);
                 }
                 return valueInference;
-            })
+            });
     }
 }

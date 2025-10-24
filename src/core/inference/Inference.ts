@@ -97,7 +97,7 @@ export class InferenceManager {
         return inference;
     }
 
-    private changeToInferLanguage(lang: Language) {
+    private changeToInferLanguage(lang: Language): InferLanguage {
         if (lang === Language.ARKTS1_1 || lang === Language.TYPESCRIPT || lang === Language.JAVASCRIPT) {
             return InferLanguage.ARK_TS1_1;
         } else if (lang === Language.ABC) {

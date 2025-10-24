@@ -1101,7 +1101,7 @@ export class AliasTypeExpr extends AbstractExpr {
         return this.originalType;
     }
 
-    public setOriginalType(type: Type) {
+    public setOriginalType(type: Type): Type {
         return this.originalType = type;
     }
 

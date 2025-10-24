@@ -652,7 +652,7 @@ export class IRInference {
         } else if (baseType instanceof ArrayType) {
             const arrayClass = arkClass.getDeclaringArkFile().getScene().getSdkGlobal(Builtin.ARRAY);
             if (arrayClass instanceof ArkClass) {
-                baseType = new ClassType(arrayClass.getSignature(), [baseType.getBaseType()])
+                baseType = new ClassType(arrayClass.getSignature(), [baseType.getBaseType()]);
             }
         }
         const fieldName = ref.getFieldName().replace(/[\"|\']/g, '');
