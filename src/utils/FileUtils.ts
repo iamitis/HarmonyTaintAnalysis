@@ -42,6 +42,7 @@ export class FileUtils {
             const stats = fs.statSync(srcPath, { throwIfNoEntry: false });
             return stats ? stats.isDirectory() : false;
         } catch (e) {
+            logger.warn(srcPath + ' not found.');
         }
         return false;
     }
