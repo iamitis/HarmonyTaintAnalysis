@@ -23,7 +23,7 @@ Logger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.INFO, false);
 
 export class Test {
     public buildScene(): Scene {
-        const prjDir = "tests/resources/cfg/classMap";
+        const prjDir = "tests/resources/cfg/for";
         let config: SceneConfig = new SceneConfig();
         config.buildFromProjectDir(prjDir);
         let projectScene: Scene = new Scene();
@@ -46,21 +46,40 @@ export class Test {
 
                     const body = arkMethod.getBody();
                     const blocks = [...body!.getCfg().getBlocks()]
-                    for (let i = 0; i < blocks.length; i++){
+                    for (let i = 0; i < blocks.length; i++) {
 
                         const block = blocks[i]
-                        logger.info("block"+i)
-                        for (const stmt of block.getStmts()){
+                        logger.info("block" + i)
+                        for (const stmt of block.getStmts()) {
                             logger.info("  " + stmt.toString())
                         }
-                        let text = "next:"
-                        for (const next of block.getSuccessors()){
-                            text += blocks.indexOf(next) + ' ';
+                        let succesText = "succes:"
+                        for (const next of block.getSuccessors()) {
+                            succesText += blocks.indexOf(next) + ' ';
                         }
-                        logger.info(text);
+                        let exceptionalSuccesText = "exceptionalSucces:"
+                        const exceptionalSucces = block.getExceptionalSuccessorBlocks();
+                        if (exceptionalSucces !== undefined) {
+                            for (const exceptionalSucce of exceptionalSucces) {
+                                exceptionalSuccesText += blocks.indexOf(exceptionalSucce) + ' ';
+                            }
+                        }
+                        let predsText = "preds:"
+                        for (const pred of block.getPredecessors()) {
+                            predsText += blocks.indexOf(pred) + ' ';
+                        }
+                        let exceptionalPredsText = "exceptionalPreds:"
+                        const exceptionPreds = block.getExceptionalPredecessorBlocks();
+                        if (exceptionPreds !== undefined) {
+                            for (const exceptionPred of exceptionPreds) {
+                                exceptionalPredsText += blocks.indexOf(exceptionPred) + ' ';
+                            }
+                        }
+                        logger.info(succesText);
+                        logger.info(exceptionalSuccesText);
+                        logger.info(predsText);
+                        logger.info(exceptionalPredsText);
                     }
-                    
-                    
                 }
             }
         }
