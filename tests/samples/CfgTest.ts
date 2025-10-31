@@ -69,9 +69,9 @@ export class Test {
                             predsText += blocks.indexOf(pred) + ' ';
                         }
                         let exceptionalPredsText = "exceptionalPreds:"
-                        const exceptionPreds = block.getExceptionalPredecessorBlocks();
-                        if (exceptionPreds !== undefined) {
-                            for (const exceptionPred of exceptionPreds) {
+                        const exceptionalPreds = block.getExceptionalPredecessorBlocks();
+                        if (exceptionalPreds !== undefined) {
+                            for (const exceptionPred of exceptionalPreds) {
                                 exceptionalPredsText += blocks.indexOf(exceptionPred) + ' ';
                             }
                         }
