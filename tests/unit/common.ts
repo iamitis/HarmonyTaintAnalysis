@@ -61,8 +61,8 @@ export function testFileStmts(scene: Scene, filePath: string, expectFileStmts: a
 }
 
 export function testMethodStmts(scene: Scene, fileName: string, expectStmts: any[],
-                                className: string = DEFAULT_ARK_CLASS_NAME,
-                                methodName: string = DEFAULT_ARK_METHOD_NAME, assertPos: boolean = true): void {
+    className: string = DEFAULT_ARK_CLASS_NAME,
+    methodName: string = DEFAULT_ARK_METHOD_NAME, assertPos: boolean = true): void {
     const arkFile = scene.getFiles().find((file) => file.getName().endsWith(fileName));
     const arkMethod = arkFile?.getClassWithName(className)?.getMethods()
         .find((method) => (method.getName() === methodName));
@@ -75,7 +75,7 @@ export function testMethodStmts(scene: Scene, fileName: string, expectStmts: any
 }
 
 export function testMethodIR(scene: Scene, fileName: string, className: string = DEFAULT_ARK_CLASS_NAME,
-                             methodName: string = DEFAULT_ARK_METHOD_NAME, expectMethodIR: string): void {
+    methodName: string = DEFAULT_ARK_METHOD_NAME, expectMethodIR: string): void {
     const arkFile = scene.getFiles().find((file) => file.getName().endsWith(fileName));
     const arkMethod = arkFile?.getClassWithName(className)?.getMethods()
         .find((method) => (method.getName() === methodName));
@@ -128,6 +128,24 @@ export function assertBlocksEqual(blocks: Set<BasicBlock>, expectBlocks: any[]):
             succes.push(succBlock.getId());
         });
         expect(succes).toEqual(expectBlocks[i].succes);
+
+        const exceptionPreds = block.getExceptionalPredecessorBlocks();
+        if (exceptionPreds !== undefined) {
+            const exceptionalPreds: number[] = [];
+            exceptionPreds.forEach(exceptionalPredBlock => {
+                exceptionalPreds.push(exceptionalPredBlock.getId());
+            });
+            expect(exceptionalPreds).toEqual(expectBlocks[i].exceptionalPreds);
+        }
+
+        const exceptionSucces = block.getExceptionalSuccessorBlocks();
+        if (exceptionSucces !== undefined) {
+            const exceptionalSucces: number[] = [];
+            exceptionSucces.forEach(exceptionalSucceBlock => {
+                exceptionalSucces.push(exceptionalSucceBlock.getId());
+            });
+            expect(exceptionalSucces).toEqual(expectBlocks[i].exceptionalSucces);
+        }
     }
 }
 
@@ -149,7 +167,7 @@ export function assertStmtsEqual(stmts: Stmt[], expectStmts: any[], assertPos: b
             if (operandOriginalPosition) {
                 operandOriginalPositions.push(
                     [operandOriginalPosition.getFirstLine(), operandOriginalPosition.getFirstCol(),
-                        operandOriginalPosition.getLastLine(), operandOriginalPosition.getLastCol()]);
+                    operandOriginalPosition.getLastLine(), operandOriginalPosition.getLastCol()]);
             } else {
                 operandOriginalPositions.push(operandOriginalPosition);
             }
