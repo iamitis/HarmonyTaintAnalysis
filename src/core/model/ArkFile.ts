@@ -22,6 +22,7 @@ import { AliasClassSignature, ClassSignature, FileSignature, NamespaceSignature 
 import { ALL } from '../common/TSConst';
 import { NAME_DELIMITER } from '../common/Const';
 import { ts } from '../../index';
+import { SdkUtils } from '../common/SdkUtils';
 
 export const notStmtOrExprKind = [
     'ModuleDeclaration',
@@ -167,7 +168,12 @@ export class ArkFile {
 
     public addArkClass(arkClass: ArkClass, originName?: string): void {
         const name = originName ?? arkClass.getName();
-        this.classes.set(name, arkClass);
+        const cls = this.classes.get(name);
+        if (!cls) {
+            this.classes.set(name, arkClass);
+        } else {
+            SdkUtils.copyMembers(arkClass, cls);
+        }
         if (!originName && !arkClass.isAnonymousClass()) {
             const index = name.indexOf(NAME_DELIMITER);
             if (index > 0) {

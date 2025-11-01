@@ -382,14 +382,14 @@ export class IRInference {
         } else if (paramType instanceof GenericType || paramType instanceof AnyType) {
             realTypes.push(argType);
         } else if (paramType instanceof FunctionType && argType instanceof FunctionType) {
-            const returnType = paramType.getMethodSignature().getType();
-            if (paramType.getMethodSignature().getParamLength() > 0 && returnType instanceof GenericType) {
-                const paramMethod = scene.getMethod(expr.getMethodSignature());
-                const argMethod = scene.getMethod(argType.getMethodSignature());
-                if (argMethod && paramMethod?.getGenericTypes()?.find(t => t === returnType)) {
-                    TypeInference.inferTypeInMethod(argMethod);
-                }
-            }
+            // const returnType = paramType.getMethodSignature().getType();
+            // if (paramType.getMethodSignature().getParamLength() > 0 && returnType instanceof GenericType) {
+            //     const paramMethod = scene.getMethod(expr.getMethodSignature());
+            //     const argMethod = scene.getMethod(argType.getMethodSignature());
+            //     if (argMethod && paramMethod?.getGenericTypes()?.find(t => t === returnType)) {
+            //         TypeInference.inferTypeInMethod(argMethod);
+            //     }
+            // }
             const realTypes = expr.getRealGenericTypes();
             TypeInference.inferFunctionType(argType, paramType.getMethodSignature().getMethodSubSignature(), realTypes);
         }
@@ -407,6 +407,8 @@ export class IRInference {
             if (baseType instanceof ClassType) {
                 IRInference.inferArgTypeWithSdk(baseType, ackClass.getDeclaringArkFile().getScene(), rightType.getBaseType());
             }
+        } else if (rightType instanceof FunctionType && leftType instanceof FunctionType) {
+            TypeInference.inferFunctionType(rightType, leftType.getMethodSignature().getMethodSubSignature(), undefined);
         }
     }
 
@@ -661,8 +663,13 @@ export class IRInference {
         let staticFlag: boolean;
         let signature: BaseSignature;
         if (baseType instanceof ClassType) {
-            const property = propertyAndType?.[0];
-            if (property instanceof ArkField && property.getCategory() !== FieldCategory.ENUM_MEMBER &&
+            let property = propertyAndType?.[0];
+            if (!property) {
+                const subField = this.findPropertyFormChildrenClass(fieldName, arkClass, baseType);
+                if (subField) {
+                    property = subField;
+                }
+            } else if (property instanceof ArkField && property.getCategory() !== FieldCategory.ENUM_MEMBER &&
                 !(property.getType() instanceof GenericType)) {
                 return property.getSignature();
             }
@@ -683,6 +690,26 @@ export class IRInference {
             return null;
         }
         return new FieldSignature(fieldName, signature, propertyType ?? ref.getType(), staticFlag);
+    }
+
+    private static findPropertyFormChildrenClass(fieldName: string, arkClass: ArkClass, baseType: ClassType): ArkField | ArkMethod | null {
+        if (baseType.getClassSignature().getClassName() !== DEFAULT_ARK_CLASS_NAME &&
+            baseType.getClassSignature().getDeclaringFileSignature().getProjectName() !== Builtin.DUMMY_PROJECT_NAME) {
+            const iterator = arkClass.getDeclaringArkFile().getScene().getClass(baseType.getClassSignature())?.getExtendedClasses().values();
+            if (!iterator) {
+                return null;
+            }
+            let next = iterator.next();
+            while (!next.done) {
+                const subClass = next.value;
+                const property = TypeInference.inferFieldType(new ClassType(subClass.getSignature(), subClass.getRealTypes()), fieldName, subClass);
+                if (property && property[0]) {
+                    return property[0];
+                }
+                next = iterator.next();
+            }
+        }
+        return null;
     }
 
     private static repairType(propertyType: Type | undefined, fieldName: string, arkClass: ArkClass): Type | undefined {

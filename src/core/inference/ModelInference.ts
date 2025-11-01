@@ -344,7 +344,7 @@ export class StmtInference extends ArkModelInference {
 
     public isTypeCanBeOverride(type: Type): boolean {
         if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType ||
-            type instanceof UnclearReferenceType || type instanceof GenericType || type instanceof FunctionType) {
+            type instanceof UnclearReferenceType || type instanceof GenericType) {
             return true;
         } else if (type instanceof ClassType) {
             return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
@@ -361,6 +361,8 @@ export class StmtInference extends ArkModelInference {
         const rightType = TypeInference.replaceAliasType(type2);
         if (this.isSameType(leftType, rightType) || TypeInference.checkType(rightType, t => t instanceof AnyType ||
             (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
+            return type1;
+        } else if (leftType instanceof FunctionType) {
             return type1;
         } else if (leftType instanceof UnionType) {
             const isExist = leftType.getTypes().find(t => this.isSameType(t, rightType));
@@ -392,8 +394,8 @@ export class StmtInference extends ArkModelInference {
     public typeSpread(stmt: Stmt, method: ArkMethod): Stmt[] {
         const impactedStmts: Stmt[] = [];
         const invokeExpr = stmt.getInvokeExpr();
+        const scene = method.getDeclaringArkFile().getScene();
         if (invokeExpr) {
-            const scene = method.getDeclaringArkFile().getScene();
             const parameters = invokeExpr.getMethodSignature().getMethodSubSignature().getParameters();
             let realTypes: Type[] = [];
             const len = invokeExpr.getArgs().length;
@@ -404,7 +406,7 @@ export class StmtInference extends ArkModelInference {
                 }
                 const argType = arg.getType();
                 const paramType = parameters[index].getType();
-                IRInference.inferArg(invokeExpr, argType, paramType, scene, realTypes);
+
                 if (argType instanceof FunctionType) {
                     const callBack = scene.getMethod(argType.getMethodSignature());
                     if (callBack && callBack.getBody()) {
@@ -418,6 +420,7 @@ export class StmtInference extends ArkModelInference {
                         arg.getUsedStmts().forEach(e => impactedStmts.push(e));
                     }
                 }
+                IRInference.inferArg(invokeExpr, argType, paramType, scene, realTypes);
             }
             if (realTypes.length > 0 && !invokeExpr.getRealGenericTypes()) {
                 invokeExpr.setRealGenericTypes(realTypes);
@@ -427,6 +430,17 @@ export class StmtInference extends ArkModelInference {
             const rightType = stmt.getRightOp().getType();
             const leftOp = stmt.getLeftOp();
             let leftType = leftOp.getType();
+            if (!TypeInference.isUnclearType(leftType)) {
+                IRInference.inferRightWithSdkType(leftType, rightType, method.getDeclaringArkClass());
+                const rightOp = stmt.getRightOp();
+                if (leftType !== rightType && rightOp instanceof Local) {
+                    if (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX) &&
+                        rightType.getClassSignature().getDeclaringFileSignature().getProjectName() === scene.getProjectName() || TypeInference.isUnclearType(rightType)) {
+                        rightOp.setType(leftType);
+                        rightOp.getUsedStmts().forEach(e => impactedStmts.push(e));
+                    }
+                }
+            }
             if (!TypeInference.isUnclearType(rightType) || (rightType instanceof ClassType &&
                 rightType.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
                 rightType.getRealGenericTypes()?.find(t => !(t instanceof GenericType)))) {
@@ -444,7 +458,22 @@ export class StmtInference extends ArkModelInference {
                 }
             }
             if (!TypeInference.isUnclearType(leftType)) {
-                IRInference.inferRightWithSdkType(leftType, rightType, method.getDeclaringArkClass());
+                if (leftOp instanceof Local) {
+                    const value = method.getBody()?.getUsedGlobals()?.get(leftOp.getName());
+                    if (value instanceof GlobalRef) {
+                        const ref = value.getRef();
+                        if (ref instanceof Local) {
+                            ref.getUsedStmts().push(...leftOp.getUsedStmts());
+                            let refType = ref.getType();
+                            if (this.isTypeCanBeOverride(refType)) {
+                                refType = leftType;
+                            } else {
+                                refType = this.union(refType, leftType);
+                            }
+                            TypeInference.setValueType(leftOp, refType);
+                        }
+                    }
+                }
             }
         } else if (stmt instanceof ArkReturnStmt) {
             let returnType = method.getSignature().getType();

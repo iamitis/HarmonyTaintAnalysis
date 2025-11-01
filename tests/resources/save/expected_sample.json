@@ -1727,7 +1727,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "String",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
@@ -1818,7 +1818,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "String",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
@@ -2764,7 +2764,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "String",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
@@ -2800,7 +2800,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "Number",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
@@ -3628,7 +3628,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "Number",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
@@ -3664,7 +3664,7 @@
                         },
                         "method": {
                           "declaringClass": {
-                            "name": "Object",
+                            "name": "Number",
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"

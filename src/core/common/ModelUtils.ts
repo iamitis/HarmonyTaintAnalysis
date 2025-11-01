@@ -448,9 +448,6 @@ export class ModelUtils {
     }
 
     public static findDeclaredLocal(local: Local, arkMethod: ArkMethod, times: number = 0): Local | null {
-        if (arkMethod.getDeclaringArkFile().getScene().getOptions().isScanAbc) {
-            return null;
-        }
         const name: string = local.getName();
         if (name === THIS_NAME || name.startsWith(TEMP_LOCAL_PREFIX)) {
             return null;
