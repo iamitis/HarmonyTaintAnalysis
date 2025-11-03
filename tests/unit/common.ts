@@ -93,6 +93,9 @@ export function testBlocks(scene: Scene, filePath: string, methodName: string, e
         assert.isDefined(blocks);
         return;
     }
+    const stmtsLength = arkMethod?.getCfg()?.getStmts().length;
+    const StmtToBlockLength = arkMethod?.getCfg()?.getStmtToBlock().size;
+    assert(stmtsLength === StmtToBlockLength);
     assertBlocksEqual(blocks, expectBlocks);
 }
 
