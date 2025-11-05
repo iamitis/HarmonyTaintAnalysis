@@ -379,19 +379,14 @@ export class IRInference {
 
         if (paramType instanceof ClassType && scene.getProjectSdkMap().has(paramType.getClassSignature().getDeclaringFileSignature().getProjectName())) {
             this.inferArgTypeWithSdk(paramType, scene, argType);
-        } else if (paramType instanceof GenericType || paramType instanceof AnyType) {
+        } else if (paramType instanceof GenericType) {
+            if (!realTypes[paramType.getIndex()]) {
+                realTypes[paramType.getIndex()] = argType;
+            }
+        } else if (paramType instanceof AnyType) {
             realTypes.push(argType);
         } else if (paramType instanceof FunctionType && argType instanceof FunctionType) {
-            // const returnType = paramType.getMethodSignature().getType();
-            // if (paramType.getMethodSignature().getParamLength() > 0 && returnType instanceof GenericType) {
-            //     const paramMethod = scene.getMethod(expr.getMethodSignature());
-            //     const argMethod = scene.getMethod(argType.getMethodSignature());
-            //     if (argMethod && paramMethod?.getGenericTypes()?.find(t => t === returnType)) {
-            //         TypeInference.inferTypeInMethod(argMethod);
-            //     }
-            // }
-            const realTypes = expr.getRealGenericTypes();
-            TypeInference.inferFunctionType(argType, paramType.getMethodSignature().getMethodSubSignature(), realTypes);
+            TypeInference.inferFunctionType(argType, paramType.getMethodSignature().getMethodSubSignature(), expr.getRealGenericTypes());
         }
     }
 

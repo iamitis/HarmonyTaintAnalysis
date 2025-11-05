@@ -2808,7 +2808,16 @@
                             "declaringNamespace": null
                           },
                           "name": "toString",
-                          "parameters": [],
+                          "parameters": [
+                            {
+                              "name": "radix",
+                              "type": {
+                                "_": "NumberType"
+                              },
+                              "isOptional": true,
+                              "isRest": false
+                            }
+                          ],
                           "returnType": {
                             "_": "StringType"
                           }
@@ -3636,7 +3645,16 @@
                             "declaringNamespace": null
                           },
                           "name": "toString",
-                          "parameters": [],
+                          "parameters": [
+                            {
+                              "name": "radix",
+                              "type": {
+                                "_": "NumberType"
+                              },
+                              "isOptional": true,
+                              "isRest": false
+                            }
+                          ],
                           "returnType": {
                             "_": "StringType"
                           }
@@ -3672,7 +3690,16 @@
                             "declaringNamespace": null
                           },
                           "name": "toString",
-                          "parameters": [],
+                          "parameters": [
+                            {
+                              "name": "radix",
+                              "type": {
+                                "_": "NumberType"
+                              },
+                              "isOptional": true,
+                              "isRest": false
+                            }
+                          ],
                           "returnType": {
                             "_": "StringType"
                           }

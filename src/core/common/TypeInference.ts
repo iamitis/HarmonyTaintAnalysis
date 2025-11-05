@@ -37,7 +37,7 @@ import {
     EnumValueType,
     FunctionType,
     GenericType,
-    IntersectionType,
+    IntersectionType, LiteralType,
     NeverType,
     NullType,
     NumberType,
@@ -79,6 +79,7 @@ import { ModelUtils } from './ModelUtils';
 import { Builtin } from './Builtin';
 import { MethodSignature, MethodSubSignature, NamespaceSignature } from '../model/ArkSignature';
 import {
+    ANONYMOUS_CLASS_PREFIX,
     ANONYMOUS_METHOD_PREFIX,
     INSTANCE_INIT_METHOD_NAME,
     LEXICAL_ENV_NAME_PREFIX,
@@ -986,9 +987,8 @@ export class TypeInference {
     public static inferFunctionType(argType: FunctionType, paramSubSignature: MethodSubSignature | undefined, realTypes: Type[] | undefined): void {
         const returnType = argType.getMethodSignature().getMethodSubSignature().getReturnType();
         const declareType = paramSubSignature?.getReturnType();
-        if (declareType instanceof GenericType && realTypes && !realTypes[declareType.getIndex()] &&
-            !this.isUnclearType(returnType) && !(returnType instanceof VoidType)) {
-            realTypes[declareType.getIndex()] = returnType;
+        if (this.isUnclearType(returnType) && declareType && !this.isUnclearType(declareType)) {
+            argType.getMethodSignature().getMethodSubSignature().setReturnType(declareType);
         }
         const params = paramSubSignature?.getParameters();
         if (!params) {
@@ -1024,5 +1024,74 @@ export class TypeInference {
         if (returnType) {
             IRInference.inferRightWithSdkType(returnType, stmt.getOp().getType(), arkMethod.getDeclaringArkClass());
         }
+    }
+
+
+    public static isAnonType(argType: Type, projectName: string): boolean {
+        const isAnonClassType = argType instanceof ClassType &&
+            argType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX) &&
+            argType.getClassSignature().getDeclaringFileSignature().getProjectName() === projectName;
+        if (isAnonClassType) {
+            return true;
+        }
+        return argType instanceof FunctionType &&
+            argType.getMethodSignature().getMethodSubSignature().getMethodName().startsWith(ANONYMOUS_METHOD_PREFIX) &&
+            argType.getMethodSignature().getDeclaringClassSignature().getDeclaringFileSignature().getProjectName() === projectName;
+    }
+
+    public static isDummyClassType(rightType: Type): boolean {
+        return rightType instanceof ClassType &&
+            rightType.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
+            !!rightType.getRealGenericTypes()?.find(t => !(t instanceof GenericType));
+    }
+
+
+    public static isTypeCanBeOverride(type: Type): boolean {
+        if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType ||
+            type instanceof UnclearReferenceType || type instanceof GenericType) {
+            return true;
+        } else if (type instanceof ClassType) {
+            return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof AliasType) {
+            return this.isTypeCanBeOverride(type.getOriginalType()) || !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof ArrayType) {
+            return TypeInference.checkType(type.getBaseType(), t => t instanceof UnclearReferenceType || t instanceof GenericType);
+        }
+        return false;
+    }
+
+    public static union(type1: Type, type2: Type): Type {
+        const leftType = TypeInference.replaceAliasType(type1);
+        const rightType = TypeInference.replaceAliasType(type2);
+        if (this.isSameType(leftType, rightType) || TypeInference.checkType(rightType, t => t instanceof AnyType ||
+            (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
+            return type1;
+        } else if (leftType instanceof FunctionType) {
+            return type1;
+        } else if (leftType instanceof UnionType) {
+            const isExist = leftType.getTypes().find(t => this.isSameType(t, rightType));
+            if (isExist) {
+                return type1;
+            }
+        } else if (leftType instanceof IntersectionType) {
+            const isExist = leftType.getTypes().find(t => !this.isSameType(t, rightType));
+            if (!isExist) {
+                return type1;
+            }
+        }
+        return new UnionType([type1, type2]);
+    }
+
+    private static isSameType(type1: Type, type2: Type): boolean {
+        if (type1 instanceof ClassType && type2 instanceof ClassType) {
+            return type1.getClassSignature() === type2.getClassSignature();
+        } else if (type1 instanceof LiteralType) {
+            return typeof type1.getLiteralName() === type2.toString();
+        } else if (type1 instanceof KeyofTypeExpr) {
+            return type2 instanceof KeyofTypeExpr || type2 instanceof StringType;
+        } else if (type1 instanceof TupleType) {
+            return type2 instanceof TupleType || type2 instanceof ArrayType;
+        }
+        return type1.constructor === type2.constructor;
     }
 }

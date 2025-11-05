@@ -196,8 +196,8 @@ const CASE1_EXPECT = `class %dflt {
       %0 = new @save/basic.ts: %AC11$%dflt.deleteTest
       %0 = instanceinvoke %0.<@save/basic.ts: %AC11$%dflt.deleteTest.constructor()>()
       x = %0
-      bbb = x.<@save/basic.ts: %AC10.b>
-      %1 = delete x.<@save/basic.ts: %AC10.a>
+      bbb = x.<@save/basic.ts: %AC11$%dflt.deleteTest.b>
+      %1 = delete x.<@save/basic.ts: %AC11$%dflt.deleteTest.a>
       %2 = delete bbb[0]
       instanceinvoke logger.<@%unk/%unk: .info()>(x)
       %3 = delete x

@@ -25,6 +25,10 @@ import { MethodSignature } from '../../model/ArkSignature';
 import { InferenceBuilder, InferLanguage } from '../InferenceBuilder';
 import { ValueInference } from '../ValueInference';
 import { ArkAliasTypeDefineStmt, Stmt } from '../../base/Stmt';
+import { Value } from '../../base/Value';
+import { Type } from '../../base/Type';
+import { AbstractFieldRef, ArkParameterRef, GlobalRef } from '../../base/Ref';
+import { Local } from '../../base/Local';
 
 class ArkTsFileInference extends FileInference {
     /**
@@ -84,7 +88,7 @@ export class ArkTsStmtInference extends StmtInference {
         super(valueInferences);
     }
 
-    public typeSpread(stmt: Stmt, method: ArkMethod): Stmt[] {
+    public typeSpread(stmt: Stmt, method: ArkMethod): Set<Stmt> {
         if (stmt instanceof ArkAliasTypeDefineStmt && TypeInference.isUnclearType(stmt.getAliasType().getOriginalType())) {
             const originalType = stmt.getAliasTypeExpr().getOriginalType();
             if (originalType) {
@@ -92,6 +96,49 @@ export class ArkTsStmtInference extends StmtInference {
             }
         }
         return super.typeSpread(stmt, method);
+    }
+
+    public transferRight2Left(leftOp: Value, rightType: Type, method: ArkMethod): Stmt[] | undefined {
+        const projectName = method.getDeclaringArkFile().getProjectName();
+        if (!TypeInference.isUnclearType(rightType) || TypeInference.isDummyClassType(rightType)) {
+            let leftType = leftOp.getType();
+            if (TypeInference.isTypeCanBeOverride(leftType) || TypeInference.isAnonType(leftType, projectName)) {
+                leftType = rightType;
+            } else {
+                leftType = TypeInference.union(leftType, rightType);
+            }
+            if (leftOp.getType() !== leftType) {
+                return this.updateValueType(leftOp, leftType, method);
+            }
+        }
+        return undefined;
+    }
+
+    public updateValueType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
+        if (target instanceof Local) {
+            target.setType(srcType);
+            const globalRef = method.getBody()?.getUsedGlobals()?.get(target.getName());
+            if (globalRef instanceof GlobalRef) {
+                const ref = globalRef.getRef();
+                if (ref instanceof Local) {
+                    let leftType = ref.getType();
+                    if (TypeInference.isTypeCanBeOverride(leftType)) {
+                        leftType = srcType;
+                    } else {
+                        leftType = TypeInference.union(leftType, srcType);
+                    }
+                    if (ref.getType() !== leftType) {
+                        ref.setType(leftType);
+                        return ref.getUsedStmts();
+                    }
+                }
+            }
+            return target.getUsedStmts();
+        } else if (target instanceof AbstractFieldRef) {
+            target.getFieldSignature().setType(srcType);
+        } else if (target instanceof ArkParameterRef) {
+            target.setType(srcType);
+        }
     }
 
 }
