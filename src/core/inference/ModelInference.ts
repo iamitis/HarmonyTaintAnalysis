@@ -210,7 +210,9 @@ export class MethodInference extends ArkModelInference {
     }
 
     public setVisitBegin(method: ArkMethod): void {
-        this.visited = new Set<ArkMethod>();
+        if (!this.visited) {
+            this.visited = new Set<ArkMethod>();
+        }
         this.visited.add(method);
     }
 
@@ -393,32 +395,27 @@ export class StmtInference extends ArkModelInference {
         }
         const rightType = rightOp.getType();
         IRInference.inferRightWithSdkType(leftType, rightType, method.getDeclaringArkClass());
-        if (TypeInference.isUnclearType(rightType)) {
-            return this.updateValueType(rightOp, leftType, method);
-        }
-        return undefined;
+        return this.updateValueType(rightOp, leftType, method);
     }
 
     public transferRight2Left(leftOp: Value, rightType: Type, method: ArkMethod): Stmt[] | undefined {
-        const projectName = method.getDeclaringArkFile().getProjectName();
-        if (TypeInference.isUnclearType(rightType) || TypeInference.isAnonType(rightType, projectName)) {
+        if (TypeInference.isUnclearType(rightType)) {
             return undefined;
         }
-        const leftType = leftOp.getType();
-        if (TypeInference.isUnclearType(leftType) || TypeInference.isAnonType(leftType, projectName)) {
-            return this.updateValueType(leftOp, rightType, method);
-        }
-        return undefined;
+        return this.updateValueType(leftOp, rightType, method);
     }
 
     public updateValueType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
-        if (target instanceof Local) {
-            target.setType(srcType);
-            return target.getUsedStmts();
-        } else if (target instanceof AbstractFieldRef) {
-            target.getFieldSignature().setType(srcType);
-        } else if (target instanceof ArkParameterRef) {
-            target.setType(srcType);
+        const type = target.getType();
+        if (type !== srcType && TypeInference.isUnclearType(type)) {
+            if (target instanceof Local) {
+                target.setType(srcType);
+                return target.getUsedStmts();
+            } else if (target instanceof AbstractFieldRef) {
+                target.getFieldSignature().setType(srcType);
+            } else if (target instanceof ArkParameterRef) {
+                target.setType(srcType);
+            }
         }
     }
 
@@ -482,13 +479,8 @@ export class StmtInference extends ArkModelInference {
             }
         }
         // if arg type updated, collect used stmts
-        if (!TypeInference.isUnclearType(paramType) && arg instanceof Local) {
-            if (TypeInference.isUnclearType(argType)) {
-                arg.setType(paramType);
-                return arg.getUsedStmts();
-            } else if (TypeInference.isAnonType(argType, scene.getProjectName())) {
-                return arg.getUsedStmts();
-            }
+        if (!TypeInference.isUnclearType(paramType) && !TypeInference.isAnonType(paramType, scene.getProjectName())) {
+            return this.updateValueType(arg, paramType, method);
         }
     }
 

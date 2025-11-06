@@ -108,13 +108,13 @@ export class ArkTsStmtInference extends StmtInference {
                 leftType = TypeInference.union(leftType, rightType);
             }
             if (leftOp.getType() !== leftType) {
-                return this.updateValueType(leftOp, leftType, method);
+                return ArkTsStmtInference.updateType(leftOp, leftType, method);
             }
         }
         return undefined;
     }
 
-    public updateValueType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
+    public static updateType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
         if (target instanceof Local) {
             target.setType(srcType);
             const globalRef = method.getBody()?.getUsedGlobals()?.get(target.getName());

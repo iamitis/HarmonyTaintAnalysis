@@ -20,6 +20,14 @@ import { ArkMethod } from '../../model/ArkMethod';
 import { FileSignature, MethodSignature } from '../../model/ArkSignature';
 import { InferenceBuilder, InferLanguage } from '../InferenceBuilder';
 import { SdkUtils } from '../../common/SdkUtils';
+import { ValueInference } from '../ValueInference';
+import { Stmt } from '../../base/Stmt';
+import { TypeInference } from '../../common/TypeInference';
+import { Value } from '../../base/Value';
+import { Type } from '../../base/Type';
+import { Local } from '../../base/Local';
+import { AbstractFieldRef, ArkParameterRef } from '../../base/Ref';
+import { ArkTsStmtInference } from '../arkts/ArkTsInference';
 
 
 class AbcImportInference extends ImportInfoInference {
@@ -89,6 +97,44 @@ class AbcMethodInference extends MethodInference {
     }
 }
 
+export class AbcStmtInference extends StmtInference {
+
+    constructor(valueInferences: ValueInference<any>[]) {
+        super(valueInferences);
+    }
+
+    public transferRight2Left(leftOp: Value, rightType: Type, method: ArkMethod): Stmt[] | undefined {
+        const projectName = method.getDeclaringArkFile().getProjectName();
+        if (!TypeInference.isUnclearType(rightType) || !TypeInference.isAnonType(rightType, projectName)) {
+            let leftType = leftOp.getType();
+            if (TypeInference.isTypeCanBeOverride(leftType)) {
+                leftType = rightType;
+            } else {
+                leftType = TypeInference.union(leftType, rightType);
+            }
+            if (leftOp.getType() !== leftType) {
+                return ArkTsStmtInference.updateType(leftOp, leftType, method);
+            }
+        }
+        return undefined;
+    }
+
+    public updateValueType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
+        const type = target.getType();
+        const projectName = method.getDeclaringArkFile().getProjectName();
+        if (type !== srcType && (TypeInference.isUnclearType(type) || !TypeInference.isAnonType(type, projectName))) {
+            if (target instanceof Local) {
+                target.setType(srcType);
+                return target.getUsedStmts();
+            } else if (target instanceof AbstractFieldRef) {
+                target.getFieldSignature().setType(srcType);
+            } else if (target instanceof ArkParameterRef) {
+                target.setType(srcType);
+            }
+        }
+    }
+
+}
 
 export class AbcInferenceBuilder extends InferenceBuilder {
 
@@ -127,7 +173,8 @@ export class AbcInferenceBuilder extends InferenceBuilder {
     public buildStmtInference(): StmtInference {
         if (!this.stmtInference) {
             const valueInferences = this.getValueInferences(InferLanguage.COMMON);
-            this.stmtInference = new StmtInference(valueInferences);
+            this.getValueInferences(InferLanguage.ABC).forEach(e => valueInferences.push(e));
+            this.stmtInference = new AbcStmtInference(valueInferences);
         }
         return this.stmtInference;
     }

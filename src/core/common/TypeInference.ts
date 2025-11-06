@@ -1082,7 +1082,7 @@ export class TypeInference {
         return new UnionType([type1, type2]);
     }
 
-    private static isSameType(type1: Type, type2: Type): boolean {
+    public static isSameType(type1: Type, type2: Type): boolean {
         if (type1 instanceof ClassType && type2 instanceof ClassType) {
             return type1.getClassSignature() === type2.getClassSignature();
         } else if (type1 instanceof LiteralType) {
