@@ -29,12 +29,12 @@ export enum InferLanguage {
     ABC = 51
 }
 
-export function Bind(lang: InferLanguage = InferLanguage.COMMON) {
-    return function <T extends { new(): ValueInference<any> }>(constructor: T) {
+export function Bind(lang: InferLanguage = InferLanguage.COMMON): Function {
+    return (constructor: new () => ValueInference<any>) => {
         valueCtors.set(constructor, lang);
         logger.info('the ValueInference %s registered.', constructor.name);
         return constructor;
-    };
+    }
 }
 
 import('./ValueInference');

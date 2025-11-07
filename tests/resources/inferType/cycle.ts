@@ -14,12 +14,12 @@
  */
 
 let a = ['1']
-//
-// function write(str: string) {
-//     a.push('2');
-// }
-//
-// function read(str: string) {
-//     let b = a[0];
-// }
+
+function write(str: string) {
+    a.push('2');
+}
+
+function read(str: string) {
+    let b = a[0];
+}
 

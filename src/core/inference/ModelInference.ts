@@ -68,7 +68,6 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
         } catch (error) {
             logger.warn('infer model failed:' + (error as Error).message);
         }
-        return;
     }
 
     /**
@@ -358,8 +357,8 @@ export class StmtInference extends ArkModelInference {
             this.transferTypeBidirectional(stmt, method, impactedStmts);
         } else if (stmt instanceof ArkReturnStmt) {
             let returnType = method.getSignature().getType();
-            if (method.containsModifier(ModifierType.ASYNC) && returnType instanceof ClassType
-                && returnType.getClassSignature().getClassName() === PROMISE) {
+            if (method.containsModifier(ModifierType.ASYNC) && returnType instanceof ClassType &&
+                returnType.getClassSignature().getClassName() === PROMISE) {
                 const realGenericType = returnType.getRealGenericTypes()?.[0];
                 if (realGenericType) {
                     returnType = realGenericType;
@@ -371,7 +370,7 @@ export class StmtInference extends ArkModelInference {
         return impactedStmts;
     }
 
-    private transferTypeBidirectional(stmt: ArkAssignStmt, method: ArkMethod, impactedStmts: Set<Stmt>) {
+    private transferTypeBidirectional(stmt: ArkAssignStmt, method: ArkMethod, impactedStmts: Set<Stmt>): void {
         const rightType = stmt.getRightOp().getType();
         const leftOp = stmt.getLeftOp();
         let leftType = leftOp.getType();
@@ -417,20 +416,12 @@ export class StmtInference extends ArkModelInference {
                 target.setType(srcType);
             }
         }
+        return undefined;
     }
 
     private paramSpread(invokeExpr: AbstractInvokeExpr, method: ArkMethod): Set<Stmt> {
         // init realTypes from base
         const realTypes: Type[] = [];
-        // if (invokeExpr instanceof ArkInstanceInvokeExpr) {
-        //     const baseType = invokeExpr.getBase().getType();
-        //     if (baseType instanceof ClassType || baseType instanceof AliasType) {
-        //         baseType.getRealGenericTypes()?.forEach(t => realTypes.push(t));
-        //     } else if (baseType instanceof ArrayType) {
-        //         realTypes.push(baseType.getBaseType());
-        //     }
-        // }
-        // infer arg with param, collect into realTypes
         const result: Set<Stmt> = new Set();
         const len = invokeExpr.getArgs().length;
         const parameters = invokeExpr.getMethodSignature().getMethodSubSignature().getParameters()

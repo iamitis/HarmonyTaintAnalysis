@@ -652,6 +652,10 @@ export class IRInference {
                 baseType = new ClassType(arrayClass.getSignature(), [baseType.getBaseType()]);
             }
         }
+        return IRInference.getFieldSignature(ref, baseType, arkClass);
+    }
+
+    private static getFieldSignature(ref: AbstractFieldRef, baseType: Type, arkClass: ArkClass): FieldSignature | null {
         const fieldName = ref.getFieldName().replace(/[\"|\']/g, '');
         const propertyAndType = TypeInference.inferFieldType(baseType, fieldName, arkClass);
         let propertyType = IRInference.repairType(propertyAndType?.[1], fieldName, arkClass);
@@ -668,16 +672,12 @@ export class IRInference {
                 !(property.getType() instanceof GenericType)) {
                 return property.getSignature();
             }
-            staticFlag =
-                baseType.getClassSignature().getClassName() === DEFAULT_ARK_CLASS_NAME ||
+            staticFlag = baseType.getClassSignature().getClassName() === DEFAULT_ARK_CLASS_NAME ||
                 ((property instanceof ArkField || property instanceof ArkMethod) && property.isStatic());
             signature = property instanceof ArkMethod ? property.getSignature().getDeclaringClassSignature() : baseType.getClassSignature();
         } else if (baseType instanceof ArrayType) {
             const property = propertyAndType?.[0];
-            if (property instanceof ArkField) {
-                return property.getSignature();
-            }
-            return null;
+            return property instanceof ArkField ? property.getSignature() : null;
         } else if (baseType instanceof AnnotationNamespaceType) {
             staticFlag = true;
             signature = baseType.getNamespaceSignature();

@@ -144,31 +144,6 @@ function compareTypeAliasStmt(stmt: Stmt, expectIR: any): void {
     }
 }
 
-function compareTypeAliasExpr(expr: AliasTypeExpr, expectedExpr: any): void {
-    const originalObject = expr.getOriginalObject();
-    assert.isTrue(originalObject instanceof expectedExpr.originalObject.instanceof);
-    if (originalObject instanceof Type) {
-        assert.equal(originalObject.toString(), expectedExpr.originalObject.toString);
-    } else if (originalObject instanceof ImportInfo && originalObject.getLazyExportInfo()) {
-        const arkExport = originalObject.getLazyExportInfo()!.getArkExport();
-        assert.isDefined(arkExport);
-        assert.isNotNull(arkExport);
-        if (arkExport instanceof Local) {
-            assert.equal(arkExport.getType().getTypeString(), expectedExpr.originalObject.lazyExportInfo.arkExport.signature);
-        } else {
-            assert.equal(arkExport!.getSignature().toString(), expectedExpr.originalObject.lazyExportInfo.arkExport.signature);
-        }
-    } else if (originalObject instanceof Local) {
-        assert.equal(originalObject.getType().getTypeString(), expectedExpr.originalObject.typeString);
-        assert.equal(originalObject.getDeclaringStmt()?.toString(), expectedExpr.originalObject.declaringStmt);
-    } else if (originalObject instanceof ArkField || originalObject instanceof ArkClass || originalObject instanceof ArkMethod) {
-        assert.equal(originalObject.getSignature().toString(), expectedExpr.originalObject.signature);
-    }
-    assert.equal(expr.getTransferWithTypeOf(), expectedExpr.transferWithTypeOf);
-    assert.equal(expr.getRealGenericTypes()?.toString(), expectedExpr.realGenericTypes);
-    assert.equal(expr.toString(), expectedExpr.toString);
-}
-
 function checkLocalWithBigIntType(name: string, method?: ArkMethod | null): void {
     const local = method?.getBody()?.getLocals().get(name);
     assert.isDefined(local);

@@ -113,7 +113,7 @@ export class AbcStmtInference extends StmtInference {
                 leftType = TypeInference.union(leftType, rightType);
             }
             if (leftOp.getType() !== leftType) {
-                return ArkTsStmtInference.updateType(leftOp, leftType, method);
+                return ArkTsStmtInference.updateUnionType(leftOp, leftType, method);
             }
         }
         return undefined;
@@ -132,6 +132,7 @@ export class AbcStmtInference extends StmtInference {
                 target.setType(srcType);
             }
         }
+        return undefined;
     }
 
 }

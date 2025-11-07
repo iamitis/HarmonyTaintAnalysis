@@ -202,6 +202,7 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
                 return new ArkStaticFieldRef(newFieldSignature);
             }
         }
+        return undefined;
     }
 }
 
@@ -689,5 +690,24 @@ export class ArkTSLocalInference extends LocalInference {
             return undefined;
         }
         return super.infer(value, stmt);
+    }
+}
+
+@Bind(InferLanguage.ABC)
+export class AbcFieldRefInference extends FieldRefInference {
+    public getValueName(): string {
+        return 'ArkInstanceFieldRef';
+    }
+
+    public preInfer(value: ArkInstanceFieldRef, stmt: Stmt): boolean {
+        const type = value.getType();
+        const projectName = stmt.getCfg().getDeclaringMethod().getDeclaringArkFile().getProjectName();
+        if (TypeInference.isAnonType(type, projectName)) {
+            const baseType = value.getBase().getType();
+            if (!TypeInference.isUnclearType(baseType) && !TypeInference.isAnonType(baseType, projectName)) {
+                return true;
+            }
+        }
+        return super.preInfer(value, stmt);
     }
 }

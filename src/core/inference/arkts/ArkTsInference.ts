@@ -108,13 +108,13 @@ export class ArkTsStmtInference extends StmtInference {
                 leftType = TypeInference.union(leftType, rightType);
             }
             if (leftOp.getType() !== leftType) {
-                return ArkTsStmtInference.updateType(leftOp, leftType, method);
+                return ArkTsStmtInference.updateUnionType(leftOp, leftType, method);
             }
         }
         return undefined;
     }
 
-    public static updateType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
+    public static updateUnionType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
         if (target instanceof Local) {
             target.setType(srcType);
             const globalRef = method.getBody()?.getUsedGlobals()?.get(target.getName());
@@ -139,6 +139,7 @@ export class ArkTsStmtInference extends StmtInference {
         } else if (target instanceof ArkParameterRef) {
             target.setType(srcType);
         }
+        return undefined;
     }
 
 }
