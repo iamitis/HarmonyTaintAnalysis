@@ -17,14 +17,17 @@
 import { ClassInference, FileInference, ImportInfoInference, MethodInference, StmtInference } from './ModelInference';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ValueInference } from './ValueInference';
+import { Value } from '../base/Value';
 
 const valueCtors: Map<Function, InferLanguage> = new Map<Function, InferLanguage>();
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'InferenceBuilder');
 
 export enum InferLanguage {
+    UNKNOWN = -1,
     COMMON = 0,
     ARK_TS1_1 = 1,
     ARK_TS1_2 = 2,
+    JAVA_SCRIPT = 3,
     CXX = 21,
     ABC = 51
 }
@@ -39,64 +42,29 @@ export function Bind(lang: InferLanguage = InferLanguage.COMMON): Function {
 
 import('./ValueInference');
 
-export class InferenceBuilder {
-
-    protected fileInference: FileInference | undefined;
-    protected importInfoInference: ImportInfoInference | undefined;
-    protected classInference: ClassInference | undefined;
-    protected methodInference: MethodInference | undefined;
-    protected stmtInference: StmtInference | undefined;
-    private valueInferences: Map<Function, ValueInference<any>>;
-
-    constructor() {
-        this.valueInferences = new Map();
-    }
+export abstract class InferenceBuilder {
 
     public buildFileInference(): FileInference {
-        if (!this.fileInference) {
-            this.fileInference = new FileInference(this.buildImportInfoInference(), this.buildClassInference());
-        }
-        return this.fileInference;
+        return new FileInference(this.buildImportInfoInference(), this.buildClassInference());
     }
 
-    public buildImportInfoInference(): ImportInfoInference {
-        if (!this.importInfoInference) {
-            this.importInfoInference = new ImportInfoInference();
-        }
-        return this.importInfoInference;
-    }
+    public abstract buildImportInfoInference(): ImportInfoInference;
 
     public buildClassInference(): ClassInference {
-        if (!this.classInference) {
-            this.classInference = new ClassInference(this.buildMethodInference());
-        }
-        return this.classInference;
+        return new ClassInference(this.buildMethodInference());
     }
 
     public buildMethodInference(): MethodInference {
-        if (!this.methodInference) {
-            this.methodInference = new MethodInference(this.buildStmtInference());
-        }
-        return this.methodInference;
+        return new MethodInference(this.buildStmtInference());
     }
 
-    public buildStmtInference(): StmtInference {
-        if (!this.stmtInference) {
-            this.stmtInference = new StmtInference(this.getValueInferences(InferLanguage.COMMON));
-        }
-        return this.stmtInference;
-    }
+    public abstract buildStmtInference(): StmtInference;
 
-    public getValueInferences(lang: InferLanguage): ValueInference<any>[] {
+    public getValueInferences(lang: InferLanguage): ValueInference<Value>[] {
         return Array.from(valueCtors.entries()).filter(entry => entry[1] === lang)
             .map(entry => {
                 const valueCtor = entry[0] as any;
-                let valueInference = this.valueInferences.get(valueCtor);
-                if (!valueInference) {
-                    valueInference = new valueCtor() as ValueInference<any>;
-                    this.valueInferences.set(valueCtor, valueInference);
-                }
-                return valueInference;
+                return new valueCtor();
             });
     }
 }

@@ -17,10 +17,8 @@ import { assert, describe, it } from 'vitest';
 import path from 'path';
 import {
     AliasType,
-    AliasTypeExpr,
     ArkAssignStmt,
     ArkClass,
-    ArkField,
     ArkInstanceFieldRef,
     ArkInstanceInvokeExpr,
     ArkInvokeStmt,
@@ -32,7 +30,6 @@ import {
     ClassType,
     FileSignature,
     FunctionType,
-    ImportInfo,
     IntersectionType,
     Local,
     NumberType,
@@ -43,7 +40,6 @@ import {
     SourceMethodPrinter,
     Stmt,
     TupleType,
-    Type,
     UnionType,
     UnknownType,
 } from '../../src';

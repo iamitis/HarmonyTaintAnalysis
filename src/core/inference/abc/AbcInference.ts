@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ClassInference, FileInference, ImportInfoInference, MethodInference, StmtInference } from '../ModelInference';
+import { ImportInfoInference, MethodInference, StmtInference } from '../ModelInference';
 import { ImportInfo } from '../../model/ArkImport';
 import { ModelUtils } from '../../common/ModelUtils';
 import { ArkMethod } from '../../model/ArkMethod';
@@ -55,7 +55,7 @@ class AbcImportInference extends ImportInfoInference {
 }
 
 
-class AbcMethodInference extends MethodInference {
+export class AbcMethodInference extends MethodInference {
 
     public preInfer(arkMethod: ArkMethod): void {
 
@@ -97,9 +97,9 @@ class AbcMethodInference extends MethodInference {
     }
 }
 
-export class AbcStmtInference extends StmtInference {
+class AbcStmtInference extends StmtInference {
 
-    constructor(valueInferences: ValueInference<any>[]) {
+    constructor(valueInferences: ValueInference<Value>[]) {
         super(valueInferences);
     }
 
@@ -139,44 +139,17 @@ export class AbcStmtInference extends StmtInference {
 
 export class AbcInferenceBuilder extends InferenceBuilder {
 
-    constructor() {
-        super();
-    }
-
-    public buildFileInference(): FileInference {
-        if (!this.fileInference) {
-            this.fileInference = new FileInference(this.buildImportInfoInference(), this.buildClassInference());
-        }
-        return this.fileInference;
-    }
-
     public buildImportInfoInference(): ImportInfoInference {
-        if (!this.importInfoInference) {
-            this.importInfoInference = new AbcImportInference();
-        }
-        return this.importInfoInference;
-    }
-
-    public buildClassInference(): ClassInference {
-        if (!this.classInference) {
-            this.classInference = new ClassInference(this.buildMethodInference());
-        }
-        return this.classInference;
+        return new AbcImportInference();
     }
 
     public buildMethodInference(): MethodInference {
-        if (!this.methodInference) {
-            this.methodInference = new AbcMethodInference(this.buildStmtInference());
-        }
-        return this.methodInference;
+        return new AbcMethodInference(this.buildStmtInference());
     }
 
     public buildStmtInference(): StmtInference {
-        if (!this.stmtInference) {
-            const valueInferences = this.getValueInferences(InferLanguage.COMMON);
-            this.getValueInferences(InferLanguage.ABC).forEach(e => valueInferences.push(e));
-            this.stmtInference = new AbcStmtInference(valueInferences);
-        }
-        return this.stmtInference;
+        const valueInferences = this.getValueInferences(InferLanguage.COMMON);
+        this.getValueInferences(InferLanguage.ABC).forEach(e => valueInferences.push(e));
+        return new AbcStmtInference(valueInferences);
     }
 }

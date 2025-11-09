@@ -76,8 +76,6 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
      * @param model - The ArkModel instance being processed
      */
     public preInfer(model: ArkModel): void {
-        // Default implementation does nothing
-        // Subclasses can override to add pre-inference logic
     }
 
     /**
@@ -87,22 +85,22 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
      * @param result
      */
     public postInfer(model: ArkModel, result?: any): any {
-        // Default implementation does nothing
-        // Subclasses can override to add post-inference logic
     }
 }
 
-export class ImportInfoInference extends ArkModelInference {
+export abstract class ImportInfoInference extends ArkModelInference {
     protected fromFile: ArkFile | null = null;
 
     /**
      * get arkFile and assign to from file
      * @param fromInfo
      */
-    public preInfer(fromInfo: ImportInfo): void {
-        throw new Error('Subclasses must override');
-    }
+    public abstract preInfer(fromInfo: ImportInfo): void;
 
+    /**
+     * find export from file
+     * @param fromInfo
+     */
     public infer(fromInfo: ImportInfo): ExportInfo | null {
         const file = this.fromFile;
         if (!file) {
@@ -128,12 +126,11 @@ export class ImportInfoInference extends ArkModelInference {
         if (arkExport) {
             exportInfo.setExportClauseType(arkExport.getExportType());
         }
-
         return exportInfo;
     }
 
     /**
-     * cleanup fromFile and exportInfo
+     * cleanup fromFile and set exportInfo
      * @param fromInfo
      * @param exportInfo
      */
@@ -159,14 +156,30 @@ export class FileInference extends ArkModelInference {
         return this.classInference;
     }
 
+    /**
+     * Pre-inference phase - processes unresolved import information in the file
+     * @param {ArkFile} file
+     */
     public preInfer(file: ArkFile): void {
         file.getImportInfos().filter(i => i.getExportInfo() === undefined)
             .forEach(info => this.importInfoInference.doInfer(info));
 
     }
 
+    /**
+     * Main inference phase - processes all arkClass definitions in the file
+     * @param {ArkFile} file
+     */
     public infer(file: ArkFile): void {
         ModelUtils.getAllClassesInFile(file).forEach(arkClass => this.classInference.doInfer(arkClass));
+    }
+
+    /**
+     * Post-inference phase - processes export information for the file
+     * @param {ArkFile} file
+     */
+    public postInfer(file: ArkFile): void {
+        IRInference.inferExportInfos(file);
     }
 }
 
@@ -182,10 +195,18 @@ export class ClassInference extends ArkModelInference {
         return this.methodInference;
     }
 
+    /**
+     * Pre-inference phase - processes heritage class information for the class
+     * @param {ArkClass} arkClass
+     */
     public preInfer(arkClass: ArkClass): void {
         arkClass.getAllHeritageClasses();
     }
 
+    /**
+     * Main inference phase - processes all methods in the class
+     * @param {ArkClass} arkClass
+     */
     public infer(arkClass: ArkClass): void {
         arkClass.getMethods(true).forEach(method => {
             this.methodInference.doInfer(method);
@@ -201,68 +222,89 @@ interface InferStmtResult {
 
 export class MethodInference extends ArkModelInference {
     private stmtInference: StmtInference;
-    private visited: Set<ArkMethod> | undefined;
+
+    /** Set to track visited methods for cycle prevention when infer a callback function */
+    private callBackVisited: Set<ArkMethod> | undefined;
 
     constructor(stmtInference: StmtInference) {
         super();
         this.stmtInference = stmtInference;
     }
 
-    public setVisitBegin(method: ArkMethod): void {
-        if (!this.visited) {
-            this.visited = new Set<ArkMethod>();
+    /**
+     * Marks a method as visited to prevent infinite recursion
+     * @param {ArkMethod} method - The method to mark as visited
+     */
+    public markVisited(method: ArkMethod): void {
+        if (!this.callBackVisited) {
+            this.callBackVisited = new Set<ArkMethod>();
         }
-        this.visited.add(method);
+        this.callBackVisited.add(method);
     }
 
+    /**
+     * Clears the visited methods set
+     */
     public cleanVisited(): void {
-        this.visited = undefined;
+        this.callBackVisited = undefined;
     }
 
+    /**
+     * Main inference phase - processes all statements in the method body
+     * @param {ArkMethod} method - The method to analyze
+     * @returns {InferStmtResult[]} Array of modified or impacted statements during inference
+     */
     public infer(method: ArkMethod): InferStmtResult[] {
         const modifiedStmts: InferStmtResult[] = [];
-        if (this.visited) {
-            if (this.visited.has(method)) {
+        // Check for cycle prevention
+        if (this.callBackVisited) {
+            if (this.callBackVisited.has(method)) {
                 return modifiedStmts;
             } else {
-                this.visited.add(method);
+                this.callBackVisited.add(method);
             }
         }
         const body = method.getBody();
         if (!body) {
             return modifiedStmts;
         }
-        //useGolbals
+        // Process used globals
         body.getUsedGlobals()?.forEach((value, key) => {
             if (value instanceof GlobalRef && !value.getRef()) {
-                const arkExport = ModelUtils.findGlobalRef(key, method);
-                if (arkExport instanceof Local) {
-                    arkExport.getUsedStmts().push(...value.getUsedStmts());
-                    value.setRef(arkExport);
+                const global = ModelUtils.findGlobalRef(key, method);
+                if (global instanceof Local) {
+                    const set = new Set(global.getUsedStmts());
+                    value.getUsedStmts().filter(f => !set.has(f)).forEach(stmt => global.addUsedStmt(stmt));
+                    value.setRef(global);
                 }
             }
         });
 
-        const workList = body.getCfg().getStmts();
-        while (workList.length > 0) {
-            const stmt = workList.shift();
-            if (!stmt) {
-                continue;
-            }
+        const workList = new Set(body.getCfg().getStmts());
+        for (let stmt of workList) {
             const result = this.stmtInference.doInfer(stmt);
             if (!result) {
                 continue;
             }
             const inferResult = result as InferStmtResult;
+            // collect modified Stmts to update CFG
             if (inferResult.replacedStmts) {
                 modifiedStmts.push(inferResult);
             }
-            inferResult.impactedStmts?.filter(s => s !== stmt && !workList.includes(s)).forEach(e => workList.push(e));
+            // Add impacted statements to work list
+            inferResult.impactedStmts?.filter(s => !workList.has(s)).forEach(e => workList.add(e));
+            workList.delete(stmt);
         }
         return modifiedStmts;
     }
 
+    /**
+     * Post-inference phase - updates CFG and infers return type
+     * @param {ArkMethod} method - The method that was analyzed
+     * @param {InferStmtResult[]} modifiedStmts - Modified statements from inference phase
+     */
     public postInfer(method: ArkMethod, modifiedStmts: InferStmtResult[]): void {
+        // Update CFG
         const cfg = method.getCfg();
         if (modifiedStmts.length > 0 && cfg) {
             modifiedStmts.forEach(m => {
@@ -270,6 +312,7 @@ export class MethodInference extends ArkModelInference {
                 cfg.remove(m.oldStmt);
             });
         }
+        //infers return type
         if (!method.getBody() || method.getName() === CONSTRUCTOR_NAME ||
             !TypeInference.isUnclearType(method.getImplementationSignature()?.getMethodSubSignature().getReturnType())) {
             return;
@@ -283,26 +326,31 @@ export class MethodInference extends ArkModelInference {
 
 
 export class StmtInference extends ArkModelInference {
-    private valueInferences: Map<string, ValueInference<any>>;
+    private valueInferences: Map<string, ValueInference<Value>>;
 
-    constructor(valueInferences: ValueInference<any>[]) {
+    constructor(valueInferences: ValueInference<Value>[]) {
         super();
         this.valueInferences = new Map();
         valueInferences.forEach(v => this.valueInferences.set(v.getValueName(), v));
     }
 
+    /**
+     * Main inference phase - processes a statement and its associated values
+     * @param {Stmt} stmt - The statement to analyze
+     * @returns {Type | undefined} The original definition type before inference
+     */
     public infer(stmt: Stmt): Type | undefined {
         const defType = stmt.getDef()?.getType();
-        const globals = stmt.getCfg().getDeclaringMethod().getBody()?.getUsedGlobals();
-        stmt.getDefAndUses().forEach(value => {
-            this.inferValue(value, stmt);
-            if (globals && value instanceof Local) {
-                this.addGlobalUsedStmts(globals, value);
-            }
-        });
+        stmt.getDefAndUses().forEach(value => this.inferValue(value, stmt));
         return defType;
     }
 
+    /**
+     * Post-inference phase - handles type propagation and impact analysis
+     * @param {Stmt} stmt - The statement that was analyzed
+     * @param {Type | undefined} defType - The original definition type before inference
+     * @returns {InferStmtResult | undefined} Inference result with impacted statements
+     */
     public postInfer(stmt: Stmt, defType: Type | undefined): InferStmtResult | undefined {
         const method = stmt.getCfg().getDeclaringMethod();
         const impactedStmts = this.typeSpread(stmt, method);
@@ -314,6 +362,12 @@ export class StmtInference extends ArkModelInference {
         return impactedStmts.size > 0 ? { oldStmt: stmt, impactedStmts: Array.from(impactedStmts) } : undefined;
     }
 
+    /**
+     * Recursively infers types for values and their dependencies
+     * @param {Value} value - The value to infer
+     * @param {Stmt} stmt - The containing statement
+     * @param {Set<Value>} visited - Set of already visited values for cycle prevention
+     */
     private inferValue(value: Value, stmt: Stmt, visited: Set<Value> = new Set()): void {
         if (visited.has(value)) {
             return;
@@ -334,20 +388,16 @@ export class StmtInference extends ArkModelInference {
         valueInference.doInfer(value, stmt);
     }
 
-    private addGlobalUsedStmts(globals: Map<string, Value>, value: Local): void {
-        const globalRef = globals.get(value.getName());
-        if (globalRef instanceof GlobalRef) {
-            const ref = globalRef.getRef();
-            if (ref instanceof Local) {
-                const set = new Set(ref.getUsedStmts());
-                value.getUsedStmts().filter(f => !set.has(f)).forEach(stmt => ref.addUsedStmt(stmt));
-            }
-        }
-    }
-
+    /**
+     * Propagates types through statements and handles special cases
+     * @param {Stmt} stmt - The statement to process
+     * @param {ArkMethod} method - The containing method
+     * @returns {Set<Stmt>} Set of statements impacted by type propagation
+     */
     public typeSpread(stmt: Stmt, method: ArkMethod): Set<Stmt> {
         let impactedStmts: Set<Stmt>;
         const invokeExpr = stmt.getInvokeExpr();
+        // Handle method invocation parameter spreading
         if (invokeExpr) {
             impactedStmts = this.paramSpread(invokeExpr, method);
         } else {
@@ -356,6 +406,7 @@ export class StmtInference extends ArkModelInference {
         if (stmt instanceof ArkAssignStmt) {
             this.transferTypeBidirectional(stmt, method, impactedStmts);
         } else if (stmt instanceof ArkReturnStmt) {
+            // Handle return statements with async type resolution
             let returnType = method.getSignature().getType();
             if (method.containsModifier(ModifierType.ASYNC) && returnType instanceof ClassType &&
                 returnType.getClassSignature().getClassName() === PROMISE) {
@@ -370,15 +421,21 @@ export class StmtInference extends ArkModelInference {
         return impactedStmts;
     }
 
+    /**
+     * Transfers types bidirectionally in assignment statements
+     * @param {ArkAssignStmt} stmt - The assignment statement
+     * @param {ArkMethod} method - The containing method
+     * @param {Set<Stmt>} impactedStmts - Set to collect impacted statements
+     */
     private transferTypeBidirectional(stmt: ArkAssignStmt, method: ArkMethod, impactedStmts: Set<Stmt>): void {
         const rightType = stmt.getRightOp().getType();
         const leftOp = stmt.getLeftOp();
         let leftType = leftOp.getType();
-        //transfer type from left to right
+        // Transfer type from left to right operand
         this.transferLeft2Right(stmt.getRightOp(), leftType, method)?.forEach(a => impactedStmts.add(a));
-        //transfer type from right to left
+        // Transfer type from right to left operand
         this.transferRight2Left(leftOp, rightType, method)?.forEach(a => impactedStmts.add(a));
-        // collect global this
+        // Handle global this references
         if (leftOp instanceof ArkStaticFieldRef) {
             const declaringSignature = leftOp.getFieldSignature().getDeclaringSignature();
             if (declaringSignature instanceof NamespaceSignature && declaringSignature.getNamespaceName() === GLOBAL_THIS_NAME) {
@@ -389,6 +446,7 @@ export class StmtInference extends ArkModelInference {
 
     public transferLeft2Right(rightOp: Value, leftType: Type, method: ArkMethod): Stmt[] | undefined {
         const projectName = method.getDeclaringArkFile().getProjectName();
+        // Skip if left type is unclear or anonymous
         if (TypeInference.isUnclearType(leftType) || TypeInference.isAnonType(leftType, projectName)) {
             return undefined;
         }
@@ -404,6 +462,13 @@ export class StmtInference extends ArkModelInference {
         return this.updateValueType(leftOp, rightType, method);
     }
 
+    /**
+     * Updates the type of a target value and returns impacted statements
+     * @param {Value} target - The target value to update
+     * @param {Type} srcType - The source type to apply
+     * @param {ArkMethod} method - The containing method
+     * @returns {Stmt[] | undefined} Array of statements impacted by the type update
+     */
     public updateValueType(target: Value, srcType: Type, method: ArkMethod): Stmt[] | undefined {
         const type = target.getType();
         if (type !== srcType && TypeInference.isUnclearType(type)) {
@@ -419,13 +484,19 @@ export class StmtInference extends ArkModelInference {
         return undefined;
     }
 
+    /**
+     * Handles parameter type propagation for method invocations
+     * @param {AbstractInvokeExpr} invokeExpr - The invocation expression
+     * @param {ArkMethod} method - The containing method
+     * @returns {Set<Stmt>} Set of statements impacted by parameter type propagation
+     */
     private paramSpread(invokeExpr: AbstractInvokeExpr, method: ArkMethod): Set<Stmt> {
-        // init realTypes from base
         const realTypes: Type[] = [];
         const result: Set<Stmt> = new Set();
         const len = invokeExpr.getArgs().length;
         const parameters = invokeExpr.getMethodSignature().getMethodSubSignature().getParameters()
             .filter(p => !p.getName().startsWith(LEXICAL_ENV_NAME_PREFIX));
+        // Map arguments to parameters
         for (let index = 0; index < len; index++) {
             const arg = invokeExpr.getArg(index);
             if (index >= parameters.length) {
@@ -434,32 +505,36 @@ export class StmtInference extends ArkModelInference {
             const paramType = parameters[index].getType();
             this.mapArgWithParam(arg, paramType, invokeExpr, method, realTypes)?.forEach(a => result.add(a));
         }
-        //setRealGenericTypes
+        // Set real generic types for the invocation
         if (realTypes.length > 0 && !invokeExpr.getRealGenericTypes()) {
             invokeExpr.setRealGenericTypes(realTypes);
         }
         return result;
     }
 
+    /**
+     * Maps argument types to parameter types and handles callback inference
+     */
     private mapArgWithParam(arg: Value, paramType: Type, invokeExpr: AbstractInvokeExpr, method: ArkMethod, realTypes: Type[]): Stmt[] | undefined {
         const argType = arg.getType();
         const scene = method.getDeclaringArkFile().getScene();
-        //infer arg with param
+        // Infer argument with parameter type
         IRInference.inferArg(invokeExpr, argType, paramType, scene, realTypes);
-        // infer callback function
+        // Handle callback function inference
         if (argType instanceof FunctionType) {
             const callback = scene.getMethod(argType.getMethodSignature());
             const paramLength = callback?.getImplementationSignature()?.getParamLength();
+            // Infer callback method if it has parameters
             if (callback && paramLength && paramLength > 0) {
                 const inference = InferenceManager.getInstance().getInference(callback.getDeclaringArkFile().getLanguage());
                 if (inference instanceof FileInference) {
                     const methodInference = inference.getClassInference().getMethodInference();
-                    methodInference.setVisitBegin(method);
+                    methodInference.markVisited(method);
                     methodInference.doInfer(callback);
                     methodInference.cleanVisited();
                 }
             }
-            // infer map function return type
+            // Infer map function return type for generic resolution
             const returnType = argType.getMethodSignature().getMethodSubSignature().getReturnType();
             if (!TypeInference.isUnclearType(returnType) && !(returnType instanceof VoidType) && paramType instanceof FunctionType) {
                 const declareReturnType = paramType.getMethodSignature().getMethodSubSignature().getReturnType();
@@ -469,7 +544,7 @@ export class StmtInference extends ArkModelInference {
                 }
             }
         }
-        // if arg type updated, collect used stmts
+        // Update argument type if parameter type is clear
         if (!TypeInference.isUnclearType(paramType) && !TypeInference.isAnonType(paramType, scene.getProjectName())) {
             return this.updateValueType(arg, paramType, method);
         }

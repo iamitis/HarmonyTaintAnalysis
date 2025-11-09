@@ -267,15 +267,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
     }
 
     public getMethodName(expr: AbstractInvokeExpr, arkMethod: ArkMethod): string {
-        let methodName = expr.getMethodSignature().getMethodSubSignature().getMethodName();
-        if (methodName.startsWith(NAME_PREFIX)) {
-            const declaringStmt = arkMethod.getBody()?.getLocals().get(methodName)?.getDeclaringStmt();
-            if (declaringStmt instanceof ArkAssignStmt && declaringStmt.getRightOp() instanceof ArkInstanceFieldRef) {
-                const rightOp = declaringStmt.getRightOp() as ArkInstanceFieldRef;
-                methodName = rightOp.getBase().getName() + '.' + rightOp.getFieldName();
-            }
-        }
-        return methodName;
+        return expr.getMethodSignature().getMethodSubSignature().getMethodName();
     }
 
     public static inferInvokeExpr(baseType: Type, expr: AbstractInvokeExpr, arkMethod: ArkMethod, methodName: string): AbstractInvokeExpr | null {
@@ -332,10 +324,6 @@ export class StaticInvokeExprInference extends InstanceInvokeExprInference {
 
     public getValueName(): string {
         return 'ArkStaticInvokeExpr';
-    }
-
-    public getMethodName(expr: AbstractInvokeExpr, arkMethod: ArkMethod): string {
-        return expr.getMethodSignature().getMethodSubSignature().getMethodName();
     }
 
     public preInfer(value: ArkStaticInvokeExpr, stmt: Stmt | undefined): boolean {

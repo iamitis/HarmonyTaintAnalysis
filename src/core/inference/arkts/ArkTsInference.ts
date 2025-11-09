@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-import { ClassInference, FileInference, ImportInfoInference, MethodInference, StmtInference } from '../ModelInference';
-import { ArkFile } from '../../model/ArkFile';
-import { IRInference } from '../../common/IRInference';
+import { ClassInference, ImportInfoInference, MethodInference, StmtInference } from '../ModelInference';
 import { ImportInfo } from '../../model/ArkImport';
 import { getArkFile } from '../../common/ModelUtils';
 import { ArkClass } from '../../model/ArkClass';
@@ -29,16 +27,7 @@ import { Value } from '../../base/Value';
 import { Type } from '../../base/Type';
 import { AbstractFieldRef, ArkParameterRef, GlobalRef } from '../../base/Ref';
 import { Local } from '../../base/Local';
-
-class ArkTsFileInference extends FileInference {
-    /**
-     * infer export info
-     * @param file
-     */
-    public postInfer(file: ArkFile): void {
-        IRInference.inferExportInfos(file);
-    }
-}
+import { AbcMethodInference } from '../abc/AbcInference';
 
 class ArkTsImportInference extends ImportInfoInference {
     /**
@@ -84,7 +73,7 @@ class ArkTsMethodInference extends MethodInference {
 
 export class ArkTsStmtInference extends StmtInference {
 
-    constructor(valueInferences: ValueInference<any>[]) {
+    constructor(valueInferences: ValueInference<Value>[]) {
         super(valueInferences);
     }
 
@@ -147,44 +136,41 @@ export class ArkTsStmtInference extends StmtInference {
 
 export class ArkTsInferenceBuilder extends InferenceBuilder {
 
-    constructor() {
-        super();
-    }
-
-    public buildFileInference(): FileInference {
-        if (!this.fileInference) {
-            this.fileInference = new ArkTsFileInference(this.buildImportInfoInference(), this.buildClassInference());
-        }
-        return this.fileInference;
-    }
-
     public buildImportInfoInference(): ImportInfoInference {
-        if (!this.importInfoInference) {
-            this.importInfoInference = new ArkTsImportInference();
-        }
-        return this.importInfoInference;
+        return new ArkTsImportInference();
     }
 
     public buildClassInference(): ClassInference {
-        if (!this.classInference) {
-            this.classInference = new ArkTsClassInference(this.buildMethodInference());
-        }
-        return this.classInference;
+        return new ArkTsClassInference(this.buildMethodInference());
     }
 
     public buildMethodInference(): MethodInference {
-        if (!this.methodInference) {
-            this.methodInference = new ArkTsMethodInference(this.buildStmtInference());
-        }
-        return this.methodInference;
+        return new ArkTsMethodInference(this.buildStmtInference());
     }
 
     public buildStmtInference(): StmtInference {
-        if (!this.stmtInference) {
-            const valueInferences = this.getValueInferences(InferLanguage.COMMON);
-            this.getValueInferences(InferLanguage.ARK_TS1_1).forEach(e => valueInferences.push(e));
-            this.stmtInference = new ArkTsStmtInference(valueInferences);
-        }
-        return this.stmtInference;
+        const valueInferences = this.getValueInferences(InferLanguage.COMMON);
+        this.getValueInferences(InferLanguage.ARK_TS1_1).forEach(e => valueInferences.push(e));
+        return new ArkTsStmtInference(valueInferences);
+    }
+}
+
+export class ArkTs2InferenceBuilder extends ArkTsInferenceBuilder {
+
+}
+
+export class JsInferenceBuilder extends InferenceBuilder {
+
+    public buildImportInfoInference(): ImportInfoInference {
+        return new ArkTsImportInference();
+    }
+
+    public buildMethodInference(): MethodInference {
+        return new AbcMethodInference(this.buildStmtInference());
+    }
+
+    public buildStmtInference(): StmtInference {
+        const valueInferences = this.getValueInferences(InferLanguage.COMMON);
+        return new ArkTsStmtInference(valueInferences);
     }
 }

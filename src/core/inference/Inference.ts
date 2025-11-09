@@ -18,8 +18,8 @@ import { ArkBaseModel } from '../model/ArkBaseModel';
 import { ArkFile, Language } from '../model/ArkFile';
 import { Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
-import { ArkTsInferenceBuilder } from './arkts/ArkTsInference';
-import { InferenceBuilder, InferLanguage } from './InferenceBuilder';
+import { ArkTs2InferenceBuilder, ArkTsInferenceBuilder, JsInferenceBuilder } from './arkts/ArkTsInference';
+import { InferLanguage } from './InferenceBuilder';
 import { AbcInferenceBuilder } from './abc/AbcInference';
 
 
@@ -89,8 +89,12 @@ export class InferenceManager {
                 inference = new ArkTsInferenceBuilder().buildFileInference();
             } else if (inferLanguage === InferLanguage.ABC) {
                 inference = new AbcInferenceBuilder().buildFileInference();
+            } else if (inferLanguage === InferLanguage.JAVA_SCRIPT) {
+                inference = new JsInferenceBuilder().buildFileInference();
+            } else if (inferLanguage === InferLanguage.ARK_TS1_2) {
+                inference = new ArkTs2InferenceBuilder().buildFileInference();
             } else {
-                inference = new InferenceBuilder().buildFileInference();
+                throw new Error('Inference not supported');
             }
             this.inferenceMap.set(inferLanguage, inference);
         }
@@ -98,11 +102,15 @@ export class InferenceManager {
     }
 
     private changeToInferLanguage(lang: Language): InferLanguage {
-        if (lang === Language.ARKTS1_1 || lang === Language.TYPESCRIPT || lang === Language.JAVASCRIPT) {
+        if (lang === Language.ARKTS1_1 || lang === Language.TYPESCRIPT) {
             return InferLanguage.ARK_TS1_1;
         } else if (lang === Language.ABC) {
             return InferLanguage.ABC;
+        } else if (lang === Language.JAVASCRIPT) {
+            return InferLanguage.JAVA_SCRIPT;
+        } else if (lang === Language.ARKTS1_2) {
+            return InferLanguage.ARK_TS1_2;
         }
-        return InferLanguage.COMMON;
+        return InferLanguage.UNKNOWN;
     }
 }
