@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-let a = ['1']
+let a = ['1'];
 
-function write(str: string) {
+function write(str: string): void {
     a.push('2');
 }
 
-function read(str: string) {
+function read(str: string): void {
     let b = a[0];
 }
 

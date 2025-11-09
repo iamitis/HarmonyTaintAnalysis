@@ -107,26 +107,31 @@ export class ArkTsStmtInference extends StmtInference {
         if (target instanceof Local) {
             target.setType(srcType);
             const globalRef = method.getBody()?.getUsedGlobals()?.get(target.getName());
+            let result;
             if (globalRef instanceof GlobalRef) {
-                const ref = globalRef.getRef();
-                if (ref instanceof Local) {
-                    let leftType = ref.getType();
-                    if (TypeInference.isTypeCanBeOverride(leftType)) {
-                        leftType = srcType;
-                    } else {
-                        leftType = TypeInference.union(leftType, srcType);
-                    }
-                    if (ref.getType() !== leftType) {
-                        ref.setType(leftType);
-                        return ref.getUsedStmts();
-                    }
-                }
+                result = this.updateGlobalRef(globalRef.getRef(), srcType);
             }
-            return target.getUsedStmts();
+            return result ? result : target.getUsedStmts();
         } else if (target instanceof AbstractFieldRef) {
             target.getFieldSignature().setType(srcType);
         } else if (target instanceof ArkParameterRef) {
             target.setType(srcType);
+        }
+        return undefined;
+    }
+
+    public static updateGlobalRef(ref: Value | null, srcType: Type): Stmt[] | undefined {
+        if (ref instanceof Local) {
+            let leftType = ref.getType();
+            if (TypeInference.isTypeCanBeOverride(leftType)) {
+                leftType = srcType;
+            } else {
+                leftType = TypeInference.union(leftType, srcType);
+            }
+            if (ref.getType() !== leftType) {
+                ref.setType(leftType);
+                return ref.getUsedStmts();
+            }
         }
         return undefined;
     }

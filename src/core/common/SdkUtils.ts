@@ -152,14 +152,18 @@ export class SdkUtils {
         file.getNamespaces().forEach(ns => {
             const oldNs = globalMap.get(ns.getName());
             if (oldNs instanceof ArkNamespace && oldNs !== ns) {
-                ns.getClasses().forEach(cls => {
-                    const oldCls = oldNs.getClassWithName(cls.getName());
-                    if (oldCls) {
-                        this.copyMembers(cls, oldCls);
-                    } else {
-                        oldNs.addArkClass(cls);
-                    }
-                });
+                SdkUtils.copyNamespace(ns, oldNs);
+            }
+        });
+    }
+
+    private static copyNamespace(ns: ArkNamespace, oldNs: ArkNamespace) {
+        ns.getClasses().forEach(cls => {
+            const oldCls = oldNs.getClassWithName(cls.getName());
+            if (oldCls) {
+                this.copyMembers(cls, oldCls);
+            } else {
+                oldNs.addArkClass(cls);
             }
         });
     }

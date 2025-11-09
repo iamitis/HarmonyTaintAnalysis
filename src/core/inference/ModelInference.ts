@@ -68,6 +68,7 @@ abstract class ArkModelInference implements Inference, InferenceFlow {
         } catch (error) {
             logger.warn('infer model failed:' + (error as Error).message);
         }
+        return undefined;
     }
 
     /**
@@ -548,6 +549,7 @@ export class StmtInference extends ArkModelInference {
         if (!TypeInference.isUnclearType(paramType) && !TypeInference.isAnonType(paramType, scene.getProjectName())) {
             return this.updateValueType(arg, paramType, method);
         }
+        return undefined;
     }
 
 

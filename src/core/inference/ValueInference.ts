@@ -14,7 +14,7 @@
  */
 
 
-import { ArkAssignStmt, Stmt } from '../base/Stmt';
+import { Stmt } from '../base/Stmt';
 import { Value } from '../base/Value';
 import { Inference, InferenceFlow } from './Inference';
 import { ArkArrayRef, ArkInstanceFieldRef, ArkParameterRef, ArkStaticFieldRef, ClosureFieldRef } from '../base/Ref';
