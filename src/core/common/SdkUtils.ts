@@ -157,7 +157,7 @@ export class SdkUtils {
         });
     }
 
-    private static copyNamespace(ns: ArkNamespace, oldNs: ArkNamespace) {
+    private static copyNamespace(ns: ArkNamespace, oldNs: ArkNamespace): void {
         ns.getClasses().forEach(cls => {
             const oldCls = oldNs.getClassWithName(cls.getName());
             if (oldCls) {

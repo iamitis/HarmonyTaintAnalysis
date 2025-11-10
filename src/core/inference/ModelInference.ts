@@ -227,6 +227,8 @@ export class MethodInference extends ArkModelInference {
     /** Set to track visited methods for cycle prevention when infer a callback function */
     private callBackVisited: Set<ArkMethod> | undefined;
 
+    private static TIMEOUT_MS = 3000;
+
     constructor(stmtInference: StmtInference) {
         super();
         this.stmtInference = stmtInference;
@@ -257,6 +259,8 @@ export class MethodInference extends ArkModelInference {
      */
     public infer(method: ArkMethod): InferStmtResult[] {
         const modifiedStmts: InferStmtResult[] = [];
+        // timeout
+        const startTime = Date.now();
         // Check for cycle prevention
         if (this.callBackVisited) {
             if (this.callBackVisited.has(method)) {
@@ -283,6 +287,10 @@ export class MethodInference extends ArkModelInference {
 
         const workList = new Set(body.getCfg().getStmts());
         for (let stmt of workList) {
+            if (Date.now() - startTime > MethodInference.TIMEOUT_MS) {
+                logger.warn(`Inference timeout for method: ${method.getName()}`);
+                return modifiedStmts;
+            }
             const result = this.stmtInference.doInfer(stmt);
             if (!result) {
                 continue;

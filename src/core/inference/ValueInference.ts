@@ -133,34 +133,67 @@ export abstract class ValueInference<T extends Value> implements Inference, Infe
     }
 }
 
+/**
+ * Parameter reference inference implementation for ArkParameterRef values
+ * Handles type inference and resolution for parameter references in the IR
+ */
 @Bind()
 export class ParameterRefInference extends ValueInference<ArkParameterRef> {
     public getValueName(): string {
         return 'ArkParameterRef';
     }
 
+    /**
+     * Determines if pre-inference should be performed on the given parameter reference
+     * Checks if the parameter type requires inference (lexical environment types or unclear types)
+     * @param {ArkParameterRef} value - The parameter reference to evaluate
+     * @returns {boolean} True if pre-inference should be performed, false otherwise
+     */
     public preInfer(value: ArkParameterRef): boolean {
         const type = value.getType();
         return type instanceof LexicalEnvType || TypeInference.isUnclearType(type);
     }
 
+    /**
+     * Performs inference on a parameter reference within the context of a statement
+     * Resolves the parameter reference using the method's declaration context
+     * @param {ArkParameterRef} value - The parameter reference to infer
+     * @param {Stmt} stmt - The statement containing the parameter reference
+     * @returns {Value | undefined} Always returns undefined as parameter references are resolved in-place
+     */
     public infer(value: ArkParameterRef, stmt: Stmt): Value | undefined {
         IRInference.inferParameterRef(value, stmt.getCfg().getDeclaringMethod());
         return undefined;
     }
 }
 
+/**
+ * Closure field reference inference implementation for ClosureFieldRef values
+ * Handles type inference and resolution for closure field references in the IR
+ */
 @Bind()
 export class ClosureFieldRefInference extends ValueInference<ClosureFieldRef> {
     public getValueName(): string {
         return 'ClosureFieldRef';
     }
 
+    /**
+     * Determines if pre-inference should be performed on the given closure field reference
+     * Checks if the closure field type requires inference (unclear types)
+     * @param {ClosureFieldRef} value - The closure field reference to evaluate
+     * @returns {boolean} True if pre-inference should be performed, false otherwise
+     */
     public preInfer(value: ClosureFieldRef): boolean {
         const type = value.getType();
         return TypeInference.isUnclearType(type);
     }
 
+    /**
+     * Performs inference on a closure field reference
+     * Resolves the closure field type by looking up the field in the lexical environment's closures
+     * @param {ClosureFieldRef} value - The closure field reference to infer
+     * @returns {Value | undefined} Always returns undefined as closure field references are resolved in-place
+     */
     public infer(value: ClosureFieldRef): Value | undefined {
         const type = value.getBase().getType();
         if (type instanceof LexicalEnvType) {
@@ -179,14 +212,30 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
         return 'ArkInstanceFieldRef';
     }
 
+    /**
+     * Determines if pre-inference should be performed on the given field reference
+     * Checks if the field requires inference based on declaring signature, type clarity, or static status
+     * @param {ArkInstanceFieldRef} value - The field reference to evaluate
+     * @param {Stmt} [stmt] - Optional statement context for the evaluation
+     * @returns {boolean} True if pre-inference should be performed, false otherwise
+     */
     public preInfer(value: ArkInstanceFieldRef, stmt?: Stmt): boolean {
         return IRInference.needInfer(value.getFieldSignature().getDeclaringSignature().getDeclaringFileSignature()) ||
             TypeInference.isUnclearType(value.getType()) || value.getFieldSignature().isStatic();
     }
 
+    /**
+     * Performs inference on a field reference within the context of a statement
+     * Handles special cases for array types and dynamic field access, and generates updated field signatures
+     * @param {ArkInstanceFieldRef} value - The field reference to infer
+     * @param {Stmt} stmt - The statement containing the field reference
+     * @returns {Value | undefined} Returns a new ArkArrayRef for array types, ArkStaticFieldRef for static fields,
+     *          or undefined for regular instance fields
+     */
     public infer(value: ArkInstanceFieldRef, stmt: Stmt): Value | undefined {
         const baseType = TypeInference.replaceAliasType(value.getBase().getType());
         const arkMethod = stmt.getCfg().getDeclaringMethod();
+        // Special handling for array types with dynamic field access
         if (baseType instanceof ArrayType && value.isDynamic()) {
             const index = TypeInference.getLocalFromMethodBody(value.getFieldName(), arkMethod);
             if (index) {
@@ -195,6 +244,7 @@ export class FieldRefInference extends ValueInference<ArkInstanceFieldRef> {
                 return new ArkArrayRef(value.getBase(), ValueUtil.createConst(value.getFieldName()));
             }
         }
+        // Generate updated field signature based on current context
         const newFieldSignature = IRInference.generateNewFieldSignature(value, arkMethod.getDeclaringArkClass(), baseType);
         if (newFieldSignature) {
             value.setFieldSignature(newFieldSignature);
@@ -212,11 +262,25 @@ export class StaticFieldRefInference extends ValueInference<ArkStaticFieldRef> {
         return 'ArkStaticFieldRef';
     }
 
+    /**
+     * Determines if pre-inference should be performed on the given static field reference
+     * Checks if the field requires inference based on declaring signature or type clarity
+     * @param {ArkStaticFieldRef} value - The static field reference to evaluate
+     * @param {Stmt} [stmt] - Optional statement context for the evaluation
+     * @returns {boolean} True if pre-inference should be performed, false otherwise
+     */
     public preInfer(value: ArkStaticFieldRef, stmt?: Stmt): boolean {
         return IRInference.needInfer(value.getFieldSignature().getDeclaringSignature().getDeclaringFileSignature()) ||
             TypeInference.isUnclearType(value.getType());
     }
 
+    /**
+     * Performs inference on a static field reference within the context of a statement
+     * Resolves the base type and generates updated field signatures, maintaining static field semantics
+     * @param {ArkStaticFieldRef} value - The static field reference to infer
+     * @param {Stmt} stmt - The statement containing the static field reference
+     * @returns {Value | undefined} Returns a new ArkStaticFieldRef with updated signature, or undefined if no changes
+     */
     public infer(value: ArkStaticFieldRef, stmt: Stmt): Value | undefined {
         const baseSignature = value.getFieldSignature().getDeclaringSignature();
         const baseName = baseSignature instanceof ClassSignature ? baseSignature.getClassName() : baseSignature.getNamespaceName();
@@ -244,17 +308,38 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
         return 'ArkInstanceInvokeExpr';
     }
 
+    /**
+     * Determines if pre-inference should be performed on the given invocation expression
+     * Checks if the method requires inference based on declaring signature or type clarity
+     * @param {ArkInstanceInvokeExpr} value - The invocation expression to evaluate
+     * @param {Stmt} [stmt] - Optional statement context for the evaluation
+     * @returns {boolean} True if pre-inference should be performed, false otherwise
+     */
     public preInfer(value: ArkInstanceInvokeExpr, stmt: Stmt | undefined): boolean {
         return IRInference.needInfer(value.getMethodSignature().getDeclaringClassSignature().getDeclaringFileSignature()) ||
             TypeInference.isUnclearType(value.getType());
     }
 
+    /**
+     * Performs inference on an instance invocation expression within the context of a statement
+     * Resolves the base type and method signature, handling various base type scenarios
+     * @param {ArkInstanceInvokeExpr} value - The invocation expression to infer
+     * @param {Stmt} stmt - The statement containing the invocation
+     * @returns {Value | undefined} Returns a new invocation expression if transformed, undefined otherwise
+     */
     public infer(value: ArkInstanceInvokeExpr, stmt: Stmt): Value | undefined {
         const arkMethod = stmt.getCfg().getDeclaringMethod();
         const result = InstanceInvokeExprInference.inferInvokeExpr(value.getBase().getType(), value, arkMethod, this.getMethodName(value, arkMethod));
         return !result || result === value ? undefined : result;
     }
 
+    /**
+     * Performs post-inference processing on invocation expressions
+     * Handles special case for super() calls by replacing the base with 'this' local
+     * @param {ArkInstanceInvokeExpr} value - The original invocation expression
+     * @param {Value} newValue - The new value after inference
+     * @param {Stmt} stmt - The statement containing the invocation
+     */
     public postInfer(value: ArkInstanceInvokeExpr, newValue: Value, stmt: Stmt): void {
         if (value instanceof ArkInstanceInvokeExpr && value.getBase().getName() === SUPER_NAME) {
             const thisLocal = stmt.getCfg().getDeclaringMethod().getBody()?.getLocals().get(THIS_NAME);
@@ -271,6 +356,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
     }
 
     public static inferInvokeExpr(baseType: Type, expr: AbstractInvokeExpr, arkMethod: ArkMethod, methodName: string): AbstractInvokeExpr | null {
+        // Handle baseType
         if (baseType instanceof AliasType) {
             baseType = TypeInference.replaceAliasType(baseType);
         } else if (baseType instanceof UnionType) {
@@ -289,6 +375,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
                 baseType = new ClassType(arrayClass.getSignature(), [baseType.getBaseType()]);
             }
         } else if (baseType instanceof StringType || baseType instanceof NumberType || baseType instanceof BooleanType) {
+            // Convert primitive types to their wrapper class types
             const name = baseType.getName();
             const className = name.charAt(0).toUpperCase() + name.slice(1);
             const arrayClass = arkMethod.getDeclaringArkFile().getScene().getSdkGlobal(className);
@@ -297,6 +384,7 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
             }
         }
         const scene = arkMethod.getDeclaringArkFile().getScene();
+        // Dispatch to appropriate inference method based on resolved base type
         if (baseType instanceof ClassType) {
             return IRInference.inferInvokeExprWithDeclaredClass(expr, baseType, methodName, scene);
         } else if (baseType instanceof AnnotationNamespaceType) {
@@ -535,11 +623,13 @@ export class LocalInference extends ValueInference<Local> {
     public infer(value: Local, stmt: Stmt): Value | undefined {
         const name = value.getName();
         const arkClass = stmt.getCfg().getDeclaringMethod().getDeclaringArkClass();
+        // Special handling for 'this' reference - set to current class type
         if (name === THIS_NAME) {
             value.setType(new ClassType(arkClass.getSignature(), arkClass.getRealTypes()));
             return undefined;
         }
         let newType;
+        // Skip temporary variables (those with name prefix) and look for declared locals
         if (!name.startsWith(NAME_PREFIX)) {
             newType = ModelUtils.findDeclaredLocal(value, stmt.getCfg().getDeclaringMethod(), 1)?.getType() ??
                 TypeInference.inferBaseType(name, arkClass);
@@ -561,6 +651,13 @@ export class ArkTSFieldRefInference extends FieldRefInference {
         return super.preInfer(value);
     }
 
+    /**
+     * Checks if a value represents an anonymous class 'this' field reference
+     * Identifies field references that access fields directly on 'this' in anonymous class constructors
+     * @param {Value} stmtDef - The value to check (typically a field reference)
+     * @param {ArkMethod} arkMethod - The method containing the value
+     * @returns {boolean} True if the value is an anonymous class 'this' field reference
+     */
     private isAnonClassThisRef(stmtDef: Value, arkMethod: ArkMethod): boolean {
         return (arkMethod.getName() === INSTANCE_INIT_METHOD_NAME || arkMethod.getName() === CONSTRUCTOR_NAME) &&
             stmtDef instanceof ArkInstanceFieldRef &&
@@ -573,6 +670,13 @@ export class ArkTSFieldRefInference extends FieldRefInference {
 
 @Bind(InferLanguage.ARK_TS1_1)
 export class ArkTsInstanceInvokeExprInference extends InstanceInvokeExprInference {
+    /**
+     * Performs inference on an instance invocation expression within the context of a statement
+     * Enhances the base implementation with real generic type inference and extension function support
+     * @param {ArkInstanceInvokeExpr} value - The invocation expression to infer
+     * @param {Stmt} stmt - The statement containing the invocation
+     * @returns {Value | undefined} Returns a new expression if transformed, undefined otherwise
+     */
     public infer(value: ArkInstanceInvokeExpr, stmt: Stmt): Value | undefined {
         const arkMethod = stmt.getCfg().getDeclaringMethod();
         TypeInference.inferRealGenericTypes(value.getRealGenericTypes(), arkMethod.getDeclaringArkClass());

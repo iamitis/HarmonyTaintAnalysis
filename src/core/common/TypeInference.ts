@@ -157,7 +157,29 @@ export class TypeInference {
             this.inferRealGenericTypes(realTypes, declaringArkClass);
             let newType = TypeInference.inferUnclearRefName(leftOpType.getClassSignature().getClassName(), declaringArkClass);
             type = newType ? this.replaceTypeWithReal(newType, realTypes) : null;
-        } else if (leftOpType instanceof UnionType || leftOpType instanceof IntersectionType || leftOpType instanceof TupleType) {
+        } else if (leftOpType instanceof TypeQueryExpr) {
+            this.inferRealGenericTypes(leftOpType.getGenerateTypes(), declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof TupleType) {
+            this.inferRealGenericTypes(leftOpType.getTypes(), declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof GenericType) {
+            this.inferGenericType([leftOpType], declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof AnnotationNamespaceType) {
+            type = this.inferBaseType(leftOpType.getOriginType(), declaringArkClass);
+        } else if (leftOpType instanceof UnclearReferenceType) {
+            type = this.inferUnclearRefType(leftOpType, declaringArkClass);
+        }
+        if (type) {
+            return type;
+        }
+        return TypeInference.inferUnclearComplexType(leftOpType, declaringArkClass, visited);
+    }
+
+    private static inferUnclearComplexType(leftOpType: Type, declaringArkClass: ArkClass, visited: Set<Type>): Type | undefined {
+        let type;
+        if (leftOpType instanceof UnionType || leftOpType instanceof IntersectionType || leftOpType instanceof TupleType) {
             let types = leftOpType.getTypes();
             for (let i = 0; i < types.length; i++) {
                 let newType = this.inferUnclearedType(types[i], declaringArkClass, visited);
@@ -186,19 +208,6 @@ export class TypeInference {
                 leftOpType.setOpType(baseType);
                 type = leftOpType;
             }
-        } else if (leftOpType instanceof TypeQueryExpr) {
-            this.inferRealGenericTypes(leftOpType.getGenerateTypes(), declaringArkClass);
-            type = leftOpType;
-        } else if (leftOpType instanceof TupleType) {
-            this.inferRealGenericTypes(leftOpType.getTypes(), declaringArkClass);
-            type = leftOpType;
-        } else if (leftOpType instanceof GenericType) {
-            this.inferGenericType([leftOpType], declaringArkClass);
-            type = leftOpType;
-        } else if (leftOpType instanceof AnnotationNamespaceType) {
-            type = this.inferBaseType(leftOpType.getOriginType(), declaringArkClass);
-        } else if (leftOpType instanceof UnclearReferenceType) {
-            type = this.inferUnclearRefType(leftOpType, declaringArkClass);
         }
         return type;
     }
