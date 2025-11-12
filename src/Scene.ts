@@ -47,6 +47,7 @@ import { SdkUtils } from './core/common/SdkUtils';
 import { PointerAnalysisConfig } from './callgraph/pointerAnalysis/PointerAnalysisConfig';
 import { ValueUtil } from './core/common/ValueUtil';
 import { InferenceManager } from './core/inference/Inference';
+import { IRInference } from './core/common/IRInference';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'Scene');
 
@@ -1087,9 +1088,20 @@ export class Scene {
         SdkUtils.dispose();
     }
 
-    public inferTypesV2(): void {
-
-        this.filesMap.forEach(file => InferenceManager.getInstance().getInference(file.getLanguage()).doInfer(file));
+    /**
+     * @deprecated This method is deprecated and will be removed in the next major release.
+     * Please use the new type inference system instead.
+     *
+     * Scheduled for removal: one month from deprecation date.
+     */
+    public inferTypesOld(): void {
+        this.filesMap.forEach(file => {
+            try {
+                IRInference.inferFile(file);
+            } catch (error) {
+                logger.error('Error inferring types of project file:', file.getFileSignature(), error);
+            }
+        });
         if (this.buildStage < SceneBuildStage.TYPE_INFERRED) {
             this.getMethodsMap(true);
             this.buildStage = SceneBuildStage.TYPE_INFERRED;

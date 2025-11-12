@@ -288,7 +288,7 @@ export class MethodInference extends ArkModelInference {
         const workList = new Set(body.getCfg().getStmts());
         for (let stmt of workList) {
             if (Date.now() - startTime > MethodInference.TIMEOUT_MS) {
-                logger.warn(`Inference timeout for method: ${method.getName()}`);
+                logger.error(`Inference timeout for method: ${method.getName()}`);
                 return modifiedStmts;
             }
             const result = this.stmtInference.doInfer(stmt);
