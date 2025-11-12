@@ -691,7 +691,7 @@ export abstract class AbstractBinopExpr extends AbstractExpr {
         return op;
     }
 
-    protected setType(): void {
+    public setType(): void {
         let op1Type = this.parseType(this.op1.getType());
         let op2Type = this.parseType(this.op2.getType());
         let type = UnknownType.getInstance();
@@ -790,6 +790,10 @@ export class ArkConditionExpr extends AbstractBinopExpr {
         this.type = BooleanType.getInstance();
         return this;
     }
+
+    public fillType(): void {
+        this.type = BooleanType.getInstance();
+    }
 }
 
 export class ArkNormalBinopExpr extends AbstractBinopExpr {
@@ -859,6 +863,10 @@ export class ArkInstanceOfExpr extends AbstractExpr {
         return this.checkType;
     }
 
+    public setCheckType(type: Type): void {
+        this.checkType = type;
+    }
+
     public getType(): Type {
         return BooleanType.getInstance();
     }
@@ -914,6 +922,10 @@ export class ArkCastExpr extends AbstractExpr {
 
     public getType(): Type {
         return this.type;
+    }
+
+    public setType(type: Type): void {
+        this.type = type;
     }
 
     public inferType(arkMethod: ArkMethod): AbstractExpr {
@@ -1052,6 +1064,7 @@ export type AliasTypeOriginalModel = Type | ImportInfo | Local | ArkClass | ArkM
  ```
  */
 export class AliasTypeExpr extends AbstractExpr {
+    private originalType?: Type;
     private originalObject: AliasTypeOriginalModel;
     private readonly transferWithTypeOf: boolean = false;
     private realGenericTypes?: Type[];
@@ -1082,6 +1095,14 @@ export class AliasTypeExpr extends AbstractExpr {
 
     public getRealGenericTypes(): Type[] | undefined {
         return this.realGenericTypes;
+    }
+
+    public getOriginalType(): Type | undefined {
+        return this.originalType;
+    }
+
+    public setOriginalType(type: Type): Type {
+        return this.originalType = type;
     }
 
     public getType(): Type {
@@ -1135,6 +1156,9 @@ export class AliasTypeExpr extends AbstractExpr {
      * @returns Always returns empty array because her is the alias type definition which has no relationship with value flow.
      */
     public getUses(): Value[] {
+        if (this.originalObject instanceof Local) {
+            return [this.originalObject];
+        }
         return [];
     }
 

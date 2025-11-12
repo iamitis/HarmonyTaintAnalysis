@@ -37,7 +37,7 @@ import {
     EnumValueType,
     FunctionType,
     GenericType,
-    IntersectionType,
+    IntersectionType, LiteralType,
     NeverType,
     NullType,
     NumberType,
@@ -79,6 +79,7 @@ import { ModelUtils } from './ModelUtils';
 import { Builtin } from './Builtin';
 import { MethodSignature, MethodSubSignature, NamespaceSignature } from '../model/ArkSignature';
 import {
+    ANONYMOUS_CLASS_PREFIX,
     ANONYMOUS_METHOD_PREFIX,
     INSTANCE_INIT_METHOD_NAME,
     LEXICAL_ENV_NAME_PREFIX,
@@ -94,6 +95,7 @@ import { SdkUtils } from './SdkUtils';
 import { ModifierType } from '../model/ArkBaseModel';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'TypeInference');
+const unknownFileName: string[] = [UNKNOWN_FILE_NAME, Builtin.DUMMY_FILE_NAME];
 
 export class TypeInference {
     public static inferTypeInArkField(arkField: ArkField): void {
@@ -150,9 +152,34 @@ export class TypeInference {
             visited.add(leftOpType);
         }
         let type;
-        if (leftOpType instanceof ClassType && leftOpType.getClassSignature().getDeclaringFileSignature().getFileName() === UNKNOWN_FILE_NAME) {
-            type = TypeInference.inferUnclearRefName(leftOpType.getClassSignature().getClassName(), declaringArkClass);
-        } else if (leftOpType instanceof UnionType || leftOpType instanceof IntersectionType || leftOpType instanceof TupleType) {
+        if (leftOpType instanceof ClassType && unknownFileName.includes(leftOpType.getClassSignature().getDeclaringFileSignature().getFileName())) {
+            const realTypes = leftOpType.getRealGenericTypes();
+            this.inferRealGenericTypes(realTypes, declaringArkClass);
+            let newType = TypeInference.inferUnclearRefName(leftOpType.getClassSignature().getClassName(), declaringArkClass);
+            type = newType ? this.replaceTypeWithReal(newType, realTypes) : null;
+        } else if (leftOpType instanceof TypeQueryExpr) {
+            this.inferRealGenericTypes(leftOpType.getGenerateTypes(), declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof TupleType) {
+            this.inferRealGenericTypes(leftOpType.getTypes(), declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof GenericType) {
+            this.inferGenericType([leftOpType], declaringArkClass);
+            type = leftOpType;
+        } else if (leftOpType instanceof AnnotationNamespaceType) {
+            type = this.inferBaseType(leftOpType.getOriginType(), declaringArkClass);
+        } else if (leftOpType instanceof UnclearReferenceType) {
+            type = this.inferUnclearRefType(leftOpType, declaringArkClass);
+        }
+        if (type) {
+            return type;
+        }
+        return TypeInference.inferUnclearComplexType(leftOpType, declaringArkClass, visited);
+    }
+
+    private static inferUnclearComplexType(leftOpType: Type, declaringArkClass: ArkClass, visited: Set<Type>): Type | undefined {
+        let type;
+        if (leftOpType instanceof UnionType || leftOpType instanceof IntersectionType || leftOpType instanceof TupleType) {
             let types = leftOpType.getTypes();
             for (let i = 0; i < types.length; i++) {
                 let newType = this.inferUnclearedType(types[i], declaringArkClass, visited);
@@ -168,7 +195,9 @@ export class TypeInference {
                 type = leftOpType;
             }
         } else if (leftOpType instanceof AliasType) {
-            let baseType = this.inferUnclearedType(leftOpType.getOriginalType(), declaringArkClass, visited);
+            const defArkClass = declaringArkClass.getDeclaringArkFile().getScene().getMethod(
+                leftOpType.getSignature().getDeclaringMethodSignature())?.getDeclaringArkClass();
+            let baseType = this.inferUnclearedType(leftOpType.getOriginalType(), defArkClass ?? declaringArkClass, visited);
             if (baseType) {
                 leftOpType.setOriginalType(baseType);
                 type = leftOpType;
@@ -179,16 +208,6 @@ export class TypeInference {
                 leftOpType.setOpType(baseType);
                 type = leftOpType;
             }
-        } else if (leftOpType instanceof TupleType) {
-            this.inferRealGenericTypes(leftOpType.getTypes(), declaringArkClass);
-            type = leftOpType;
-        } else if (leftOpType instanceof GenericType) {
-            this.inferGenericType([leftOpType], declaringArkClass);
-            type = leftOpType;
-        } else if (leftOpType instanceof AnnotationNamespaceType) {
-            type = this.inferBaseType(leftOpType.getOriginType(), declaringArkClass);
-        } else if (leftOpType instanceof UnclearReferenceType) {
-            type = this.inferUnclearRefType(leftOpType, declaringArkClass);
         }
         return type;
     }
@@ -350,7 +369,7 @@ export class TypeInference {
         }
     }
 
-    private static getLocalFromMethodBody(name: string, arkMethod: ArkMethod): Local | null {
+    public static getLocalFromMethodBody(name: string, arkMethod: ArkMethod): Local | null {
         const local = arkMethod?.getBody()?.getLocals().get(name);
         if (local) {
             return local;
@@ -375,7 +394,7 @@ export class TypeInference {
         } else if (arkExport instanceof ArkNamespace) {
             return AnnotationNamespaceType.getInstance(arkExport.getSignature());
         } else if (arkExport instanceof ArkMethod) {
-            return new FunctionType(arkExport.getSignature());
+            return new FunctionType(arkExport.getSignature(), arkExport.getGenericTypes());
         } else if (arkExport instanceof Local) {
             if (arkExport.getType() instanceof UnknownType || arkExport.getType() instanceof UnclearReferenceType) {
                 return null;
@@ -459,7 +478,7 @@ export class TypeInference {
         return leftType || null;
     }
 
-    private static setValueType(value: Value, type: Type): void {
+    public static setValueType(value: Value, type: Type): void {
         if (value instanceof Local || value instanceof ArkParameterRef) {
             value.setType(type);
         } else if (value instanceof AbstractFieldRef) {
@@ -474,10 +493,8 @@ export class TypeInference {
             return true;
         } else if (
             type instanceof ClassType &&
-            (type.getClassSignature().getDeclaringFileSignature().getFileName() === UNKNOWN_FILE_NAME ||
-                (type.getClassSignature().getClassName() === PROMISE && !type.getRealGenericTypes()) ||
-                (type.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
-                    type.getRealGenericTypes()?.find(t => t instanceof GenericType)))
+            (unknownFileName.includes(type.getClassSignature().getDeclaringFileSignature().getFileName()) ||
+                (type.getClassSignature().getClassName() === PROMISE && !type.getRealGenericTypes()))
         ) {
             return true;
         } else if (type instanceof UnionType || type instanceof IntersectionType || type instanceof TupleType) {
@@ -490,7 +507,8 @@ export class TypeInference {
         } else if (type instanceof KeyofTypeExpr) {
             return this.isUnclearType(type.getOpType());
         } else if (type instanceof TypeQueryExpr) {
-            return this.isUnclearType(type.getType());
+            return this.isUnclearType(type.getType()) ||
+                !!type.getGenerateTypes()?.find(t => this.checkType(t, e => e instanceof UnclearReferenceType || e instanceof GenericType));
         }
         return false;
     }
@@ -506,7 +524,7 @@ export class TypeInference {
         }
         if (check(type)) {
             return true;
-        } else if (type instanceof ClassType) {
+        } else if (type instanceof ClassType || type instanceof FunctionType) {
             return !!type.getRealGenericTypes()?.find(t => this.checkType(t, check, visited));
         } else if (type instanceof UnionType || type instanceof IntersectionType || type instanceof TupleType) {
             return !!type.getTypes().find(t => this.checkType(t, check, visited));
@@ -623,7 +641,7 @@ export class TypeInference {
         }
     }
 
-    private static inferReturnType(arkMethod: ArkMethod): Type | null {
+    public static inferReturnType(arkMethod: ArkMethod): Type | null {
         const typeMap: Map<string, Type> = new Map();
         for (let returnValue of arkMethod.getReturnValues()) {
             const type = returnValue.getType();
@@ -703,7 +721,7 @@ export class TypeInference {
         let type = null;
         for (let i = 0; i < singleNames.length; i++) {
             let genericName: string = EMPTY_STRING;
-            const name = singleNames[i].replace(/<(\w+)>/, (match, group1) => {
+            const name = singleNames[i].replace(/<(.+)>/, (match, group1) => {
                 genericName = group1;
                 return EMPTY_STRING;
             });
@@ -787,6 +805,7 @@ export class TypeInference {
             if (arkClass.getCategory() === ClassCategory.ENUM) {
                 propertyType = this.getEnumValueType(property);
             } else {
+                this.repairFieldType(property, arkClass);
                 propertyType = this.replaceTypeWithReal(property.getType(), baseType.getRealGenericTypes());
             }
         } else if (property) {
@@ -799,6 +818,16 @@ export class TypeInference {
             return fieldType ? [null, fieldType] : null;
         }
         return null;
+    }
+
+    private static repairFieldType(property: ArkField, arkClass: ArkClass): void {
+        const propertyType = property.getType();
+        if (TypeInference.isUnclearType(propertyType)) {
+            const newType = TypeInference.inferUnclearedType(propertyType, arkClass);
+            if (newType) {
+                property.getSignature().setType(newType);
+            }
+        }
     }
 
     public static getEnumValueType(property: ArkField): EnumValueType | null {
@@ -967,9 +996,8 @@ export class TypeInference {
     public static inferFunctionType(argType: FunctionType, paramSubSignature: MethodSubSignature | undefined, realTypes: Type[] | undefined): void {
         const returnType = argType.getMethodSignature().getMethodSubSignature().getReturnType();
         const declareType = paramSubSignature?.getReturnType();
-        if (declareType instanceof GenericType && realTypes && !realTypes[declareType.getIndex()] &&
-            !this.isUnclearType(returnType) && !(returnType instanceof VoidType)) {
-            realTypes[declareType.getIndex()] = returnType;
+        if (this.isUnclearType(returnType) && declareType && !this.isUnclearType(declareType)) {
+            argType.getMethodSignature().getMethodSubSignature().setReturnType(declareType);
         }
         const params = paramSubSignature?.getParameters();
         if (!params) {
@@ -1005,5 +1033,74 @@ export class TypeInference {
         if (returnType) {
             IRInference.inferRightWithSdkType(returnType, stmt.getOp().getType(), arkMethod.getDeclaringArkClass());
         }
+    }
+
+
+    public static isAnonType(argType: Type, projectName: string): boolean {
+        const isAnonClassType = argType instanceof ClassType &&
+            argType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX) &&
+            argType.getClassSignature().getDeclaringFileSignature().getProjectName() === projectName;
+        if (isAnonClassType) {
+            return true;
+        }
+        return argType instanceof FunctionType &&
+            argType.getMethodSignature().getMethodSubSignature().getMethodName().startsWith(ANONYMOUS_METHOD_PREFIX) &&
+            argType.getMethodSignature().getDeclaringClassSignature().getDeclaringFileSignature().getProjectName() === projectName;
+    }
+
+    public static isDummyClassType(rightType: Type): boolean {
+        return rightType instanceof ClassType &&
+            rightType.getClassSignature().getDeclaringFileSignature().getFileName() === Builtin.DUMMY_FILE_NAME &&
+            !!rightType.getRealGenericTypes()?.find(t => !(t instanceof GenericType));
+    }
+
+
+    public static isTypeCanBeOverride(type: Type): boolean {
+        if (type instanceof UnknownType || type instanceof NullType || type instanceof UndefinedType ||
+            type instanceof UnclearReferenceType || type instanceof GenericType) {
+            return true;
+        } else if (type instanceof ClassType) {
+            return !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof AliasType) {
+            return this.isTypeCanBeOverride(type.getOriginalType()) || !!type.getRealGenericTypes()?.find(r => this.isTypeCanBeOverride(r));
+        } else if (type instanceof ArrayType) {
+            return TypeInference.checkType(type.getBaseType(), t => t instanceof UnclearReferenceType || t instanceof GenericType);
+        }
+        return false;
+    }
+
+    public static union(type1: Type, type2: Type): Type {
+        const leftType = TypeInference.replaceAliasType(type1);
+        const rightType = TypeInference.replaceAliasType(type2);
+        if (this.isSameType(leftType, rightType) || TypeInference.checkType(rightType, t => t instanceof AnyType ||
+            (rightType instanceof ClassType && rightType.getClassSignature().getClassName().startsWith(ANONYMOUS_CLASS_PREFIX)))) {
+            return type1;
+        } else if (leftType instanceof FunctionType) {
+            return type1;
+        } else if (leftType instanceof UnionType) {
+            const isExist = leftType.getTypes().find(t => this.isSameType(t, rightType));
+            if (isExist) {
+                return type1;
+            }
+        } else if (leftType instanceof IntersectionType) {
+            const isExist = leftType.getTypes().find(t => !this.isSameType(t, rightType));
+            if (!isExist) {
+                return type1;
+            }
+        }
+        return new UnionType([type1, type2]);
+    }
+
+    public static isSameType(type1: Type, type2: Type): boolean {
+        if (type1 instanceof ClassType && type2 instanceof ClassType) {
+            return type1.getClassSignature() === type2.getClassSignature();
+        } else if (type1 instanceof LiteralType) {
+            return typeof type1.getLiteralName() === type2.toString();
+        } else if (type1 instanceof KeyofTypeExpr) {
+            return type2 instanceof KeyofTypeExpr || type2 instanceof StringType;
+        } else if (type1 instanceof TupleType) {
+            return type2 instanceof TupleType || type2 instanceof ArrayType;
+        }
+        return type1.constructor === type2.constructor;
     }
 }
