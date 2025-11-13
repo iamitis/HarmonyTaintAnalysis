@@ -125,6 +125,6 @@ export interface TestInterface {
     callf(): string
 }
 
-function genericFunction<T extends TestInterface>(a: T) {
-    a.callf()
+function genericFunction<T extends TestInterface>(a: T): void {
+    a.callf();
 }

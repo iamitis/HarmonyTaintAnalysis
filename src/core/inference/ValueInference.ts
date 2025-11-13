@@ -64,6 +64,7 @@ import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { ClassSignature } from '../model/ArkSignature';
 import { ImportInfo } from '../model/ArkImport';
 import { ArkField } from '../model/ArkField';
+import { Scene } from '../../Scene';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.ARKANALYZER, 'ValueInference');
 
@@ -409,6 +410,10 @@ export class InstanceInvokeExprInference extends ValueInference<ArkInstanceInvok
             }
         }
         const scene = arkMethod.getDeclaringArkFile().getScene();
+        return this.inferMethodFromBase(baseType, expr, scene, methodName);
+    }
+
+    public static inferMethodFromBase(baseType: Type, expr: AbstractInvokeExpr, scene: Scene, methodName: string): AbstractInvokeExpr | null {
         // Dispatch to appropriate inference method based on resolved base type
         if (baseType instanceof ClassType) {
             return IRInference.inferInvokeExprWithDeclaredClass(expr, baseType, methodName, scene);
