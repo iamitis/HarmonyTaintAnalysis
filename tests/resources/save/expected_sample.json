@@ -11,8 +11,7 @@
         "declaringFile": {
           "projectName": "save",
           "fileName": "sample.ts"
-        },
-        "declaringNamespace": null
+        }
       },
       "modifiers": 0,
       "decorators": [],
@@ -28,8 +27,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%dflt",
             "parameters": [],
@@ -50,8 +48,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -95,8 +92,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -109,8 +105,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -154,8 +149,8 @@
                 {
                   "id": 1,
                   "successors": [
-                    2,
-                    3
+                    3,
+                    2
                   ],
                   "predecessors": [
                     0,
@@ -212,8 +207,7 @@
                             "declaringFile": {
                               "projectName": "%unk",
                               "fileName": "%unk"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "readFileSync",
                           "parameters": [],
@@ -322,8 +316,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "simpleFunction",
             "parameters": [
@@ -361,8 +354,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -426,8 +418,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    1,
-                    4
+                    4,
+                    1
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -477,8 +469,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -491,8 +482,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -638,8 +628,8 @@
                 {
                   "id": 1,
                   "successors": [
-                    2,
-                    3
+                    3,
+                    2
                   ],
                   "predecessors": [
                     0,
@@ -843,8 +833,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "complexFunction",
             "parameters": [
@@ -890,8 +879,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -949,8 +937,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    1,
-                    7
+                    7,
+                    1
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -1017,8 +1005,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -1031,8 +1018,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -1178,12 +1164,12 @@
                 {
                   "id": 2,
                   "successors": [
-                    3,
-                    6
+                    6,
+                    3
                   ],
                   "predecessors": [
-                    1,
-                    7
+                    7,
+                    1
                   ],
                   "stmts": [
                     {
@@ -1215,8 +1201,8 @@
                 {
                   "id": 3,
                   "successors": [
-                    4,
-                    5
+                    5,
+                    4
                   ],
                   "predecessors": [
                     2
@@ -1252,9 +1238,9 @@
                   "id": 4,
                   "successors": [],
                   "predecessors": [
+                    6,
                     3,
-                    5,
-                    6
+                    5
                   ],
                   "stmts": [
                     {
@@ -1431,8 +1417,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "processInput",
             "parameters": [
@@ -1470,8 +1455,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -1519,8 +1503,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    1,
-                    4
+                    4,
+                    1
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -1569,8 +1553,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -1583,8 +1566,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -1629,8 +1611,8 @@
                 {
                   "id": 1,
                   "successors": [
-                    2,
-                    3
+                    3,
+                    2
                   ],
                   "predecessors": [
                     0
@@ -1886,8 +1868,7 @@
         "declaringFile": {
           "projectName": "save",
           "fileName": "sample.ts"
-        },
-        "declaringNamespace": null
+        }
       },
       "modifiers": 0,
       "decorators": [],
@@ -1902,8 +1883,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "name",
             "type": {
@@ -1922,8 +1902,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "age",
             "type": {
@@ -1944,8 +1923,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "greet",
             "parameters": [],
@@ -1964,8 +1942,7 @@
         "declaringFile": {
           "projectName": "save",
           "fileName": "sample.ts"
-        },
-        "declaringNamespace": null
+        }
       },
       "modifiers": 0,
       "decorators": [],
@@ -1982,8 +1959,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "name",
             "type": {
@@ -2002,8 +1978,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "age",
             "type": {
@@ -2022,8 +1997,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "grade",
             "type": {
@@ -2044,8 +2018,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%instInit",
             "parameters": [],
@@ -2066,8 +2039,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -2091,8 +2063,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -2105,8 +2076,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -2127,8 +2097,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "constructor",
             "parameters": [
@@ -2164,8 +2133,7 @@
                 "declaringFile": {
                   "projectName": "save",
                   "fileName": "sample.ts"
-                },
-                "declaringNamespace": null
+                }
               }
             }
           },
@@ -2182,8 +2150,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -2210,7 +2177,10 @@
               "blocks": [
                 {
                   "id": 0,
-                  "successors": [1, 2],
+                  "successors": [
+                    2,
+                    1
+                  ],
                   "predecessors": [],
                   "stmts": [
                     {
@@ -2276,8 +2246,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -2290,8 +2259,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -2310,8 +2278,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2321,8 +2288,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "%instInit",
                           "parameters": [],
@@ -2337,6 +2303,7 @@
                       "_": "IfStmt",
                       "condition": {
                         "_": "ConditionExpr",
+                        "op": "==",
                         "left": {
                           "_": "Local",
                           "name": "grade",
@@ -2344,13 +2311,12 @@
                             "_": "NumberType"
                           }
                         },
-                        "op": "==",
                         "right": {
                           "_": "Constant",
+                          "value": "undefined",
                           "type": {
                             "_": "UndefinedType"
-                          },
-                          "value": "undefined"
+                          }
                         },
                         "type": {
                           "_": "BooleanType"
@@ -2362,7 +2328,10 @@
                 {
                   "id": 1,
                   "successors": [],
-                  "predecessors": [0, 2],
+                  "predecessors": [
+                    2,
+                    0
+                  ],
                   "stmts": [
                     {
                       "_": "AssignStmt",
@@ -2378,8 +2347,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2389,8 +2357,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "name",
                           "type": {
@@ -2420,8 +2387,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2431,8 +2397,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "age",
                           "type": {
@@ -2462,8 +2427,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2473,8 +2437,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "grade",
                           "type": {
@@ -2502,8 +2465,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -2512,8 +2474,12 @@
                 },
                 {
                   "id": 2,
-                  "successors": [1],
-                  "predecessors": [0],
+                  "successors": [
+                    1
+                  ],
+                  "predecessors": [
+                    0
+                  ],
                   "stmts": [
                     {
                       "_": "AssignStmt",
@@ -2526,10 +2492,10 @@
                       },
                       "right": {
                         "_": "Constant",
+                        "value": "1",
                         "type": {
                           "_": "NumberType"
-                        },
-                        "value": "1"
+                        }
                       }
                     }
                   ]
@@ -2545,8 +2511,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "greet",
             "parameters": [],
@@ -2567,8 +2532,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -2640,8 +2604,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -2654,8 +2617,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -2681,8 +2643,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2692,8 +2653,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "name",
                           "type": {
@@ -2723,8 +2683,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -2734,8 +2693,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "age",
                           "type": {
@@ -2960,8 +2918,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "calculateGraduationYear",
             "parameters": [
@@ -2991,8 +2948,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -3057,8 +3013,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -3071,8 +3026,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3098,8 +3052,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -3109,8 +3062,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "grade",
                           "type": {
@@ -3198,8 +3150,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%statInit",
             "parameters": [],
@@ -3220,8 +3171,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -3245,8 +3195,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -3259,8 +3208,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3282,8 +3230,7 @@
         "declaringFile": {
           "projectName": "save",
           "fileName": "sample.ts"
-        },
-        "declaringNamespace": null
+        }
       },
       "modifiers": 32,
       "decorators": [],
@@ -3299,8 +3246,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%instInit",
             "parameters": [],
@@ -3321,8 +3267,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -3346,8 +3291,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -3360,8 +3304,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3382,8 +3325,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "area",
             "parameters": [],
@@ -3401,8 +3343,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "perimeter",
             "parameters": [],
@@ -3420,8 +3361,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "description",
             "parameters": [],
@@ -3442,8 +3382,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -3509,8 +3448,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -3523,8 +3461,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3550,8 +3487,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -3561,8 +3497,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "area",
                           "parameters": [],
@@ -3594,8 +3529,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -3605,8 +3539,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "perimeter",
                           "parameters": [],
@@ -3814,8 +3747,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "constructor",
             "parameters": [],
@@ -3826,8 +3758,7 @@
                 "declaringFile": {
                   "projectName": "save",
                   "fileName": "sample.ts"
-                },
-                "declaringNamespace": null
+                }
               }
             }
           },
@@ -3844,8 +3775,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -3869,8 +3799,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -3883,8 +3812,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3903,8 +3831,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -3914,8 +3841,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "%instInit",
                           "parameters": [],
@@ -3938,8 +3864,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -3957,8 +3882,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%statInit",
             "parameters": [],
@@ -3979,8 +3903,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -4004,8 +3927,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -4018,8 +3940,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4041,8 +3962,7 @@
         "declaringFile": {
           "projectName": "save",
           "fileName": "sample.ts"
-        },
-        "declaringNamespace": null
+        }
       },
       "modifiers": 0,
       "decorators": [],
@@ -4057,8 +3977,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "radius",
             "type": {
@@ -4079,8 +3998,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%instInit",
             "parameters": [],
@@ -4101,8 +4019,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -4126,8 +4043,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -4140,8 +4056,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4162,8 +4077,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "constructor",
             "parameters": [
@@ -4183,8 +4097,7 @@
                 "declaringFile": {
                   "projectName": "save",
                   "fileName": "sample.ts"
-                },
-                "declaringNamespace": null
+                }
               }
             }
           },
@@ -4201,8 +4114,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -4249,8 +4161,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -4263,8 +4174,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4283,8 +4193,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4294,20 +4203,18 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "constructor",
                           "parameters": [],
                           "returnType": {
                             "_": "ClassType",
-                            "signature":{
+                            "signature": {
                               "name": "Shape",
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4328,8 +4235,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4339,8 +4245,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "%instInit",
                           "parameters": [],
@@ -4365,8 +4270,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4376,8 +4280,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "radius",
                           "type": {
@@ -4405,8 +4308,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4424,8 +4326,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "area",
             "parameters": [],
@@ -4446,8 +4347,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -4501,8 +4401,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -4515,8 +4414,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4542,8 +4440,7 @@
                               "declaringFile": {
                                 "projectName": "built-in",
                                 "fileName": "lib.es5.d.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4553,8 +4450,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "PI",
                           "type": {
@@ -4584,8 +4480,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4595,8 +4490,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "radius",
                           "type": {
@@ -4654,8 +4548,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4665,8 +4558,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "radius",
                           "type": {
@@ -4726,8 +4618,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "perimeter",
             "parameters": [],
@@ -4748,8 +4639,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               },
@@ -4797,8 +4687,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -4811,8 +4700,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -4838,8 +4726,7 @@
                               "declaringFile": {
                                 "projectName": "built-in",
                                 "fileName": "lib.es5.d.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4849,8 +4736,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "PI",
                           "type": {
@@ -4908,8 +4794,7 @@
                               "declaringFile": {
                                 "projectName": "save",
                                 "fileName": "sample.ts"
-                              },
-                              "declaringNamespace": null
+                              }
                             }
                           }
                         },
@@ -4919,8 +4804,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "radius",
                           "type": {
@@ -4980,8 +4864,7 @@
               "declaringFile": {
                 "projectName": "save",
                 "fileName": "sample.ts"
-              },
-              "declaringNamespace": null
+              }
             },
             "name": "%statInit",
             "parameters": [],
@@ -5002,8 +4885,7 @@
                     "declaringFile": {
                       "projectName": "save",
                       "fileName": "sample.ts"
-                    },
-                    "declaringNamespace": null
+                    }
                   }
                 }
               }
@@ -5027,8 +4909,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       },
@@ -5041,8 +4922,7 @@
                             "declaringFile": {
                               "projectName": "save",
                               "fileName": "sample.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           }
                         }
                       }
@@ -5061,106 +4941,57 @@
   ],
   "importInfos": [
     {
-      "importClauseName": "readFileSync",
+      "importName": "readFileSync",
       "importType": "NamedImports",
       "importFrom": "fs",
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 17,
-        "col": 10
-      }
+      "modifiers": 0
     }
   ],
   "exportInfos": [
     {
-      "exportClauseName": "Person",
-      "exportClauseType": 1,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "Person",
+      "exportType": 1,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "Student",
-      "exportClauseType": 1,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "Student",
+      "exportType": 1,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "Shape",
-      "exportClauseType": 1,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "Shape",
+      "exportType": 1,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "Circle",
-      "exportClauseType": 1,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "Circle",
+      "exportType": 1,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "simpleFunction",
-      "exportClauseType": 2,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "simpleFunction",
+      "exportType": 2,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "complexFunction",
-      "exportClauseType": 2,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "complexFunction",
+      "exportType": 2,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "sum",
-      "exportClauseType": 3,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "sum",
+      "exportType": 3,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "fileContent",
-      "exportClauseType": 3,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "fileContent",
+      "exportType": 3,
+      "modifiers": 0
     },
     {
-      "exportClauseName": "processInput",
-      "exportClauseType": 2,
-      "isDefault": false,
-      "modifiers": 0,
-      "originTsPosition": {
-        "line": 149,
-        "col": 1
-      }
+      "exportName": "processInput",
+      "exportType": 2,
+      "modifiers": 0
     }
   ]
 }
