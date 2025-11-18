@@ -434,7 +434,7 @@ export function serializeCfg(cfg: Cfg): CfgDto {
         }
     });
 
-    return { blocks }
+    return { blocks };
 }
 
 export function serializeBasicBlock(block: BasicBlock): BasicBlockDto {
