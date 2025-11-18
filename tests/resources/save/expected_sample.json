@@ -149,12 +149,12 @@
                 {
                   "id": 1,
                   "successors": [
-                    3,
-                    2
+                    2,
+                    3
                   ],
                   "predecessors": [
                     0,
-                    3
+                    2
                   ],
                   "stmts": [
                     {
@@ -185,61 +185,6 @@
                 },
                 {
                   "id": 2,
-                  "successors": [],
-                  "predecessors": [
-                    1
-                  ],
-                  "stmts": [
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "fileContent",
-                        "type": {
-                          "_": "StringType"
-                        }
-                      },
-                      "right": {
-                        "_": "StaticCallExpr",
-                        "method": {
-                          "declaringClass": {
-                            "name": "",
-                            "declaringFile": {
-                              "projectName": "%unk",
-                              "fileName": "%unk"
-                            }
-                          },
-                          "name": "readFileSync",
-                          "parameters": [],
-                          "returnType": {
-                            "_": "UnknownType"
-                          }
-                        },
-                        "args": [
-                          {
-                            "_": "Constant",
-                            "value": "dummy.txt",
-                            "type": {
-                              "_": "StringType"
-                            }
-                          },
-                          {
-                            "_": "Constant",
-                            "value": "utf8",
-                            "type": {
-                              "_": "StringType"
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "_": "ReturnVoidStmt"
-                    }
-                  ]
-                },
-                {
-                  "id": 3,
                   "successors": [
                     1
                   ],
@@ -302,6 +247,61 @@
                           }
                         }
                       }
+                    }
+                  ]
+                },
+                {
+                  "id": 3,
+                  "successors": [],
+                  "predecessors": [
+                    1
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "fileContent",
+                        "type": {
+                          "_": "StringType"
+                        }
+                      },
+                      "right": {
+                        "_": "StaticCallExpr",
+                        "method": {
+                          "declaringClass": {
+                            "name": "",
+                            "declaringFile": {
+                              "projectName": "%unk",
+                              "fileName": "%unk"
+                            }
+                          },
+                          "name": "readFileSync",
+                          "parameters": [],
+                          "returnType": {
+                            "_": "UnknownType"
+                          }
+                        },
+                        "args": [
+                          {
+                            "_": "Constant",
+                            "value": "dummy.txt",
+                            "type": {
+                              "_": "StringType"
+                            }
+                          },
+                          {
+                            "_": "Constant",
+                            "value": "utf8",
+                            "type": {
+                              "_": "StringType"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "_": "ReturnVoidStmt"
                     }
                   ]
                 }
@@ -418,8 +418,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    4,
-                    1
+                    1,
+                    2
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -628,12 +628,40 @@
                 {
                   "id": 1,
                   "successors": [
-                    3,
                     2
                   ],
                   "predecessors": [
-                    0,
+                    0
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "sum",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "Constant",
+                        "value": "100",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 2,
+                  "successors": [
+                    3,
                     4
+                  ],
+                  "predecessors": [
+                    0,
+                    1
                   ],
                   "stmts": [
                     {
@@ -663,10 +691,38 @@
                   ]
                 },
                 {
-                  "id": 2,
+                  "id": 3,
+                  "successors": [
+                    4
+                  ],
+                  "predecessors": [
+                    2
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "difference",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "Constant",
+                        "value": "0",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 4,
                   "successors": [],
                   "predecessors": [
-                    1,
+                    2,
                     3
                   ],
                   "stmts": [
@@ -759,62 +815,6 @@
                       "arg": {
                         "_": "Local",
                         "name": "result",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
-                  "id": 3,
-                  "successors": [
-                    2
-                  ],
-                  "predecessors": [
-                    1
-                  ],
-                  "stmts": [
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "difference",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "Constant",
-                        "value": "0",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
-                  "id": 4,
-                  "successors": [
-                    1
-                  ],
-                  "predecessors": [
-                    0
-                  ],
-                  "stmts": [
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "sum",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "Constant",
-                        "value": "100",
                         "type": {
                           "_": "NumberType"
                         }
@@ -937,8 +937,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    7,
-                    1
+                    1,
+                    2
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -1069,7 +1069,102 @@
                 {
                   "id": 1,
                   "successors": [
-                    2
+                    3
+                  ],
+                  "predecessors": [
+                    0
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "%0",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "BinopExpr",
+                        "op": "*",
+                        "left": {
+                          "_": "Local",
+                          "name": "a",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        },
+                        "right": {
+                          "_": "Local",
+                          "name": "b",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "%1",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "BinopExpr",
+                        "op": "-",
+                        "left": {
+                          "_": "Local",
+                          "name": "a",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        },
+                        "right": {
+                          "_": "Local",
+                          "name": "b",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "result",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "BinopExpr",
+                        "op": "+",
+                        "left": {
+                          "_": "Local",
+                          "name": "%0",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        },
+                        "right": {
+                          "_": "Local",
+                          "name": "%1",
+                          "type": {
+                            "_": "NumberType"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 2,
+                  "successors": [
+                    3
                   ],
                   "predecessors": [
                     0
@@ -1162,14 +1257,14 @@
                   ]
                 },
                 {
-                  "id": 2,
+                  "id": 3,
                   "successors": [
-                    6,
-                    3
+                    4,
+                    5
                   ],
                   "predecessors": [
-                    7,
-                    1
+                    1,
+                    2
                   ],
                   "stmts": [
                     {
@@ -1199,13 +1294,41 @@
                   ]
                 },
                 {
-                  "id": 3,
+                  "id": 4,
                   "successors": [
-                    5,
-                    4
+                    7
                   ],
                   "predecessors": [
-                    2
+                    3
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "result",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "Constant",
+                        "value": "100",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 5,
+                  "successors": [
+                    6,
+                    7
+                  ],
+                  "predecessors": [
+                    3
                   ],
                   "stmts": [
                     {
@@ -1235,33 +1358,12 @@
                   ]
                 },
                 {
-                  "id": 4,
-                  "successors": [],
-                  "predecessors": [
-                    6,
-                    3,
-                    5
-                  ],
-                  "stmts": [
-                    {
-                      "_": "ReturnStmt",
-                      "arg": {
-                        "_": "Local",
-                        "name": "result",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
-                  "id": 5,
+                  "id": 6,
                   "successors": [
-                    4
+                    7
                   ],
                   "predecessors": [
-                    3
+                    5
                   ],
                   "stmts": [
                     {
@@ -1284,123 +1386,21 @@
                   ]
                 },
                 {
-                  "id": 6,
-                  "successors": [
-                    4
-                  ],
-                  "predecessors": [
-                    2
-                  ],
-                  "stmts": [
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "result",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "Constant",
-                        "value": "100",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
                   "id": 7,
-                  "successors": [
-                    2
-                  ],
+                  "successors": [],
                   "predecessors": [
-                    0
+                    4,
+                    5,
+                    6
                   ],
                   "stmts": [
                     {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "%0",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "BinopExpr",
-                        "op": "*",
-                        "left": {
-                          "_": "Local",
-                          "name": "a",
-                          "type": {
-                            "_": "NumberType"
-                          }
-                        },
-                        "right": {
-                          "_": "Local",
-                          "name": "b",
-                          "type": {
-                            "_": "NumberType"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "%1",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "BinopExpr",
-                        "op": "-",
-                        "left": {
-                          "_": "Local",
-                          "name": "a",
-                          "type": {
-                            "_": "NumberType"
-                          }
-                        },
-                        "right": {
-                          "_": "Local",
-                          "name": "b",
-                          "type": {
-                            "_": "NumberType"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "_": "AssignStmt",
-                      "left": {
+                      "_": "ReturnStmt",
+                      "arg": {
                         "_": "Local",
                         "name": "result",
                         "type": {
                           "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "BinopExpr",
-                        "op": "+",
-                        "left": {
-                          "_": "Local",
-                          "name": "%0",
-                          "type": {
-                            "_": "NumberType"
-                          }
-                        },
-                        "right": {
-                          "_": "Local",
-                          "name": "%1",
-                          "type": {
-                            "_": "NumberType"
-                          }
                         }
                       }
                     }
@@ -1503,8 +1503,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    4,
-                    1
+                    1,
+                    2
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -1610,9 +1610,99 @@
                 },
                 {
                   "id": 1,
+                  "successors": [],
+                  "predecessors": [
+                    0
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "%0",
+                        "type": {
+                          "_": "StringType"
+                        }
+                      },
+                      "right": {
+                        "_": "InstanceCallExpr",
+                        "instance": {
+                          "_": "Local",
+                          "name": "input",
+                          "type": {
+                            "_": "UnionType",
+                            "types": [
+                              {
+                                "_": "StringType"
+                              },
+                              {
+                                "_": "NumberType"
+                              }
+                            ]
+                          }
+                        },
+                        "method": {
+                          "declaringClass": {
+                            "name": "String",
+                            "declaringFile": {
+                              "projectName": "built-in",
+                              "fileName": "lib.es5.d.ts"
+                            }
+                          },
+                          "name": "toString",
+                          "parameters": [],
+                          "returnType": {
+                            "_": "StringType"
+                          }
+                        },
+                        "args": []
+                      }
+                    },
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "%1",
+                        "type": {
+                          "_": "StringType"
+                        }
+                      },
+                      "right": {
+                        "_": "BinopExpr",
+                        "op": "+",
+                        "left": {
+                          "_": "Constant",
+                          "value": "String input: ",
+                          "type": {
+                            "_": "StringType"
+                          }
+                        },
+                        "right": {
+                          "_": "Local",
+                          "name": "%0",
+                          "type": {
+                            "_": "StringType"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "_": "ReturnStmt",
+                      "arg": {
+                        "_": "Local",
+                        "name": "%1",
+                        "type": {
+                          "_": "StringType"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 2,
                   "successors": [
                     3,
-                    2
+                    4
                   ],
                   "predecessors": [
                     0
@@ -1656,29 +1746,10 @@
                   ]
                 },
                 {
-                  "id": 2,
-                  "successors": [],
-                  "predecessors": [
-                    1
-                  ],
-                  "stmts": [
-                    {
-                      "_": "ReturnStmt",
-                      "arg": {
-                        "_": "Constant",
-                        "value": "Unknown input",
-                        "type": {
-                          "_": "StringType"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
                   "id": 3,
                   "successors": [],
                   "predecessors": [
-                    1
+                    2
                   ],
                   "stmts": [
                     {
@@ -1713,8 +1784,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "toString",
                           "parameters": [],
@@ -1769,86 +1839,14 @@
                   "id": 4,
                   "successors": [],
                   "predecessors": [
-                    0
+                    2
                   ],
                   "stmts": [
                     {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "%0",
-                        "type": {
-                          "_": "StringType"
-                        }
-                      },
-                      "right": {
-                        "_": "InstanceCallExpr",
-                        "instance": {
-                          "_": "Local",
-                          "name": "input",
-                          "type": {
-                            "_": "UnionType",
-                            "types": [
-                              {
-                                "_": "StringType"
-                              },
-                              {
-                                "_": "NumberType"
-                              }
-                            ]
-                          }
-                        },
-                        "method": {
-                          "declaringClass": {
-                            "name": "String",
-                            "declaringFile": {
-                              "projectName": "built-in",
-                              "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
-                          },
-                          "name": "toString",
-                          "parameters": [],
-                          "returnType": {
-                            "_": "StringType"
-                          }
-                        },
-                        "args": []
-                      }
-                    },
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "%1",
-                        "type": {
-                          "_": "StringType"
-                        }
-                      },
-                      "right": {
-                        "_": "BinopExpr",
-                        "op": "+",
-                        "left": {
-                          "_": "Constant",
-                          "value": "String input: ",
-                          "type": {
-                            "_": "StringType"
-                          }
-                        },
-                        "right": {
-                          "_": "Local",
-                          "name": "%0",
-                          "type": {
-                            "_": "StringType"
-                          }
-                        }
-                      }
-                    },
-                    {
                       "_": "ReturnStmt",
                       "arg": {
-                        "_": "Local",
-                        "name": "%1",
+                        "_": "Constant",
+                        "value": "Unknown input",
                         "type": {
                           "_": "StringType"
                         }
@@ -2178,8 +2176,8 @@
                 {
                   "id": 0,
                   "successors": [
-                    2,
-                    1
+                    1,
+                    2
                   ],
                   "predecessors": [],
                   "stmts": [
@@ -2327,9 +2325,37 @@
                 },
                 {
                   "id": 1,
+                  "successors": [
+                    2
+                  ],
+                  "predecessors": [
+                    0
+                  ],
+                  "stmts": [
+                    {
+                      "_": "AssignStmt",
+                      "left": {
+                        "_": "Local",
+                        "name": "grade",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      },
+                      "right": {
+                        "_": "Constant",
+                        "value": "1",
+                        "type": {
+                          "_": "NumberType"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 2,
                   "successors": [],
                   "predecessors": [
-                    2,
+                    1,
                     0
                   ],
                   "stmts": [
@@ -2467,34 +2493,6 @@
                               "fileName": "sample.ts"
                             }
                           }
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
-                  "id": 2,
-                  "successors": [
-                    1
-                  ],
-                  "predecessors": [
-                    0
-                  ],
-                  "stmts": [
-                    {
-                      "_": "AssignStmt",
-                      "left": {
-                        "_": "Local",
-                        "name": "grade",
-                        "type": {
-                          "_": "NumberType"
-                        }
-                      },
-                      "right": {
-                        "_": "Constant",
-                        "value": "1",
-                        "type": {
-                          "_": "NumberType"
                         }
                       }
                     }
@@ -2726,8 +2724,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "toString",
                           "parameters": [],
@@ -2762,8 +2759,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "toString",
                           "parameters": [
@@ -3574,8 +3570,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "toString",
                           "parameters": [
@@ -3619,8 +3614,7 @@
                             "declaringFile": {
                               "projectName": "built-in",
                               "fileName": "lib.es5.d.ts"
-                            },
-                            "declaringNamespace": null
+                            }
                           },
                           "name": "toString",
                           "parameters": [
