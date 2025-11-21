@@ -429,7 +429,7 @@ export function serializeCfg(cfg: Cfg): CfgDto {
 
     // Check that block IDs match their indices in the array:
     blocks.forEach((block, index) => {
-        if (block.id != index) {
+        if (block.id !== index) {
             console.warn(`Block ID ${block.id} does not match its index ${index} in serialized CFG blocks array`);
         }
     });
