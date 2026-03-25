@@ -1,0 +1,78 @@
+{
+    "sources": [
+        {
+            "methodName": "getDeviceId",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "string",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "getIMEI",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "number",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "getIMSI",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "number",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "getLongitude",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "number",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "getLastKnownLocation",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "AppLocation",
+            "isStatic": true,
+            "paramIndex": -1
+        }
+    ],
+    "sinks": [
+        {
+            "methodName": "publish",
+            "declaringClass": {},
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "publishInt",
+            "declaringClass": {},
+            "parameterTypes": ["number"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "publishBoolean",
+            "declaringClass": {},
+            "parameterTypes": ["boolean"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "publishDouble",
+            "declaringClass": {},
+            "parameterTypes": ["number"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        }
+    ]
+}

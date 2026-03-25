@@ -1,0 +1,71 @@
+{
+    "sources": [
+        {
+            "methodName": "sourceField",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "string",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "simpleSource",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "string",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "sourceArray",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "Array<number>",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "sourceNum",
+            "declaringClass": {},
+            "parameterTypes": [],
+            "returnType": "number",
+            "isStatic": false,
+            "paramIndex": -1
+        }
+    ],
+    "sinks": [
+        
+        {
+            "methodName": "sinkField",
+            "declaringClass": {},
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "simpleSink",
+            "declaringClass": {},
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "sinkArray",
+            "declaringClass": {},
+            "parameterTypes": ["Array<number>"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        },
+        {
+            "methodName": "sinkArrayNum",
+            "declaringClass": {},
+            "parameterTypes": ["number"],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [0]
+        }
+    ]
+}
