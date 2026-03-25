@@ -6,6 +6,7 @@ import { FactKillingStatus, Rule } from "./Rule";
 import { SinkRule } from "./SinkRule";
 import { SourceRule } from "./SourceRule";
 import { LHSOverwrittenRule } from "./LHSOverwrittenRule";
+import { TaintedInstanceInvokeRule } from "./TaintedInstanceInvokeRule";
 
 export class RuleManager {
     private rules: Set<Rule> = new Set();
@@ -23,6 +24,7 @@ export class RuleManager {
         this.addRule(new SourceRule(this.ifdsManager));
         this.addRule(new SinkRule(this.ifdsManager));
         this.addRule(new LHSOverwrittenRule(this.ifdsManager));
+        this.addRule(new TaintedInstanceInvokeRule(this.ifdsManager));
     }
 
     public addRule(rule: Rule) {
