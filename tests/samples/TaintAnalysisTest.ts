@@ -63,13 +63,16 @@ function harmonyTest() {
 }
 
 // 测试 IFDS
-const IFDS_DIR = './tests/resources/taintAnalysis/debug';
+const DEBUG_DIR = './tests/resources/taintAnalysis/debug';
+const DEBUG_DEFINITION_FILE = './tests/resources/taintAnalysis/debug/SourceSinkDefinition.json';
+const UNIT_DIR = './tests/resources/taintAnalysis';
+const UNIT_DEFINITION_FILE = './tests/resources/taintAnalysis/SourceSinkDefinition.json';
 function ifdsTest() {
-    const scene = buildDirectoryScene(IFDS_DIR);
+    const scene = buildDirectoryScene(UNIT_DIR);
     const taintAnalysisConfig = new TaintAnalysisConfig();
     taintAnalysisConfig.projectType = TaintAnalysisProjectType.Directory;
     taintAnalysisConfig.sourceAndSinkConfig = {
-        definitionFilePath: '/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/debug/SourceSinkDefinition.json',
+        definitionFilePath: UNIT_DEFINITION_FILE,
         definitionFileType: SourceAndSinkFileType.JSON
     }
 
@@ -96,18 +99,37 @@ function ifdsTest() {
     // findMethodAndTest('testFieldAlias10');
     // findMethodAndTest('testFieldAlias11');
     // findMethodAndTest('testFieldAlias12'); // 未通过
+    // findMethodAndTest('testFieldAlias13');
+    // findMethodAndTest('testFieldAlias14');
+    // findMethodAndTest('testFieldAlias15');
+    // findMethodAndTest('functionAliasTest');
     // findMethodAndTest('arrayTest1');
     // findMethodAndTest('arrayTest2');
     // findMethodAndTest('arrayTest3');
     // findMethodAndTest('arrayTest4');
-    findMethodAndTest('arrayTest5');
+    // findMethodAndTest('arrayTest5');
     // findMethodAndTest('arrayAliasTest1');
     // findMethodAndTest('arrayAliasTest2');
+    // findMethodAndTest('debugOverwriteBaseObjectTest2');
+    // findMethodAndTest('debugMultiLevelTaint');
+    // findMethodAndTest('debugSimpleTest');
+    // findMethodAndTest('debugReturnAliasTest');
+    // findMethodAndTest('debugTwoLevelTest');
+    // findMethodAndTest('debugTestAliases');
+    // findMethodAndTest('debugNegativeTest');
+    // findMethodAndTest('debugFunctionAliasTest');
+    // findMethodAndTest('debugFieldBaseOverwriteTest');
+    // findMethodAndTest('debugDoubleAliasTest');
+    // findMethodAndTest('debugUnAliasParameterTest');
+    // findMethodAndTest('debugCallSiteCreatesAlias');
+    // findMethodAndTest('debugOverwriteInCalleeTest2');
+    // findMethodAndTest('debugSummaryTest1');
+    // findMethodAndTest('debugOverwriteAliasedVariableTest5');
+    findMethodAndTest('debugLhsNotUpwardsInAliasFlow');
 
     function findMethodAndTest(methodName: string) {
         const method = scene.getMethods().find((method) => method.getName() === methodName);
         if (method) {
-            printCFG(method);
             taintAnalysisConfig.methodToBeAnalyzed = method;
             taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
             const setup = new TaintAnalysis(scene, taintAnalysisConfig);
@@ -118,6 +140,7 @@ function ifdsTest() {
                 console.log(res.toString());
             });
             console.log(`------------------ ${methodName} Taint Analysis Result End ------------------`);
+            printCFG(method);
         }
     }
 }

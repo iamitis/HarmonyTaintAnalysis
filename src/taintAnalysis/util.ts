@@ -1,4 +1,4 @@
-import { AbstractBinopExpr } from "../core/base/Expr";
+import { AbstractBinopExpr, ArkCastExpr } from "../core/base/Expr";
 import { Local } from "../core/base/Local";
 import { AbstractFieldRef, ArkArrayRef } from "../core/base/Ref";
 import { Value } from "../core/base/Value";
@@ -9,9 +9,14 @@ import { Value } from "../core/base/Value";
 export function getBaseValues(value: Value): Value[] {
     // TODO: 检查完善更多类型
     if (value instanceof AbstractBinopExpr) {
+        // a * b
         return value.getUses();
     } else if (value instanceof ArkArrayRef) {
+        // a[i]
         return [value.getBase()];
+    } else if (value instanceof ArkCastExpr) {
+        // a as string
+        return value.getUses();
     }
     return [value];
 }

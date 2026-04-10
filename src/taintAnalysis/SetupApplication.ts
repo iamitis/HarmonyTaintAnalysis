@@ -8,14 +8,15 @@ import { fetchDependenciesFromFile } from "../utils/json5parser";
 import { LOG_MODULE_TYPE } from "../utils/logger";
 import { Callback, CallbackCollector } from "./CallbackCollector";
 import { ComponentCollector, RouterMap } from "./ComponentCollector";
-import { TaintProblem } from "./ifds/TaintProblem";
-import { TaintSolver } from "./ifds/TaintSolver";
+import { TaintProblem } from "./ifds/problem/TaintProblem";
+import { TaintSolver } from "./ifds/solver/TaintSolver";
 import { HarmonyMainMethodCreater } from "./mainMethodCreaters/HarmonyMainMethodCreater";
 import path from 'path';
 import fs from 'fs';
 import { SourceSinkManager } from "./sourcesAndSinks/SourceSinkManager";
 import { AliasingStrategy, IFDSConfig } from "./config/IFDSConfig";
 import { IFDSManager } from "./ifds/IFDSManager";
+import { SolverPeerGroup } from "./ifds/solver/SolverPeerGroup";
 import { SourceAndSinkFileType, TaintAnalysisConfig, TaintAnalysisProjectType } from "./config/TaintAnalysisConfig";
 import { SourceToSinkInfo } from "./results/TaintAnalysisResult";
 
@@ -340,14 +341,18 @@ export class TaintAnalysis {
         try {
             const ifdsManager = new IFDSManager(this.taintAnalysisConfig.ifdsConfig);
             ifdsManager.setSourceSinkManager(this.sourceSinkManager);
+            // 创建共享的 solver 对等组, 前向/后向 solver 共享 incoming 表
+            const peerGroup = new SolverPeerGroup();
             // 正向分析
             const taintProblem = new TaintProblem(this.dummyMain, ifdsManager);
-            const taintSolver = new TaintSolver(taintProblem, this.scene, ifdsManager);
+            const taintSolver = new TaintSolver(taintProblem, this.scene, ifdsManager, peerGroup);
             ifdsManager.setForwardSolver(taintSolver);
+            peerGroup.addSolver(taintSolver);
             // 别名分析
             const aliasProblem = new AliasProblem(ifdsManager, this.dummyMain);
-            const aliasSolver = new AliasSolver(aliasProblem, this.scene, ifdsManager);
+            const aliasSolver = new AliasSolver(aliasProblem, this.scene, ifdsManager, peerGroup);
             ifdsManager.setBackwardSolver(aliasSolver);
+            peerGroup.addSolver(aliasSolver);
             switch (this.taintAnalysisConfig.ifdsConfig.aliasingStrategy) {
                 case AliasingStrategy.FlowSensitive:
                     const flowSensitiveAliasStrategy = new FlowSensitiveAliasStrategy(ifdsManager);

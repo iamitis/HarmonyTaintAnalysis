@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
-import { Stmt } from '../../core/base/Stmt';
-import { Value } from '../../core/base/Value';
-import { Local } from '../../core/base/Local';
-import { ArkMethod } from '../../core/model/ArkMethod';
-import { TaintFact } from './TaintFact';
-import { AccessPath } from './AccessPath';
-import { IFDSManager } from './IFDSManager';
-import { IAliasingStrategy } from './aliasing/IAliasingStrategy';
-import { NullAliasStrategy } from './aliasing/NullAliasStrategy';
-import { FlowSensitiveAliasStrategy } from './aliasing/FlowSensitiveAliasStrategy';
-import { AbstractFieldRef, ArkInstanceFieldRef, ArkStaticFieldRef, ArkArrayRef } from '../../core/base/Ref';
-import { PrimitiveType } from '../../core/base/Type';
-import { PointerAnalysis } from '../../callgraph/pointerAnalysis/PointerAnalysis';
-import { LOG_MODULE_TYPE, Logger, NodeID, PagNode } from '../..';
+import { Stmt } from '../../../core/base/Stmt';
+import { Value } from '../../../core/base/Value';
+import { Local } from '../../../core/base/Local';
+import { ArkMethod } from '../../../core/model/ArkMethod';
+import { TaintFact } from '../TaintFact';
+import { AccessPath } from '../AccessPath';
+import { IFDSManager } from '../IFDSManager';
+import { IAliasingStrategy } from './IAliasingStrategy';
+import { NullAliasStrategy } from './NullAliasStrategy';
+import { FlowSensitiveAliasStrategy } from './FlowSensitiveAliasStrategy';
+import { AbstractFieldRef, ArkInstanceFieldRef, ArkStaticFieldRef, ArkArrayRef } from '../../../core/base/Ref';
+import { PrimitiveType } from '../../../core/base/Type';
+import { PointerAnalysis } from '../../../callgraph/pointerAnalysis/PointerAnalysis';
+import { LOG_MODULE_TYPE, Logger, NodeID, PagNode, PathEdgePoint } from '../../..';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'Aliasing');
 
@@ -73,7 +73,7 @@ export class Aliasing {
     /**
      * 寻找污点的别名
      * 
-     * @param ctxFact 方法入口点的抽象
+     * @param ctxNode 方法上下文
      * @param taintingStmt 当前语句（别名分析的起点）
      * @param taintedValue 目标值（被污染的变量）
      * @param taintSet 污点集合（用于收集结果）
@@ -81,19 +81,19 @@ export class Aliasing {
      * @param newFact 新创建的污点抽象
      */
     public computeAliases(
-        ctxFact: TaintFact,
+        ctxNode: PathEdgePoint<TaintFact>,
         taintingStmt: Stmt,
         taintedValue: Value,
         taintSet: Set<TaintFact>,
         method: ArkMethod,
         newFact: TaintFact
     ): void {
-        if (!Aliasing.canHaveAliases(taintedValue)) {
+        if (!Aliasing.canHaveAliases(newFact)) {
             return;
         }
 
-        if (!ctxFact.getVariable().isEmpty()) {
-            this.aliasingStrategy.computeAliasTaints(ctxFact, taintingStmt, taintedValue, taintSet, method, newFact);
+        if (!ctxNode.fact.getAccessPath().isEmpty()) {
+            this.aliasingStrategy.computeAliasTaints(ctxNode, taintingStmt, taintedValue, taintSet, method, newFact);
         } else {
             // TODO: 寻找隐式污点别名
         }
@@ -102,17 +102,16 @@ export class Aliasing {
     /**
      * 判断受污变量是否可能有别名
      * 某些类型的值不可能有别名（如基本类型）
-     * @param variable 受污变量
      */
-    public static canHaveAliases(variable: Value): boolean {
-        if (variable instanceof ArkStaticFieldRef) {
-            if (variable.getType() instanceof PrimitiveType) {
+    public static canHaveAliases(fact: TaintFact): boolean {
+        if (fact.getAccessPath().isStaticFieldRef()) {
+            if (fact.getAccessPath().getBaseType() instanceof PrimitiveType) {
                 return false;
             }
             return true;
         }
 
-        if (variable instanceof ArkInstanceFieldRef || variable instanceof ArkArrayRef) {
+        if (fact.getAccessPath().isInstanceFieldRef() || fact.getAccessPath().isArrayTaintedByElement()) {
             return true;
         }
 
@@ -164,41 +163,10 @@ export class Aliasing {
     }
 
     /**
-     * 判断两个值是否可能别名
-     * TODO: 删除或修改这个方法, 方法不完善且方法名有歧义
-     */
-    public mayAlias(val1: Value, val2: Value): boolean {
-        if (!AccessPath.canContainValue(val1) || !AccessPath.canContainValue(val2)) {
-            return false;
-        }
-
-        if (val1 === val2) {
-            return true;
-        }
-
-        // 创建 AccessPath 并使用策略判断
-        const ap1 = AccessPath.createAccessPath(val1);
-        const ap2 = AccessPath.createAccessPath(val2);
-
-        if (ap1 && ap2) {
-            return this.aliasingStrategy.mayAlias(ap1, ap2);
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断两个访问路径是否可能别名
-     */
-    public mayAliasAccessPath(ap1: AccessPath, ap2: AccessPath): boolean {
-        return this.aliasingStrategy.mayAlias(ap1, ap2);
-    }
-
-    /**
      * 判断 value 和 fact 是否是同一个变量, 或 value 是否包含 fact (如 value=a.f, fact=a.f.g)
      */
     public static baseMatches(value: Value, fact: TaintFact): boolean {
-        const ap = fact.getVariable();
+        const ap = fact.getAccessPath();
 
         if (value instanceof Local) {
             return value === ap.getBase();
@@ -219,7 +187,7 @@ export class Aliasing {
             return false;
         }
 
-        const ap = fact.getVariable();
+        const ap = fact.getAccessPath();
 
         if (value instanceof Local) {
             return ap.isLocal();

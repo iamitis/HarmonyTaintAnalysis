@@ -16,7 +16,7 @@
 import { MethodSignature, ClassSignature, FieldSignature, FileSignature, NamespaceSignature, MethodSubSignature } from '../../core/model/ArkSignature';
 import { MethodParameter } from '../../core/model/builder/ArkMethodBuilder';
 import { TypeInference } from '../../core/common/TypeInference';
-import { Type, ArrayType, UnclearReferenceType } from '../../core/base/Type';
+import { Type, ArrayType, UnclearReferenceType, ClassType } from '../../core/base/Type';
 import { SourceDefinition, SinkDefinition, SourceSinkType } from './SourceSinkDefinition';
 import { MethodSourceDefinition, MethodSinkDefinition } from './matchers/MethodMatcher';
 import { FieldSourceDefinition, FieldSinkDefinition, FieldAccessType } from './matchers/FieldMatcher';
@@ -43,12 +43,13 @@ export interface NamespaceSignatureJson {
 
 /**
  * JSON 定义文件中 ClassSignature 的格式
+ * 支持对象形式或字符串形式（如 "@projectName/fileName:ClassName" 或 "@projectName/fileName:Namespace.ClassName"）
  */
-export interface ClassSignatureJson {
+export type ClassSignatureJson = {
     className: string;
     fileSignature: FileSignatureJson;
     namespace?: NamespaceSignatureJson | null;
-}
+} | string;
 
 /**
  * JSON 定义文件中方法签名的通用格式
@@ -193,9 +194,16 @@ export class SourceSinkDefinitionFactory {
 
     /**
      * 从 JSON 格式构建 ClassSignature
+     * 支持对象形式或字符串形式（如 "@projectName/fileName:ClassName" 或 "@projectName/fileName:Namespace.ClassName"）
      * 当 declaringClass 为空对象或缺少必要字段时，返回 ClassSignature.DEFAULT 作为通配符
      */
     private static buildClassSignatureFromJson(json: ClassSignatureJson): ClassSignature {
+        // 处理字符串形式: "@projectName/fileName:ClassName" 或 "@projectName/fileName:Namespace.ClassName"
+        if (typeof json === 'string') {
+            return this.parseClassSignatureString(json);
+        }
+
+        // 处理对象形式
         if (!json || !json.className || !json.fileSignature) {
             return ClassSignature.DEFAULT;
         }
@@ -207,6 +215,52 @@ export class SourceSinkDefinitionFactory {
             ? this.buildNamespaceSignatureFromJson(json.namespace, fileSignature)
             : null;
         return new ClassSignature(json.className, fileSignature, namespaceSignature);
+    }
+
+    /**
+     * 解析类签名字符串
+     * 格式: "@projectName/fileName:ClassName" 或 "@projectName/fileName:Namespace.ClassName"
+     * @param classSigStr 类签名字符串
+     * @returns ClassSignature 实例
+     */
+    private static parseClassSignatureString(classSigStr: string): ClassSignature {
+        // 格式: @projectName/fileName:ClassName 或 @projectName/fileName:Namespace.ClassName
+        const match = classSigStr.match(/^@([^/]+)\/([^:]+):(.+)$/);
+        if (!match) {
+            logger.error(`Invalid class signature format: ${classSigStr}`);
+            return ClassSignature.DEFAULT;
+        }
+
+        const [, projectName, fileName, fullClassName] = match;
+        const fileSignature = new FileSignature(projectName, fileName);
+
+        // 处理命名空间: Namespace.ClassName
+        const classParts = fullClassName.split('.');
+        const className = classParts.pop()!; // 最后一部分是类名
+
+        if (classParts.length > 0) {
+            // 有命名空间，构建命名空间链
+            const namespaceSignature = this.buildNamespaceChain(classParts, fileSignature);
+            return new ClassSignature(className, fileSignature, namespaceSignature);
+        }
+
+        // 无命名空间
+        return new ClassSignature(className, fileSignature, null);
+    }
+
+    /**
+     * 构建命名空间链
+     * @param namespaceParts 命名空间部分数组
+     * @param fileSignature 文件签名
+     * @returns 最内层的 NamespaceSignature
+     */
+    private static buildNamespaceChain(namespaceParts: string[], fileSignature: FileSignature): NamespaceSignature {
+        // 从外到内构建命名空间链
+        let parentNs: NamespaceSignature | null = null;
+        for (const nsName of namespaceParts) {
+            parentNs = new NamespaceSignature(nsName, fileSignature, parentNs);
+        }
+        return parentNs!;
     }
 
     /**
@@ -250,14 +304,24 @@ export class SourceSinkDefinitionFactory {
 
     /**
      * 增强型类型字符串解析，包装 TypeInference.buildTypeFromStr
-     * 在调用原方法前先处理数组类型、泛型 Array 语法和通用泛型语法
+     * 在调用原方法前先处理类签名、数组类型、泛型 Array 语法和通用泛型语法
      * @param typeStr 类型字符串
      * @returns 解析后的 Type 实例
      */
     private static buildEnhancedTypeFromStr(typeStr: string): Type {
         const trimmed = typeStr.trim();
 
-        // 1. 数组后缀语法：T[], T[][], ...
+        // 1. 类签名字符串：@projectName/fileName:ClassName 或 @projectName/fileName:Namespace.ClassName
+        if (trimmed.startsWith('@')) {
+            const classSignature = this.parseClassSignatureString(trimmed);
+            if (classSignature !== ClassSignature.DEFAULT) {
+                return new ClassType(classSignature);
+            }
+            // 解析失败，回退到原始方法
+            return TypeInference.buildTypeFromStr(trimmed);
+        }
+
+        // 2. 数组后缀语法：T[], T[][], ...
         if (trimmed.endsWith('[]')) {
             let dimension = 0;
             let base = trimmed;
@@ -269,14 +333,14 @@ export class SourceSinkDefinitionFactory {
             return new ArrayType(baseType, dimension);
         }
 
-        // 2. 泛型 Array 语法：Array<T>
+        // 3. 泛型 Array 语法：Array<T>
         if (trimmed.startsWith('Array<') && trimmed.endsWith('>')) {
             const inner = trimmed.slice(6, -1).trim();
             const elementType = this.buildEnhancedTypeFromStr(inner);
             return new ArrayType(elementType, 1);
         }
 
-        // 3. 通用泛型语法：TypeName<T1, T2, ...>
+        // 4. 通用泛型语法：TypeName<T1, T2, ...>
         const angleBracketIdx = trimmed.indexOf('<');
         if (angleBracketIdx > 0 && trimmed.endsWith('>')) {
             const typeName = trimmed.slice(0, angleBracketIdx).trim();
@@ -286,7 +350,7 @@ export class SourceSinkDefinitionFactory {
             return new UnclearReferenceType(typeName, parsedGenericTypes);
         }
 
-        // 4. 回退：调用原始方法
+        // 5. 回退：调用原始方法
         return TypeInference.buildTypeFromStr(trimmed);
     }
 

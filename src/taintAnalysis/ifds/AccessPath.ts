@@ -32,7 +32,7 @@ export class AccessPath {
     }
 
     public getBaseType(): Type {
-        return NullType.getInstance();
+        return this.base?.getType() ?? NullType.getInstance();
     }
 
     public isLocal(): boolean {
@@ -63,8 +63,8 @@ export class AccessPath {
 
     /**
      * 判断 accessPath 所指向的变量是否是 value 或者 value 的字段
-     * @param value 
-     * @param accessPath 
+     * 如:
+     * value: a, accessPath: b.v
      * @returns 若匹配则返回匹配的 accessPath，否则返回 undefined
      */
     public isContainedByValue(value: Value): AccessPath | undefined {

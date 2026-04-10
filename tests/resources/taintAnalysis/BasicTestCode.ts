@@ -1,85 +1,4 @@
-class LocationManager {
-    static getLongitude(): number {
-        return 3.1415;
-    }
-
-    static getLastKnownLocation(): AppLocation {
-        return new AppLocation();
-    }
-}
-
-class AppLocation {
-    private longitude: number = 0;
-    private latitude: number = 0;
-
-    constructor();
-    constructor(longitude: number, latitude: number);
-    constructor(longitude?: number, latitude?: number) {
-        if (longitude !== undefined && latitude !== undefined) {
-            this.longitude = longitude;
-            this.latitude = latitude;
-        }
-    }
-
-    getLongitude(): number {
-        return this.longitude;
-    }
-
-    getLatitude(): number {
-        return this.latitude;
-    }
-
-    clear(): AppLocation {
-        this.longitude = 0;
-        this.latitude = 0;
-        return this;
-    }
-
-    clearLongitude(): AppLocation {
-        this.longitude = 0;
-        return new AppLocation();
-    }
-
-    setLongitude(longitude: number): void {
-        this.longitude = longitude;
-    }
-}
-
-class TelephonyManager {
-    static getDeviceId(): string {
-        return "I1t359-f";
-    }
-
-    static getIMEI(): number {
-        return 123;
-    }
-
-    static getIMSI(): number {
-        return 321;
-    }
-}
-
-class ConnectionManager {
-    publish(str: string): void {
-        console.log(str);
-    }
-
-    publishInt(i: number): void {
-        console.log(i.toString());
-    }
-
-    publishBoolean(b: boolean): void {
-        console.log(b.toString());
-    }
-
-    publishDouble(dbl: number): void {
-        console.log(dbl.toString());
-    }
-}
-
-class IntegerRef {
-    value: number = 0;
-}
+import { AppLocation, ConnectionManager, LocationManager, TelephonyManager, IntegerRef } from "./UtilClasses";
 
 /**
  * Test 1: Parameter overwritten in callee
@@ -209,7 +128,7 @@ class BasicTestCode {
     private increment(i: number): number {
         return i + 1;
     }
-    
+
     /**
      * Test 8: Basic alias test
      * Source: TelephonyManager.getIMEI() returns tainted integer
@@ -222,7 +141,7 @@ class BasicTestCode {
         let i: IntegerRef = new IntegerRef();
         let j: IntegerRef = i;
         j.value = TelephonyManager.getIMEI();
-    
+
         let cm: ConnectionManager = new ConnectionManager();
         cm.publishInt(i.value);
     }

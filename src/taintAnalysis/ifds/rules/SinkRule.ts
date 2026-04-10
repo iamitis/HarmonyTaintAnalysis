@@ -4,6 +4,7 @@ import { ArkInstanceInvokeExpr } from "../../../core/base/Expr";
 import { TaintFact } from "../TaintFact";
 import { AbstractRule, FactKillingStatus } from "./Rule";
 import { FactAtSink } from "../FactAtSink";
+import { Aliasing } from "../aliasing/Aliasing";
 
 /**
  * Sink 规则：检测污点是否到达 sink 点
@@ -26,7 +27,7 @@ export class SinkRule extends AbstractRule {
         }
 
         // 检查是否是静态字段引用
-        if (fact.getVariable().isStaticFieldRef()) {
+        if (fact.getAccessPath().isStaticFieldRef()) {
             return;
         }
 
@@ -101,7 +102,7 @@ export class SinkRule extends AbstractRule {
             }
 
             // 检查是否匹配：本地变量或字段污染
-            const matches = fact.getVariable().isLocal() || this.factHasTaintSubFields(fact);
+            const matches = fact.getAccessPath().isLocal() || this.factHasTaintSubFields(fact);
 
             if (matches && fact.isActive()) {
                 const sinkDef = sourceSinkManager.getSinkIfIs(returnStmt);
@@ -144,7 +145,7 @@ export class SinkRule extends AbstractRule {
         const uses = stmt.getUses();
         for (const use of uses) {
             // 检查是否可能别名
-            if (this.mayAlias(use, fact.getVariable())) {
+            if (this.mayAlias(use, fact.getAccessPath())) {
                 const sinkDef = sourceSinkManager.getSinkIfIs(stmt);
                 if (sinkDef) {
                     const sinkKey = this.getSinkKey(stmt, fact);
@@ -166,10 +167,10 @@ export class SinkRule extends AbstractRule {
     /**
      * 检查污点在被调用方法中是否可见
      * @param stmt 调用语句
-     * @param source 污点 fact
+     * @param fact 污点 fact
      * @return 如果被调用方法可以访问污点值返回 true，否则返回 false
      */
-    private isTaintVisibleInCallee(stmt: Stmt, source: TaintFact): boolean {
+    private isTaintVisibleInCallee(stmt: Stmt, fact: TaintFact): boolean {
         const aliasing = this.getIfdsManager().getAliasing();
         if (!aliasing) {
             return false;
@@ -180,12 +181,10 @@ export class SinkRule extends AbstractRule {
             return false;
         }
 
-        const sourceBase = source.getVariable().getBase();
 
-        if (sourceBase) {
             // 检查参数是否被污染
             for (const arg of invokeExpr.getArgs()) {
-                if (this.getIfdsManager().getAliasing()?.mayAlias(arg, sourceBase)) {
+                if (Aliasing.baseMatches(arg, fact)) {
                     // TODO: 非 Local 判断 taintSubFields
                     return true;
                 }
@@ -194,13 +193,10 @@ export class SinkRule extends AbstractRule {
             // 检查基对象是否被污染（仅对实例调用有效）
             if (invokeExpr instanceof ArkInstanceInvokeExpr) {
                 const base = invokeExpr.getBase();
-                if (sourceBase) {
-                    if (this.getIfdsManager().getAliasing()?.mayAlias(base, sourceBase)) {
-                        return true;
-                    }
+                if (Aliasing.baseMatches(base, fact)) {
+                    return true;
                 }
             }
-        }
 
         return false;
     }
@@ -230,7 +226,7 @@ export class SinkRule extends AbstractRule {
      */
     private factHasTaintSubFields(fact: TaintFact): boolean {
         // TODO: 实现更完整的检查
-        return fact.getVariable().isInstanceFieldRef();
+        return fact.getAccessPath().isInstanceFieldRef();
     }
 
     /**
@@ -239,7 +235,7 @@ export class SinkRule extends AbstractRule {
     private getSinkKey(stmt: Stmt, fact: TaintFact): string {
         const lineNo = stmt.getOriginPositionInfo().getLineNo();
         const colNo = stmt.getOriginPositionInfo().getColNo();
-        const variable = fact.getVariable().toString();
+        const variable = fact.getAccessPath().toString();
         return `${lineNo}_${colNo}_${variable}`
     }
 

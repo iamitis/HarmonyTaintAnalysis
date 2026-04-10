@@ -29,7 +29,7 @@ export class SourceRule extends AbstractRule {
             if (sourceDefinition) {
                 const newAP = AccessPath.createAccessPath(srcStmt.getLeftOp());
                 if (newAP) {
-                    const newFact = TaintFact.createSourceFact(newAP, sourceDefinition, srcStmt);
+                    const newFact = TaintFact.createSourceFact(newAP, srcStmt.getLeftOp(), sourceDefinition, srcStmt);
                     result.add(newFact);
                 }
             }

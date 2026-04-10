@@ -1,4 +1,5 @@
-import { LOG_MODULE_TYPE, Logger } from '../..';
+import { LOG_MODULE_TYPE, Logger, Value } from '../..';
+import { NullConstant } from '../../core/base/Constant';
 import { Stmt } from '../../core/base/Stmt';
 import { SourceDefinition } from '../sourcesAndSinks/SourceSinkDefinition';
 import { AccessPath } from './AccessPath';
@@ -15,8 +16,11 @@ export class TaintFact {
     /** 流敏感别名分析的全局开关 */
     protected static flowSensitiveAliasing: boolean = true;
 
-    /** 承载变量（访问路径） */
-    private variable: AccessPath;
+    /** 受污变量名 */
+    private accessPath: AccessPath;
+
+    /** 受污染的变量 */
+    private taintedVar: Value;
 
     /* 污染变量的语句 */
     private taintingStmt?: Stmt;
@@ -44,16 +48,17 @@ export class TaintFact {
     /** 是否依赖于被截断的访问路径 */
     private dependsOnCutAPFlag: boolean = false;
 
-    constructor(variable: AccessPath, taintingStmt?: Stmt) {
-        this.variable = variable;
+    constructor(accessPath: AccessPath, taintedVar: Value, taintingStmt?: Stmt) {
+        this.accessPath = accessPath;
+        this.taintedVar = taintedVar;
         this.taintingStmt = taintingStmt;
     }
 
     /**
      * 创建被 source definition 直接污染的 fact
      */
-    public static createSourceFact(variable: AccessPath, sourceDefinition: SourceDefinition, taintingStmt: Stmt) {
-        const sourceFact = new TaintFact(variable, taintingStmt);
+    public static createSourceFact(accessPath: AccessPath, taintedVar: Value, sourceDefinition: SourceDefinition, taintingStmt: Stmt) {
+        const sourceFact = new TaintFact(accessPath, taintedVar, taintingStmt);
         sourceFact.sourceDefinition = sourceDefinition;
         return sourceFact;
     }
@@ -61,13 +66,13 @@ export class TaintFact {
     /**
      * 创建由旧污点产生的新污点, 如赋值语句传递的污点
      */
-    public deriveWithNewAccessPath(variable: AccessPath, taintingStmt: Stmt): TaintFact | undefined {
+    public deriveWithNewAccessPath(accessPath: AccessPath, taintedVar: Value, taintingStmt: Stmt): TaintFact | undefined {
         if (this.isZeroFact()) {
             logger.warn('Creating normal fact from zero fact');
             return undefined;
         }
 
-        const newFact = new TaintFact(variable, taintingStmt);
+        const newFact = new TaintFact(accessPath, taintedVar, taintingStmt);
         newFact.sourceDefinition = this.sourceDefinition;
         newFact.preTaintFact = this;
         newFact.active = this.active;
@@ -95,7 +100,7 @@ export class TaintFact {
             return this;
         }
 
-        const newFact = new TaintFact(this.variable, this.taintingStmt);
+        const newFact = new TaintFact(this.accessPath, this.taintedVar, this.taintingStmt);
         newFact.sourceDefinition = this.sourceDefinition;
         newFact.preTaintFact = this.preTaintFact;
         newFact.active = false;
@@ -123,28 +128,9 @@ export class TaintFact {
      * 创建零值 Fact（IFDS 的特殊初始 fact）
      */
     public static createZeroFact(): TaintFact {
-        const zeroFact = new TaintFact(AccessPath.getZeroAccessPath(), undefined);
+        const zeroFact = new TaintFact(AccessPath.getZeroAccessPath(), NullConstant.getInstance(), undefined);
         zeroFact.isZero = true;
         return zeroFact;
-    }
-
-    /**
-     * 派生新的污点抽象
-     * @param newVariable 新的访问路径
-     * @param currentStmt 当前语句（用于更新来源）
-     */
-    public deriveNewAbstraction(newVariable: AccessPath, currentStmt?: Stmt): TaintFact | null {
-        if (!newVariable) {
-            return null;
-        }
-        const newFact = new TaintFact(newVariable, this.taintingStmt);
-        // 继承激活状态
-        newFact.activationStmt = this.activationStmt;
-        // 继承后支配点栈
-        newFact.postdominators = this.postdominators ? [...this.postdominators] : undefined;
-        // 继承截断标志
-        newFact.dependsOnCutAPFlag = this.dependsOnCutAPFlag;
-        return newFact;
     }
 
     /**
@@ -155,7 +141,7 @@ export class TaintFact {
         if (this.isActive()) {
             return this;
         }
-        const copy = new TaintFact(this.variable, this.taintingStmt);
+        const copy = new TaintFact(this.accessPath, this.taintedVar, this.taintingStmt);
         copy.sourceDefinition = this.sourceDefinition;
         copy.preTaintFact = this.preTaintFact;
         copy.activationStmt = this.activationStmt;
@@ -171,8 +157,8 @@ export class TaintFact {
     /**
      * 获取被污染的值（访问路径）
      */
-    public getVariable(): AccessPath {
-        return this.variable;
+    public getAccessPath(): AccessPath {
+        return this.accessPath;
     }
 
     public getSourceDefinition(): SourceDefinition | undefined {
@@ -195,6 +181,10 @@ export class TaintFact {
      */
     public getActivationStmt(): Stmt | undefined {
         return this.activationStmt;
+    }
+
+    public getTaintedVar(): Value {
+        return this.taintedVar;
     }
 
     /**
@@ -228,35 +218,47 @@ export class TaintFact {
 
     /**
      * 判断两个 Fact 是否相等
-     * TODO: 完善或移除
+     *
+     * 相等性基于 fact 的语义身份，即：
+     * 1. accessPath — 标识被污染的变量/字段
+     * 2. activationStmt — 区分不同激活条件的非活跃抽象
+     * 3. active — 区分同一 activationStmt 下的未激活与已激活状态
+     *
+     * 溯源信息（taintingStmt、sourceDefinition、preTaintFact）和
+     * 辅助分析状态（postdominators、dependsOnCutAPFlag）不参与相等性判断。
      */
     public equals(other: TaintFact): boolean {
+        // 引用相等快速路径
+        if (this === other) {
+            return true;
+        }
+
+        if (!other) {
+            return false;
+        }
+
+        // 零值 fact：所有零值 fact 互相相等
         if (this.isZero && other.isZero) {
             return true;
         }
-        if (this.isZero || other.isZero) {
+        if (this.isZero !== other.isZero) {
             return false;
         }
-        // 比较访问路径
-        if (!this.variableEquals(other.variable)) {
+
+        // 核心身份：访问路径
+        if (!this.accessPath.equals(other.accessPath)) {
             return false;
         }
-        // 比较激活单元
+
+        // 激活状态：activationStmt 区分不同激活条件，active 区分激活前后
         if (this.activationStmt !== other.activationStmt) {
             return false;
         }
-        return true;
-    }
-
-    /**
-     * 比较两个访问路径是否相等
-     */
-    private variableEquals(other: AccessPath): boolean {
-        if (!this.variable || !other) {
-            return this.variable === other;
+        if (this.active !== other.active) {
+            return false;
         }
-        // 简化比较：直接比较对象引用或字符串表示
-        return this.variable === other || this.variable.toString() === other.toString();
+
+        return true;
     }
 
     /**
@@ -267,8 +269,8 @@ export class TaintFact {
             return 0;
         }
         let hash = 1;
-        if (this.variable) {
-            hash = hash * 31 + this.hashString(this.variable.toString());
+        if (this.accessPath) {
+            hash = hash * 31 + this.hashString(this.accessPath.toString());
         }
         if (this.activationStmt) {
             hash = hash * 31 + this.hashString(this.activationStmt.toString());
@@ -294,6 +296,6 @@ export class TaintFact {
             return 'ZERO';
         }
         const activeStatus = this.isActive() ? '' : `[inactive@${this.activationStmt?.toString() ?? ''}]`;
-        return `TaintFact(${this.variable?.toString()}${activeStatus})`;
+        return `TaintFact(${this.accessPath?.toString()}${activeStatus})`;
     }
 }

@@ -1,13 +1,9 @@
-import { Aliasing } from "./Aliasing";
-import { AliasingStrategy, IFDSConfig } from "../config/IFDSConfig";
+import { Aliasing } from "./aliasing/Aliasing";
+import { IFDSConfig } from "../config/IFDSConfig";
 import { SourceSinkManager } from "../sourcesAndSinks/SourceSinkManager";
-import { DataflowSolver } from "../../core/dataflow/DataflowSolver";
-import { TaintFact } from "./TaintFact";
-import { FlowSensitiveAliasStrategy } from "./aliasing/FlowSensitiveAliasStrategy";
 import { FactAtSink } from "./FactAtSink";
-import { AliasSolver } from "./AliasSolver";
-import { AliasProblem } from "./AliasProblem";
-import { TaintSolver } from "./TaintSolver";
+import { AliasSolver } from "./solver/AliasSolver";
+import { TaintSolver } from "./solver/TaintSolver";
 
 export interface IFDSResult {
     toString(): string;

@@ -17,7 +17,7 @@ describe('Basic Taint Analysis Test', () => {
 
     beforeAll(() => {
         // 初始化 log4js，开启 console 输出，日志级别设为 DEBUG
-        // ConsoleLogger.configure('', LOG_LEVEL.DEBUG, LOG_LEVEL.DEBUG, false);
+        ConsoleLogger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.DEBUG, false);
 
         // Build scene from test resources
         const config: SceneConfig = new SceneConfig();
@@ -94,6 +94,9 @@ describe('Basic Taint Analysis Test', () => {
         expect(method).toBeDefined();
 
         const results = runTaintAnalysis(method!);
+        printCFG(method!);
+        const method2 = getMethodByName('calleeOverwrite');
+        printCFG(method2!);
         expect(results.size).toBe(0);
     });
 
@@ -105,8 +108,6 @@ describe('Basic Taint Analysis Test', () => {
     it('overwriteInCalleeTest2 - should find leak (parameter overwritten to null)', () => {
         const method = getMethodByName('overwriteInCalleeTest2');
         expect(method).toBeDefined();
-
-        printCFG(method!);
 
         const results = runTaintAnalysis(method!);
         expect(results.size).toBeGreaterThan(0);

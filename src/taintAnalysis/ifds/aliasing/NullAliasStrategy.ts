@@ -19,6 +19,7 @@ import { ArkMethod } from '../../../core/model/ArkMethod';
 import { TaintFact } from '../TaintFact';
 import { AccessPath } from '../AccessPath';
 import { IAliasingStrategy } from './IAliasingStrategy';
+import { PathEdgePoint } from '../../../core/dataflow/Edge';
 
 /**
  * 空别名分析策略
@@ -30,49 +31,13 @@ export class NullAliasStrategy implements IAliasingStrategy {
      * 计算别名污点 - 空实现
      */
     public computeAliasTaints(
-        d1: TaintFact, 
-        src: Stmt, 
-        targetValue: Value, 
+        ctxNode: PathEdgePoint<TaintFact>, 
+        taintingStmt: Stmt, 
+        taintedValue: Value, 
         taintSet: Set<TaintFact>, 
         method: ArkMethod, 
-        newAbs: TaintFact
+        newFact: TaintFact
     ): void {
         // 不进行别名分析，什么都不做
-    }
-    
-    /**
-     * 注入调用上下文 - 空实现
-     */
-    public injectCallingContext(
-        d3: TaintFact, 
-        forwardSolver: unknown, 
-        callee: ArkMethod,
-        callSite: Stmt, 
-        source: TaintFact, 
-        d1: TaintFact
-    ): void {
-        // 不进行上下文注入，什么都不做
-    }
-    
-    /**
-     * 是否是流敏感的别名分析
-     */
-    public isFlowSensitive(): boolean {
-        return false;
-    }
-    
-    /**
-     * 判断两个访问路径是否可能别名
-     * 简化实现：只有完全相同才认为可能别名
-     */
-    public mayAlias(ap1: AccessPath, ap2: AccessPath): boolean {
-        return ap1 === ap2;
-    }
-    
-    /**
-     * 是否是交互式别名算法
-     */
-    public isInteractive(): boolean {
-        return false;
     }
 }

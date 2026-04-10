@@ -10,7 +10,7 @@ import { AbstractRule, FactKillingStatus } from "./Rule";
  * 这里简单地将 x 设为污点
  * 要扩展更多策略, 参考 FlowDroid 的 TaintWrapper 和 WrapperPropagationRule
  */
-export class TaintedInstanceInvokeRule extends AbstractRule{
+export class TaintedInstanceInvokeRule extends AbstractRule {
     /**
      * @override
      */
@@ -19,7 +19,7 @@ export class TaintedInstanceInvokeRule extends AbstractRule{
 
         if (invokeExpr && invokeExpr instanceof ArkInstanceInvokeExpr) {
             // 若 base 是污点, 不进入 callee
-            if (fact.getVariable().getBase() === invokeExpr.getBase()) {
+            if (fact.getAccessPath().isLocal() && fact.getAccessPath().getBase() === invokeExpr.getBase()) {
                 factKillingStatus.killAllFacts = true;
             }
         }
@@ -37,11 +37,13 @@ export class TaintedInstanceInvokeRule extends AbstractRule{
 
         if (invokeExpr && invokeExpr instanceof ArkInstanceInvokeExpr) {
             // 若 base 是污点, 将 lhs 设为污点
-            if (fact.getVariable().getBase() === invokeExpr.getBase()) {
+            if (fact.getAccessPath().isLocal() &&
+                fact.getAccessPath().getBase() === invokeExpr.getBase()
+            ) {
                 const lhs = srcStmt.getLeftOp();
                 const newAP = AccessPath.createAccessPath(lhs);
                 if (newAP) {
-                    const newFact = fact.deriveWithNewAccessPath(newAP, srcStmt);
+                    const newFact = fact.deriveWithNewAccessPath(newAP, lhs, srcStmt);
                     newFact && result.add(newFact);
                 }
             }

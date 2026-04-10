@@ -72,7 +72,7 @@ export class SourceToSinkInfo {
         }
 
         const sinkDef = factAtSinks.sink;
-        const sourceAtSink = factAtSinks.fact.getVariable();
+        const sourceAtSink = factAtSinks.fact.getAccessPath();
         const sinkStmt = factAtSinks.sinkStmt;
         const taintingStmtOfTaintAtSink = factAtSinks.fact.getTaintingStmt();
         if (taintingStmtOfTaintAtSink === undefined) {
@@ -86,7 +86,7 @@ export class SourceToSinkInfo {
         let currFact = factAtSinks.fact;
         while (currFact.getPreTaintFact() !== undefined) {
             const pre = currFact.getPreTaintFact()!;
-            preTaints.push(pre.getVariable());
+            preTaints.push(pre.getAccessPath());
             if (pre.getTaintingStmt() !== undefined) {
                 propagationStmts.push(pre.getTaintingStmt()!);
             } else {

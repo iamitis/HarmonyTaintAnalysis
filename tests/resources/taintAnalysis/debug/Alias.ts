@@ -153,7 +153,69 @@ function testFieldAlias12() {
     const p = new Parent();
     const c = new Child();
     p.parentField = c;
-    c.childField = sourceField();
+    c.childField = sourceField(); // 未激活, 杀
     c.childField = 'c';
     sinkField(p.parentField.childField)
+}
+
+/**
+ * 后向寻找别名, 适时杀死污点
+ */
+function testFieldAlias13() {
+    const c = new Child();
+    const p3 = new Parent();
+    const p2 = p3;
+    p2.parentField = c;
+    p3.parentField = new Child(); // 未激活, 杀
+    c.childField = sourceField();
+    sinkField(p2.parentField.childField);
+}
+
+class Grand {
+    grandField: Parent;
+}
+
+/**
+ * 未激活, 不杀
+ */
+function testFieldAlias14() {
+    const g = new Grand();
+    const p = new Parent();
+    const c = new Child();
+
+    g.grandField = p;
+    p.parentField = c;
+    p.parentField.childField = 'pc'; // 未激活, 不杀
+
+    c.childField = sourceField();
+    sinkField(g.grandField.parentField.childField);
+}
+
+/**
+ * 未激活, 杀
+ */
+function testFieldAlias15() {
+    const g = new Grand();
+    const p = new Parent();
+    const c = new Child();
+
+    g.grandField = p;
+    p.parentField = c;
+    p.parentField = new Child(); // 未激活, 杀
+
+    c.childField = sourceField();
+    sinkField(g.grandField.parentField.childField);
+}
+
+function functionAliasTest(): void {
+    const tainted = sourceField();
+    const dc1 = new Child();
+    const dc2 = new Child();
+    dc1.childField = tainted;
+    this.copy(dc1, dc2);
+    sinkField(dc2.childField);
+}
+
+function copy(pdc1: Child, pdc2: Child): void {
+    pdc2.childField = pdc1.childField;
 }
