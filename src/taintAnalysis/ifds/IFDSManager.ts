@@ -4,6 +4,8 @@ import { SourceSinkManager } from "../sourcesAndSinks/SourceSinkManager";
 import { FactAtSink } from "./FactAtSink";
 import { AliasSolver } from "./solver/AliasSolver";
 import { TaintSolver } from "./solver/TaintSolver";
+import { ArkMethod } from "../../core/model/ArkMethod";
+import { FieldSignature } from "../../core/model/ArkSignature";
 
 export interface IFDSResult {
     toString(): string;
@@ -73,5 +75,29 @@ export class IFDSManager {
 
     public getResults(): Map<string, FactAtSink> {
         return this.factAtSinks;
+    }
+
+    /**
+     * 判断某个方法是否读取了指定的静态字段
+     * TODO: 可基于 DefUseChain 实现精确判断，目前保守返回 true
+     * @param method 被调用的方法
+     * @param field 静态字段签名
+     * @returns 是否读取了该静态字段
+     */
+    public isStaticFieldRead(method: ArkMethod, field: FieldSignature): boolean {
+        // 保守实现：假设所有方法都可能读取静态字段
+        return true;
+    }
+
+    /**
+     * 判断某个方法是否使用（读或写）了指定的静态字段
+     * TODO: 可基于 DefUseChain 实现精确判断，目前保守返回 true
+     * @param method 被调用的方法
+     * @param field 静态字段签名
+     * @returns 是否使用了该静态字段
+     */
+    public isStaticFieldUsed(method: ArkMethod, field: FieldSignature): boolean {
+        // 保守实现：假设所有方法都可能使用静态字段
+        return true;
     }
 }

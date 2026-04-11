@@ -1,8 +1,8 @@
 export class IFDSConfig {
 
-    staticFieldTrackingMode: StaticFieldTrackingMode = StaticFieldTrackingMode.None;
+    staticFieldTrackingMode: StaticFieldTrackingMode = StaticFieldTrackingMode.ContextFlowSensitive;
 
-    aliasingStrategy: AliasingStrategy = AliasingStrategy.None;
+    aliasingStrategy: AliasingStrategy = AliasingStrategy.FlowSensitive;
 
 }
 

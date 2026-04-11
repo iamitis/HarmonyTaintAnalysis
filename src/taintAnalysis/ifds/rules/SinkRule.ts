@@ -133,36 +133,7 @@ export class SinkRule extends AbstractRule {
      * @param fact 当前 fact
      * @param factKillingStatus fact 杀死状态
      */
-    private checkForSink(stmt: Stmt, value: any, fact: TaintFact, factKillingStatus: FactKillingStatus): void {
-        const sourceSinkManager = this.getIfdsManager().getSourceSinkManager();
-        const aliasing = this.getIfdsManager().getAliasing();
-
-        if (!sourceSinkManager || !aliasing || !fact.isActive()) {
-            return;
-        }
-
-        // 获取语句中使用的所有基础值
-        const uses = stmt.getUses();
-        for (const use of uses) {
-            // 检查是否可能别名
-            if (this.mayAlias(use, fact.getAccessPath())) {
-                const sinkDef = sourceSinkManager.getSinkIfIs(stmt);
-                if (sinkDef) {
-                    const sinkKey = this.getSinkKey(stmt, fact);
-                    const taintResults = this.getIfdsManager().getResults();
-                    const newResult = new FactAtSink(fact, sinkDef, stmt);
-                    if (!taintResults.has(sinkKey)) {
-                        taintResults.set(sinkKey, newResult);
-                    } else {
-                        this.killState = true;
-                        if (factKillingStatus) {
-                            factKillingStatus.killAllFacts = true;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    private checkForSink(stmt: Stmt, value: any, fact: TaintFact, factKillingStatus: FactKillingStatus): void {}
 
     /**
      * 检查污点在被调用方法中是否可见

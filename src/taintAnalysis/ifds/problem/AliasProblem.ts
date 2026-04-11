@@ -8,13 +8,14 @@ import { IFDSManager } from '../IFDSManager';
 import { PathEdge, PathEdgePoint } from '../../../core/dataflow/Edge';
 import { ArkAssignStmt, ArkReturnStmt } from '../../../core/base/Stmt';
 import { ArkInstanceInvokeExpr } from '../../../core/base/Expr';
-import { AbstractFieldRef, ArkInstanceFieldRef, ArkStaticFieldRef, ArkArrayRef } from '../../../core/base/Ref';
+import { ArkInstanceFieldRef, ArkStaticFieldRef, ArkArrayRef } from '../../../core/base/Ref';
 import Logger from '../../../utils/logger';
 import { LOG_MODULE_TYPE } from '../../../utils/logger';
 import { Aliasing } from '../aliasing/Aliasing';
 import { getColorText } from '../../util';
 import { AbstractTaintProblem, TaintFlowFunction } from './AbstractTaintProblem';
 import { THIS_NAME } from '../../../core/common/TSConst';
+import { StaticFieldTrackingMode } from '../../config/IFDSConfig';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'AliasProblem');
 
@@ -100,6 +101,14 @@ export class AliasProblem extends AbstractTaintProblem {
                 const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, rhs, { cutFirstField: true });
                 // 新的污点加入结果集中, 继续后向传播
                 newFact && res.add(newFact);
+            } else if (lhs instanceof ArkStaticFieldRef &&
+                taintedVar.isStaticFieldRef() &&
+                taintedVar.firstFieldMatches(lhs.getFieldSignature()) &&
+                taintedVar.getFields()!.length > 1 // 污点变量需要是 lhs 的字段, 才能产生别名
+            ) {
+                // lhs = X.f, taintedVar = X.f.g.*
+                const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, rhs, { cutFirstField: true });
+                newFact && res.add(newFact);
             } else if (lhs instanceof Local && taintedVar.isInstanceFieldRef()) {
                 // lhs = x, taintedVar = x.y.*
                 const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, rhs);
@@ -125,6 +134,14 @@ export class AliasProblem extends AbstractTaintProblem {
                     const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, lhs, { cutFirstField: true });
                     // 新的污点加入结果集中, 继续后向传播
                     newFact && lhs instanceof ArkInstanceFieldRef && res.add(newFact);
+                } else if (this.ifdsManager.getConfig().staticFieldTrackingMode === StaticFieldTrackingMode.ContextFlowSensitive
+                    && rhs instanceof ArkStaticFieldRef
+                    && taintedVar.isStaticFieldRef()
+                    && taintedVar.firstFieldMatches(rhs.getFieldSignature())
+                ) {
+                    // rhs = X.f, taintedVar = X.f(.g.*)
+                    const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, lhs, { cutFirstField: true });
+                    newFact && res.add(newFact);
                 } else if (rhs instanceof Local && taintedVar.isInstanceFieldRef()) {
                     // rhs = x, taintedVar = x.y.*
                     const newFact = this.createNewFactAndAddToForwardSolver(assignStmt, fact, ctxNode, lhs);
@@ -155,10 +172,12 @@ export class AliasProblem extends AbstractTaintProblem {
 
         let newFact: TaintFact | undefined = undefined;
 
-        if (newValue instanceof Local || newValue instanceof ArkInstanceFieldRef) {
+        if (newValue instanceof Local || newValue instanceof ArkInstanceFieldRef || newValue instanceof ArkStaticFieldRef) {
             // stmt: a = b, taintedVar = a.f.* => newFact = b.f.*
             // === OR ===
-            // stmt: a = b.f, taintedVar = a.f.g.* => newFact = b.f.g.*
+            // stmt: a = b.bf, taintedVar = a.f.* => newFact = b.bf.f.*
+            // === OR ===
+            // stmt: a = B.bf, taintedVar = a.f.* => newFact = B.bf.f.*
             let newAP: AccessPath | undefined;
             if (!options?.isArrayTaintedByElement) {
                 newAP = fact.getAccessPath().deriveWithNewBase(newValue, options);
@@ -246,6 +265,14 @@ export class AliasProblem extends AbstractTaintProblem {
                     return result;
                 }
 
+                // 静态字段 fact 在 ContextFlowSensitive 模式下需要传回 caller
+                if (currFact.getAccessPath().isStaticFieldRef()) {
+                    if (self.ifdsManager.getConfig().staticFieldTrackingMode === StaticFieldTrackingMode.ContextFlowSensitive) {
+                        result.add(currFact);
+                    }
+                    return result;
+                }
+
                 // 污点路径转化：形参 -> 实参, this 指针转化
                 const factsFromCalleeToCaller: Set<TaintFact> = self.transFactsFromCalleeToCaller(srcStmt, callStmt, currFact, ctxNode);
 
@@ -264,13 +291,25 @@ export class AliasProblem extends AbstractTaintProblem {
         const invokeExpr = callStmt.getInvokeExpr();
 
         return {
-            getDataFacts: (currFact: TaintFact): Set<TaintFact> => {
+            getDataFacts: () => new Set(),
+
+            getDataFactsWithCallees: (callees: Set<ArkMethod>, currFact: TaintFact): Set<TaintFact> => {
                 logger.debug(getColorText('debugg CallToReturnFlow ', 'yellow'),
                     callStmt.toString(),
                     getColorText(`${currFact.toString()}`, 'yellow'));
 
                 if (currFact.isZeroFact()) {
                     return new Set([currFact]);
+                }
+
+                if (currFact.getAccessPath().isStaticFieldRef()) {
+                    if (self.ifdsManager.getConfig().staticFieldTrackingMode === StaticFieldTrackingMode.ContextFlowSensitive &&
+                        Array.from(callees).every(callee => self.ifdsManager.isStaticFieldRead(callee, currFact.getAccessPath().getFields()![0])) &&
+                        !self.isExcludedMethod(callStmt)
+                    ) {
+                        // 如果 callee 使用了该静态字段，不让它直通
+                        return new Set();
+                    }
                 }
 
                 // 如果 lhs 被覆盖，不传播
@@ -310,7 +349,14 @@ export class AliasProblem extends AbstractTaintProblem {
         }
 
         if (fact.getAccessPath().isStaticFieldRef()) {
-            // TODO: 处理静态字段
+            // 静态字段 fact 在 ContextFlowSensitive 模式下直接传入 callee
+            if (this.ifdsManager.getConfig().staticFieldTrackingMode === StaticFieldTrackingMode.ContextFlowSensitive) {
+                // 只传入读取该静态字段的 callee
+                const firstField = fact.getAccessPath().getFields()?.[0];
+                if (firstField && this.ifdsManager.isStaticFieldRead(method, firstField)) {
+                    res.add(fact);
+                }
+            }
             return res;
         }
 

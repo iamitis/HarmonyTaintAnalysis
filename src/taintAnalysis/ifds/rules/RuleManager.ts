@@ -7,6 +7,7 @@ import { SinkRule } from "./SinkRule";
 import { SourceRule } from "./SourceRule";
 import { LHSOverwrittenRule } from "./LHSOverwrittenRule";
 import { TaintedInstanceInvokeRule } from "./TaintedInstanceInvokeRule";
+import { StaticPropagationRule } from "./StaticPropagationRule";
 
 export class RuleManager {
     private rules: Set<Rule> = new Set();
@@ -25,6 +26,7 @@ export class RuleManager {
         this.addRule(new SinkRule(this.ifdsManager));
         this.addRule(new LHSOverwrittenRule(this.ifdsManager));
         this.addRule(new TaintedInstanceInvokeRule(this.ifdsManager));
+        this.addRule(new StaticPropagationRule(this.ifdsManager));
     }
 
     public addRule(rule: Rule) {
@@ -35,6 +37,12 @@ export class RuleManager {
         const result: Set<TaintFact> = new Set();
         for (const rule of this.rules) {
             rule.applyNormalRule(srcStmt, tgtStmt, fact, result, factKillingStatus);
+            if (factKillingStatus.killAllFacts) {
+                return new Set();
+            }
+        }
+        if (!factKillingStatus.killAllFacts && !factKillingStatus.killCurrFact) {
+            result.add(fact);
         }
         return result;
     }
@@ -43,6 +51,9 @@ export class RuleManager {
         const result: Set<TaintFact> = new Set();
         for (const rule of this.rules) {
             rule.applyCallRule(srcStmt, method, fact, result, factKillingStatus);
+            if (factKillingStatus.killAllFacts) {
+                return new Set();
+            }
         }
         return result;
     }
@@ -51,6 +62,9 @@ export class RuleManager {
         const result: Set<TaintFact> = new Set();
         for (const rule of this.rules) {
             rule.applyReturnRule(srcStmt, tgtStmt, callStmt, fact, result, factKillingStatus);
+            if (factKillingStatus.killAllFacts) {
+                return new Set();
+            }
         }
         return result;
     }
@@ -59,6 +73,9 @@ export class RuleManager {
         const result: Set<TaintFact> = new Set();
         for (const rule of this.rules) {
             rule.applyCallToReturnRule(srcStmt, tgtStmt, fact, result, factKillingStatus);
+            if (factKillingStatus.killAllFacts) {
+                return new Set();
+            }
         }
         return result;
     }

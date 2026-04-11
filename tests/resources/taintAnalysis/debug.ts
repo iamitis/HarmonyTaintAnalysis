@@ -27,6 +27,8 @@ class DebugHeapTest {
     b1: B | null = null;
     b2: B | null = null;
     alias: Book | null = null;
+    static staticB1: B | null = null;
+    static staticB2: B | null = null;
 
     debugNegativeTest(): void {
         const taint = TelephonyManager.getDeviceId();
@@ -227,5 +229,29 @@ class DebugHeapTest {
         book.name = TelephonyManager.getDeviceId();
         const cm = new ConnectionManager();
         cm.publish(alias2.name);
+    }
+
+    private debugAliasStatic(): void {
+        DebugHeapTest.staticB2!.attr = DebugHeapTest.staticB1!.attr;
+    }
+
+    debugStaticAliasTest(): void {
+        DebugHeapTest.staticB1 = new B();
+        DebugHeapTest.staticB2 = new B();
+
+        this.debugAliasStatic();
+
+        DebugHeapTest.staticB1!.attr.b = TelephonyManager.getDeviceId();
+
+        const cm = new ConnectionManager();
+        cm.publish(DebugHeapTest.staticB2!.attr.b);
+    }
+
+    debugStaticAliasTest2(): void {
+        DebugHeapTest.staticB1 = new B();
+        DebugHeapTest.staticB2 = DebugHeapTest.staticB1;
+        DebugHeapTest.staticB1!.attr.b = TelephonyManager.getDeviceId();
+        const cm = new ConnectionManager();
+        cm.publish(DebugHeapTest.staticB2!.attr.b);
     }
 }

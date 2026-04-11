@@ -118,14 +118,16 @@ function ifdsTest() {
     // findMethodAndTest('debugTestAliases');
     // findMethodAndTest('debugNegativeTest');
     // findMethodAndTest('debugFunctionAliasTest');
-    // findMethodAndTest('debugFieldBaseOverwriteTest');
+    findMethodAndTest('debugFieldBaseOverwriteTest');
     // findMethodAndTest('debugDoubleAliasTest');
     // findMethodAndTest('debugUnAliasParameterTest');
     // findMethodAndTest('debugCallSiteCreatesAlias');
     // findMethodAndTest('debugOverwriteInCalleeTest2');
     // findMethodAndTest('debugSummaryTest1');
     // findMethodAndTest('debugOverwriteAliasedVariableTest5');
-    findMethodAndTest('debugLhsNotUpwardsInAliasFlow');
+    // findMethodAndTest('debugLhsNotUpwardsInAliasFlow');
+    // findMethodAndTest('debugStaticAliasTest');
+    // findMethodAndTest('debugStaticAliasTest2');
 
     function findMethodAndTest(methodName: string) {
         const method = scene.getMethods().find((method) => method.getName() === methodName);

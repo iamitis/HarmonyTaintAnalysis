@@ -96,14 +96,18 @@ export class AccessPath {
             return undefined;
         }
 
-        // TODO
+        if (value instanceof ArkStaticFieldRef) {
+            if (accessPath.firstFieldMatches(value.getFieldSignature())) {
+                return accessPath;
+            }
+        }
 
         return undefined;
     }
 
     /**
      * 创建 Local, StaticField 或 InstanceField 型的 AccessPath.
-     * @returns [base.base].[base.field].[field] 
+     * @returns [base.base].[base.field].[fields] 
      */
     public static createAccessPath(base?: Value, fields?: FieldSignature[]): AccessPath | undefined {
         // 检查 base 是否可以被包含（如果提供了 base）

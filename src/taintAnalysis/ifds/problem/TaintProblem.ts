@@ -74,15 +74,11 @@ export class TaintProblem extends AbstractTaintProblem {
                     // 激活污点
                     fact = currFact.getActiveCopy();
                 }
-                result.add(fact);
 
                 // 零值始终传播
                 if (fact.isZeroFact()) {
+                    result.add(fact);
                     return result;
-                }
-
-                if (srcStmt.toString() === 'z = <string>x') {
-                    debugger;
                 }
 
                 // 应用各条规则
@@ -280,11 +276,21 @@ export class TaintProblem extends AbstractTaintProblem {
 
                 // 判断是否需要直接在调用方法外传播 fact
 
+                // 静态字段 fact 在 ContextFlowSensitive 模式下不走 call-to-return 边，
+                // 强制走 call -> return 边以保证上下文敏感性。
+                // 除非所有 callee 都是被排除的方法或没有 callee。
+                if (fact.getAccessPath().isStaticFieldRef()) {
+                    const anyCalleeExcluded = Array.from(callees).some(callee => self.isExcludedMethod(callStmt, callee));
+                    const noCallees = callees.size === 0;
+                    if (anyCalleeExcluded || noCallees) {
+                        result.add(fact);
+                    }
+                    // 否则静态字段 fact 由 StaticPropagationRule 走 call/return 边处理
+                    return result;
+                }
+
                 // 判断 fact 是否是基本类型, 若是则需在方法外传播
                 const isPrimitive = fact.getAccessPath().getBaseType() instanceof PrimitiveType;
-
-                // TODO: fact 为静态字段, 且 callee 中没有读取 fact, 则需在方法外传播
-                const factIsStaticFieldRefAndRead = fact.getAccessPath().isStaticFieldRef() && ('staticFactIsReadInCallee')
 
                 // 任何一个 callee 是被排除的方法, 就需要在方法外传播
                 const calleeIsExcluded = Array.from(callees).some(callee => self.isExcludedMethod(callStmt, callee));
@@ -297,7 +303,6 @@ export class TaintProblem extends AbstractTaintProblem {
 
                 if (fact.getAccessPath().isLocal() ||
                     isPrimitive ||
-                    factIsStaticFieldRefAndRead ||
                     calleeIsExcluded ||
                     hasCalleeNotUsingFact
                 ) {
@@ -375,7 +380,13 @@ export class TaintProblem extends AbstractTaintProblem {
                 }
             } else if (rv instanceof ArkStaticFieldRef) {
                 // rv 为静态字段型, 如 X.y
-
+                // 判断 currFact 是否为该静态字段或该静态字段的子字段
+                const mappedAP = AccessPath.staticFieldRefContainsAccessPath(rv, currFact.getAccessPath());
+                if (mappedAP) {
+                    // currFact = X.y(.z), rv = X.y, 则 newAP = lhs(.z)
+                    const lhsFact = this.taintLhs(stmt, currFact, ctxNode, { cutFirstField: true });
+                    lhsFact && result.add(lhsFact);
+                }
             } else if (rv instanceof Local && currFact.getAccessPath().isInstanceFieldRef()) {
                 // rv 为 Local, currFact 为实例字段型
 
@@ -439,7 +450,14 @@ export class TaintProblem extends AbstractTaintProblem {
 
         if (newFact) {
             if (lhs instanceof ArkStaticFieldRef && this.ifdsManager.getConfig().staticFieldTrackingMode === StaticFieldTrackingMode.ContextFlowSensitive) {
-                // TODO
+                // ContextFlowSensitive 模式: 静态字段写入也需触发别名分析
+                const aliasing = this.ifdsManager.getAliasing();
+                if (aliasing) {
+                    const taintSet = new Set<TaintFact>();
+                    taintSet.add(newFact);
+                    const method = stmt.getCfg().getDeclaringMethod();
+                    aliasing.computeAliases(ctxNode, stmt, lhs, taintSet, method, newFact);
+                }
             } else {
                 // ★ 追踪别名：触发别名分析
                 const aliasing = this.ifdsManager.getAliasing();
@@ -467,7 +485,7 @@ export class TaintProblem extends AbstractTaintProblem {
         }
 
         if (fact.getAccessPath().isStaticFieldRef()) {
-            // TODO: 处理静态 fact
+            // 静态字段 fact 由 StaticPropagationRule 在 applyCallRule 中处理
             return res;
         }
 
