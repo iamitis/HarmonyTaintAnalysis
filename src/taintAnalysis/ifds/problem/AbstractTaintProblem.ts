@@ -50,7 +50,7 @@ export abstract class AbstractTaintProblem extends DataflowProblem<TaintFact> {
      * 判断是否是无需进入的方法
      * TODO: 库方法
      */
-    protected isExcludedMethod(stmt: Stmt, method?: ArkMethod): boolean {
+    public isExcludedMethod(stmt: Stmt, method?: ArkMethod): boolean {
         const isSourceMethod = this.ifdsManager.getSourceSinkManager()?.getSources().some((source) => source.matches(stmt)) ?? false;
         if (isSourceMethod) {
             return true;

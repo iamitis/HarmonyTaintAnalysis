@@ -67,9 +67,6 @@ export class CallbackCollector {
 
     private findCallbackOfComponents(components: Set<ArkClass>, ability: ArkClass) {
         components.forEach((component) => {
-            if (component.getSignature().getClassName() === 'CategoryPage' || component.getSignature().getClassName() === 'Discount') {
-                // debugger;
-            }
             // 找组件 UI 树中的回调
             this.findCallbacksInViewTree(component, ability);
             // 找注册型回调

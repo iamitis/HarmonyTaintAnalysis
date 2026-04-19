@@ -1,13 +1,14 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import path from 'path';
-import { Scene } from '../../../src/Scene';
-import { SceneConfig } from '../../../src/Config';
-import { TaintAnalysis } from '../../../src/taintAnalysis/SetupApplication';
-import { TaintAnalysisConfig, TaintAnalysisProjectType, SourceAndSinkFileType } from '../../../src/taintAnalysis/config/TaintAnalysisConfig';
-import { ArkMethod } from '../../../src/core/model/ArkMethod';
-import { AliasingStrategy } from '../../../src/taintAnalysis/config/IFDSConfig';
-import ConsoleLogger, { LOG_LEVEL } from '../../../src/utils/logger';
-import { ArkIRMethodPrinter } from '../../../src/save/arkir/ArkIRMethodPrinter';
+import { Scene } from '../../../../src/Scene';
+import { SceneConfig } from '../../../../src/Config';
+import { TaintAnalysis } from '../../../../src/taintAnalysis/SetupApplication';
+import { TaintAnalysisConfig, TaintAnalysisProjectType, SourceAndSinkFileType } from '../../../../src/taintAnalysis/config/TaintAnalysisConfig';
+import { ArkMethod } from '../../../../src/core/model/ArkMethod';
+import { AliasingStrategy } from '../../../../src/taintAnalysis/config/IFDSConfig';
+import ConsoleLogger, { LOG_LEVEL } from '../../../../src/utils/logger';
+import { ArkIRMethodPrinter } from '../../../../src/save/arkir/ArkIRMethodPrinter';
+import { SourceToSinkInfo } from '../../../../src/taintAnalysis/results/TaintAnalysisResult';
 
 describe('Basic Taint Analysis Test', () => {
     let scene: Scene;
@@ -21,7 +22,7 @@ describe('Basic Taint Analysis Test', () => {
 
         // Build scene from test resources
         const config: SceneConfig = new SceneConfig();
-        testResourceDir = path.join(__dirname, '../../resources/taintAnalysis');
+        testResourceDir = path.join(__dirname, '../../../resources/taintAnalysis/transFromFlowDroid');
         config.buildFromProjectDir(testResourceDir);
 
         scene = new Scene();
@@ -57,7 +58,7 @@ describe('Basic Taint Analysis Test', () => {
     /**
      * Helper function to run taint analysis on a specific method
      */
-    function runTaintAnalysis(entryMethod: ArkMethod): Set<any> {
+    function runTaintAnalysis(entryMethod: ArkMethod): Set<SourceToSinkInfo> {
         const config = new TaintAnalysisConfig();
         config.projectType = TaintAnalysisProjectType.Directory;
         config.methodToBeAnalyzed = entryMethod;

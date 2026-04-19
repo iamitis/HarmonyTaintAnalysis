@@ -4,7 +4,8 @@ import { PathEdge, PathEdgePoint } from '../../../core/dataflow/Edge';
 import { TaintFact } from '../TaintFact';
 import { IFDSManager } from '../IFDSManager';
 import { BasicBlock } from '../../../core/graph/BasicBlock';
-import { AliasProblem, ArkMethod, CallGraphBuilder, ClassHierarchyAnalysis, LOG_MODULE_TYPE, Logger } from '../../..';
+import { Trap } from '../../../core/base/Trap';
+import { AliasProblem, ArkMethod, CallGraphBuilder, ClassHierarchyAnalysis, LexicalEnvType, LOG_MODULE_TYPE, Logger } from '../../..';
 import { CallGraph } from '../../../callgraph/model/CallGraph';
 import { AbstractTaintSolver } from './AbstractTaintSolver';
 import { SolverPeerGroup } from './SolverPeerGroup';
@@ -54,31 +55,54 @@ export class AliasSolver extends AbstractTaintSolver {
 
     /**
      * @override
+     * 构建前驱/后继映射，包含异常边
      */
     protected buildStmtMapInBlock(block: BasicBlock): void {
+        const stmts = block.getStmts();
+
         // 构建前驱映射
-        block.getStmts().forEach((stmt, index) => {
+        stmts.forEach((stmt, index) => {
             if (index === 0) {
                 const preStmts: Set<Stmt> = new Set();
                 block.getPredecessors().forEach(predecessor => {
                     preStmts.add(predecessor.getTail()!);
                 });
+                // 添加异常前驱
+                const exceptionalPreds = block.getExceptionalPredecessorBlocks();
+                if (exceptionalPreds) {
+                    for (const excPred of exceptionalPreds) {
+                        const tail = excPred.getTail();
+                        if (tail) {
+                            preStmts.add(tail);
+                        }
+                    }
+                }
                 this.stmtPredecessors.set(stmt, preStmts);
             } else {
-                this.stmtPredecessors.set(stmt, new Set([block.getStmts()[index - 1]]));
+                this.stmtPredecessors.set(stmt, new Set([stmts[index - 1]]));
             }
         });
 
         // 构建后继映射
-        block.getStmts().forEach((stmt, index) => {
-            if (index === block.getStmts().length - 1) {
+        stmts.forEach((stmt, index) => {
+            if (index === stmts.length - 1) {
                 const succStmts: Set<Stmt> = new Set();
                 block.getSuccessors().forEach(successor => {
                     succStmts.add(successor.getHead()!);
                 });
+                // 添加异常后继
+                const exceptionalSuccs = block.getExceptionalSuccessorBlocks();
+                if (exceptionalSuccs) {
+                    for (const excSucc of exceptionalSuccs) {
+                        const head = excSucc.getHead();
+                        if (head) {
+                            succStmts.add(head);
+                        }
+                    }
+                }
                 this.stmtNexts.set(stmt, succStmts);
             } else {
-                this.stmtNexts.set(stmt, new Set([block.getStmts()[index + 1]]));
+                this.stmtNexts.set(stmt, new Set([stmts[index + 1]]));
             }
         });
     }
@@ -93,67 +117,6 @@ export class AliasSolver extends AbstractTaintSolver {
         }
         this.doSolve();
     }
-
-    /**
-     * @override
-     */
-    // protected processExitNode(edge: PathEdge<TaintFact>): void {
-    //     const ctxPoint = edge.edgeStart;
-    //     const exitPoint = edge.edgeEnd;
-
-    //     // 更新 map: callee start point -> callee exit point
-    //     const summary = this.endSummary.get(ctxPoint);
-    //     if (summary === undefined) {
-    //         this.endSummary.set(ctxPoint, new Set([exitPoint]));
-    //     } else {
-    //         summary.add(exitPoint);
-    //     }
-
-    //     // 通过 peerGroup 共享 incoming 表查找调用点
-    //     const callSiteEdges = this.findInComingEdges(ctxPoint);
-    //     if (callSiteEdges === undefined) {
-    //         if (ctxPoint.node.getCfg()!.getDeclaringMethod() === this.problem.getEntryMethod()) {
-    //             return;
-    //         }
-    //         throw new Error('incoming does not have ' + ctxPoint.node.getCfg()?.getDeclaringMethod().toString());
-    //     }
-
-    //     // 应用 callee exit point -> caller return site point 的流函数
-    //     for (const callEdge of callSiteEdges) {
-    //         const returnSites = this.findMultiReturnSitesOfCall(callEdge.edgeEnd.node);
-    //         for (const rs of returnSites) {
-    //             const returnFlowFunc = this.problem.getExitToReturnFlowFunction(exitPoint.node, rs, callEdge.edgeEnd.node);
-    //             const facts = returnFlowFunc.getDataFactsWithCtxNode?.(ctxPoint, exitPoint.fact) ?? returnFlowFunc.getDataFacts(exitPoint.fact);
-    //             for (let fact of facts) {
-    //                 let returnSitePoint: PathEdgePoint<TaintFact> = new PathEdgePoint<TaintFact>(rs, fact);
-    //                 let cacheEdge: PathEdge<TaintFact> = new PathEdge<TaintFact>(callEdge.edgeEnd, returnSitePoint);
-    //                 let summaryEdgeHasCacheEdge = false;
-    //                 for (const sEdge of this.summaryEdge) {
-    //                     if (sEdge.edgeStart === callEdge.edgeEnd && sEdge.edgeEnd.node === rs && sEdge.edgeEnd.fact === fact) {
-    //                         summaryEdgeHasCacheEdge = true;
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (summaryEdgeHasCacheEdge) {
-    //                     continue;
-    //                 }
-    //                 this.summaryEdge.add(cacheEdge);
-    //                 let startStmtsOfCaller: readonly Stmt[] = this.findStartStmtsOfMethod(callEdge.edgeEnd.node.getCfg().getDeclaringMethod());
-    //                 for (const start of startStmtsOfCaller) {
-    //                     for (const start of startStmtsOfCaller) {
-    //                         // for (const pathEdge of this.pathEdgeSet) {
-    //                         //     if (pathEdge.edgeStart.fact === callEdge.edgeStart.fact && pathEdge.edgeEnd === callEdge.edgeEnd) {
-    //                         //         this.propagate(new PathEdge<TaintFact>(pathEdge.edgeStart, returnSitePoint));
-    //                         //     }
-    //                         // }
-    //                         const ctxPoint: PathEdgePoint<TaintFact> = new PathEdgePoint<TaintFact>(start, callEdge.edgeStart.fact);
-    //                         this.propagate(new PathEdge<TaintFact>(ctxPoint, returnSitePoint));
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     /**
      * @override
@@ -173,7 +136,16 @@ export class AliasSolver extends AbstractTaintSolver {
         }
         
         const paramCount = method.getParameters().length;
-        return [cfg.getStmts()[paramCount]];
+        let closureCount = 0;
+        if (method.isAnonymousMethod() &&
+            method.getParameters()[0] &&
+            method.getParameters()[0].getType() instanceof LexicalEnvType
+        ) {
+            const lexicalEnv = method.getParameters()[0].getType() as LexicalEnvType;
+            closureCount = lexicalEnv.getClosures().length;
+        }
+
+        return [cfg.getStmts()[paramCount + closureCount]];
     }
 
     /**
@@ -202,6 +174,47 @@ export class AliasSolver extends AbstractTaintSolver {
         }
 
         return this.stmtPredecessors.get(stmt) ?? new Set();
+    }
+
+    /**
+     * @override
+     * 在父类补充 stmtNexts 的基础上，同步补充 stmtPredecessors 的异常边
+     */
+    protected supplementExceptionalEdgesFromTraps(method: ArkMethod): void {
+        const traps = method.getBody()?.getTraps();
+        if (!traps) {
+            return;
+        }
+
+        for (const trap of traps) {
+            const catchBlocks = trap.getCatchBlocks();
+            if (catchBlocks.length === 0) {
+                continue;
+            }
+            const catchHead = catchBlocks[0].getHead();
+            if (!catchHead) {
+                continue;
+            }
+
+            for (const tryBlock of trap.getTryBlocks()) {
+                const tryTail = tryBlock.getTail();
+                if (!tryTail) {
+                    continue;
+                }
+
+                // 补充 stmtNexts: tryTail -> catchHead
+                const existingNexts = this.stmtNexts.get(tryTail);
+                if (existingNexts && !existingNexts.has(catchHead)) {
+                    existingNexts.add(catchHead);
+                }
+
+                // 补充 stmtPredecessors: catchHead <- tryTail
+                const existingPreds = this.stmtPredecessors.get(catchHead);
+                if (existingPreds && !existingPreds.has(tryTail)) {
+                    existingPreds.add(tryTail);
+                }
+            }
+        }
     }
 
     /**

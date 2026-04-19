@@ -1,0 +1,67 @@
+..\HapBench\Aliasing\After , 1
+..\HapBench\Aliasing\Before , 1
+..\HapBench\Aliasing\InstanceAlias , 1
+..\HapBench\Aliasing\Inter , 0
+..\HapBench\Aliasing\Merge , 1
+..\HapBench\Aliasing\ParamAlias , 1
+..\HapBench\Anonymous Constructs\AnonymousClass1 , 1
+..\HapBench\Anonymous Constructs\AnonymousClass2 , 0
+..\HapBench\Anonymous Constructs\AnonymousMethod1 , 1
+..\HapBench\Anonymous Constructs\AnonymousMethod2 , 1
+..\HapBench\Anonymous Constructs\AnonymousMethod3 , 1
+..\HapBench\Anonymous Constructs\AnonymousMethod4 , 0
+..\HapBench\Anonymous Constructs\AnonymousMethod5 , 0
+..\HapBench\Anonymous Constructs\AnonymousMethod6 , 1
+..\HapBench\Anonymous Constructs\AnonymousMethod7 , 1
+..\HapBench\Anonymous Constructs\AnonymousMethod8 , 1
+..\HapBench\Array-Like Structures\ArrayAccess , 1
+..\HapBench\Array-Like Structures\ArrayCopy , 1
+..\HapBench\Array-Like Structures\ArrayIndexNoLeak , 1
+..\HapBench\Array-Like Structures\Map , 1
+..\HapBench\Array-Like Structures\MultidimentionalArray , 1
+..\HapBench\Field And Object Sensitivity\FieldSensitivity1 , 0
+..\HapBench\Field And Object Sensitivity\FieldSensitivity2 , 0
+..\HapBench\Field And Object Sensitivity\FieldSensitivity3 , 1
+..\HapBench\Field And Object Sensitivity\FieldSensitivity4 , 0
+..\HapBench\Field And Object Sensitivity\InheritedObjects , 1
+..\HapBench\Field And Object Sensitivity\ObjectSensitivity1 , 0
+..\HapBench\General Language Features\Clone1 , 1
+..\HapBench\General Language Features\Clone2 , 1
+..\HapBench\General Language Features\Closure1 , 1
+..\HapBench\General Language Features\Closure2 , 1
+..\HapBench\General Language Features\Condition , 1
+..\HapBench\General Language Features\Exceptions1 , 1
+..\HapBench\General Language Features\Exceptions2 , 1
+..\HapBench\General Language Features\Exceptions3 , 1
+..\HapBench\General Language Features\Exceptions4 , 0
+..\HapBench\General Language Features\LocalFunction , 1
+..\HapBench\General Language Features\Loop1 , 1
+..\HapBench\General Language Features\MulFields , 1
+..\HapBench\General Language Features\Param1 , 1
+..\HapBench\General Language Features\Param2 , 0
+..\HapBench\General Language Features\PrivateDataLeak , 1
+..\HapBench\General Language Features\PublicAPILeak1 , 1
+..\HapBench\General Language Features\StaticFieldInit , 1
+..\HapBench\General Language Features\StringPatternMatching , 1
+..\HapBench\General Language Features\UnreachableMethod , 0
+..\HapBench\General Language Features\VirtualDispatch1 , 2
+..\HapBench\General Language Features\VirtualDispatch2 , 1
+..\HapBench\General Language Features\VirtualDispatch3 , 1
+..\HapBench\Lifecycle Modeling\ActivityLifecycle1 , 1
+..\HapBench\Lifecycle Modeling\ActivityLifecycle2 , 1
+..\HapBench\Lifecycle Modeling\ActivityLifecycle3 , 1
+..\HapBench\Lifecycle Modeling\ActivityLifecycle4 , 1
+..\HapBench\Lifecycle Modeling\BackupExtensionAbility , 1
+..\HapBench\Lifecycle Modeling\Button1 , 1
+..\HapBench\Lifecycle Modeling\Button2 , 1
+..\HapBench\Lifecycle Modeling\Button3 , 1
+..\HapBench\Lifecycle Modeling\ComponentLifecycle1 , 1
+..\HapBench\Lifecycle Modeling\ComponentLifecycle2 , 1
+..\HapBench\Lifecycle Modeling\ComponentLifecycle3 , 1
+..\HapBench\Lifecycle Modeling\EventOdering , 1
+..\HapBench\Lifecycle Modeling\UnreachableFlow , 1
+..\HapBench\OpenHarmony Specific APIs\CallbackInSource , 1
+..\HapBench\OpenHarmony Specific APIs\DirectLeak , 1
+..\HapBench\OpenHarmony Specific APIs\DirectLeak-want , 1
+..\HapBench\OpenHarmony Specific APIs\FileReadWrite , 1
+..\HapBench\OpenHarmony Specific APIs\NoLeak , 0

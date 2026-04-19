@@ -1,0 +1,13 @@
+{
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

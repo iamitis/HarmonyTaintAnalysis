@@ -133,7 +133,7 @@ export class SinkRule extends AbstractRule {
      * @param fact 当前 fact
      * @param factKillingStatus fact 杀死状态
      */
-    private checkForSink(stmt: Stmt, value: any, fact: TaintFact, factKillingStatus: FactKillingStatus): void {}
+    private checkForSink(stmt: Stmt, value: any, fact: TaintFact, factKillingStatus: FactKillingStatus): void { }
 
     /**
      * 检查污点在被调用方法中是否可见
@@ -153,21 +153,21 @@ export class SinkRule extends AbstractRule {
         }
 
 
-            // 检查参数是否被污染
-            for (const arg of invokeExpr.getArgs()) {
-                if (Aliasing.baseMatches(arg, fact)) {
-                    // TODO: 非 Local 判断 taintSubFields
-                    return true;
-                }
+        // 检查参数是否被污染
+        for (const arg of invokeExpr.getArgs()) {
+            if (Aliasing.baseMatches(arg, fact)) {
+                // TODO: 非 Local 判断 taintSubFields
+                return true;
             }
+        }
 
-            // 检查基对象是否被污染（仅对实例调用有效）
-            if (invokeExpr instanceof ArkInstanceInvokeExpr) {
-                const base = invokeExpr.getBase();
-                if (Aliasing.baseMatches(base, fact)) {
-                    return true;
-                }
+        // 检查基对象是否被污染（仅对实例调用有效）
+        if (invokeExpr instanceof ArkInstanceInvokeExpr) {
+            const base = invokeExpr.getBase();
+            if (Aliasing.baseMatches(base, fact)) {
+                return true;
             }
+        }
 
         return false;
     }
@@ -208,19 +208,5 @@ export class SinkRule extends AbstractRule {
         const colNo = stmt.getOriginPositionInfo().getColNo();
         const variable = fact.getAccessPath().toString();
         return `${lineNo}_${colNo}_${variable}`
-    }
-
-    /**
-     * 重置 kill 状态
-     */
-    public resetKillState(): void {
-        this.killState = false;
-    }
-
-    /**
-     * 重置所有状态
-     */
-    public reset(): void {
-        this.killState = false;
     }
 }

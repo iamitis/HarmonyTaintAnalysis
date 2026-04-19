@@ -3,7 +3,7 @@ import { ArkArrayRef, ArkInstanceFieldRef } from "../../../core/base/Ref";
 import { ArkAssignStmt, Stmt } from "../../../core/base/Stmt";
 import { Value } from "../../../core/base/Value";
 import { FieldSignature } from "../../../core/model/ArkSignature";
-import { getBaseValues } from "../../util";
+import { findBaseValues } from "../../util";
 import { AccessPath } from "../AccessPath";
 import { Aliasing } from "../aliasing/Aliasing";
 import { TaintFact } from "../TaintFact";
@@ -94,7 +94,7 @@ export class LHSOverwrittenRule extends AbstractRule {
                 if (taintedAP.getBase() === lhs) {
                     factKillingStatus.killCurrFact = true;
                     // 若 rhs 有 fact, 可能产生新污点, 不能 killAll, 否则可以
-                    if (getBaseValues(srcStmt.getRightOp()).every(use => use !== taintedAP.getBase())) {
+                    if (findBaseValues(srcStmt.getRightOp()).every(use => use !== taintedAP.getBase())) {
                         factKillingStatus.killAllFacts = true;
                     }
                 }

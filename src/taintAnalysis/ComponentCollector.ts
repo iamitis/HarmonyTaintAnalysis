@@ -1,4 +1,5 @@
 import { ArkClass, ClassCategory } from "../core/model/ArkClass";
+import { ArkFile } from "../core/model/ArkFile";
 import { StringConstant } from "../core/base/Constant";
 import { Scene } from "../Scene";
 import Logger, { LOG_MODULE_TYPE } from '../utils/logger';
@@ -371,27 +372,58 @@ export class ComponentCollector {
      * For example, path='pages/index' should match the file at 'src/main/ets/pages/index.ets'
      */
     private findComponentFromPath(pagePath: string): void {
-        const expectedRelativePath = path.join('src', 'main', 'ets', `${pagePath}.ets`);
-        const abilityModuleScene = this.ability.getDeclaringArkFile().getModuleScene();
-        const modulePath = abilityModuleScene?.getModulePath() || '';
+        const pageFileSuffix = `${pagePath}.ets`;
 
-        for (const arkFile of this.scene.getFiles()) {
-            const filePath = arkFile.getFilePath();
-            if (filePath.includes(modulePath) && filePath.endsWith(expectedRelativePath)) {
-                const classes = arkFile.getClasses();
-                for (const arkClass of classes) {
-                    if (!arkClass.isDefaultArkClass() && arkClass.getCategory() === ClassCategory.STRUCT) {
+        // 1. First, try to find the component near the ability's directory
+        //    Go up one level from the ability's directory (e.g., from entryAbility/ to ets/)
+        //    and look for pagePath.ets
+        const abilityFilePath = this.ability.getDeclaringArkFile().getFilePath();
+        const abilityDir = path.dirname(abilityFilePath);
+        const parentDir = path.dirname(abilityDir);
+        const expectedPath = path.join(parentDir, pageFileSuffix);
+
+        const abilityModuleScene = this.ability.getDeclaringArkFile().getModuleScene();
+        if (abilityModuleScene) {
+            for (const arkFile of abilityModuleScene.getModuleFilesMap().values()) {
+                if (arkFile.getFilePath() === expectedPath) {
+                    const arkClass = this.findStructInArkFile(arkFile);
+                    if (arkClass) {
                         this.pathToComponentMap.set(pagePath, arkClass);
                         return;
                     }
+                    logger.warn(`No struct found in ${expectedPath}`);
+                    break;
                 }
+            }
+        }
 
-                logger.warn(`No struct found in ${filePath}`);
+        // 2. If not found near ability, search all scene files ending with pageFileSuffix
+        for (const arkFile of this.scene.getFiles()) {
+            if (arkFile.getFilePath().endsWith(pageFileSuffix)) {
+                const arkClass = this.findStructInArkFile(arkFile);
+                if (arkClass) {
+                    this.pathToComponentMap.set(pagePath, arkClass);
+                    return;
+                }
+                logger.warn(`No struct found in ${arkFile.getFilePath()}`);
             }
         }
 
         logger.warn(`Component not found for page path ${pagePath} in ability ${this.ability.getName()}`);
         this.pathToComponentMap.set(pagePath, null);
+    }
+
+    /**
+     * Find a struct class (non-default ArkClass with STRUCT category) in the given ArkFile.
+     */
+    private findStructInArkFile(arkFile: ArkFile): ArkClass | null {
+        const classes = arkFile.getClasses();
+        for (const arkClass of classes) {
+            if (!arkClass.isDefaultArkClass() && arkClass.getCategory() === ClassCategory.STRUCT) {
+                return arkClass;
+            }
+        }
+        return null;
     }
 
     // ==================== Value Extraction Helpers ====================

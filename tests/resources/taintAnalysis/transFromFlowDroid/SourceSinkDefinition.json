@@ -2,7 +2,7 @@
     "sources": [
         {
             "methodName": "getDeviceId",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:TelephonyManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
             "parameterTypes": [],
             "returnType": "string",
             "isStatic": true,
@@ -10,7 +10,7 @@
         },
         {
             "methodName": "getIMEI",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:TelephonyManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
             "parameterTypes": [],
             "returnType": "number",
             "isStatic": true,
@@ -18,7 +18,7 @@
         },
         {
             "methodName": "getIMSI",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:TelephonyManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
             "parameterTypes": [],
             "returnType": "number",
             "isStatic": true,
@@ -26,7 +26,7 @@
         },
         {
             "methodName": "getLongitude",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:LocationManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:LocationManager",
             "parameterTypes": [],
             "returnType": "number",
             "isStatic": true,
@@ -34,9 +34,9 @@
         },
         {
             "methodName": "getLastKnownLocation",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:LocationManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:LocationManager",
             "parameterTypes": [],
-            "returnType": "@taintAnalysis/UtilClasses.ts:AppLocation",
+            "returnType": "@transFromFlowDroid/UtilClasses.ts:AppLocation",
             "isStatic": true,
             "paramIndex": -1
         }
@@ -44,7 +44,7 @@
     "sinks": [
         {
             "methodName": "publish",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:ConnectionManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
             "parameterTypes": ["string"],
             "returnType": "void",
             "isStatic": false,
@@ -52,7 +52,7 @@
         },
         {
             "methodName": "publishInt",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:ConnectionManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
             "parameterTypes": ["number"],
             "returnType": "void",
             "isStatic": false,
@@ -60,7 +60,7 @@
         },
         {
             "methodName": "publishBoolean",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:ConnectionManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
             "parameterTypes": ["boolean"],
             "returnType": "void",
             "isStatic": false,
@@ -68,7 +68,7 @@
         },
         {
             "methodName": "publishDouble",
-            "declaringClass": "@taintAnalysis/UtilClasses.ts:ConnectionManager",
+            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
             "parameterTypes": ["number"],
             "returnType": "void",
             "isStatic": false,

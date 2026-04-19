@@ -12,8 +12,10 @@ import { StaticFieldTrackingMode } from '../../config/IFDSConfig';
 import { THIS_NAME } from '../../../core/common/TSConst';
 import { LOG_MODULE_TYPE, Logger, PathEdge, PathEdgePoint, PrimitiveType } from '../../..';
 import { FactKillingStatus } from '../rules/Rule';
-import { getBaseValues, getColorText } from '../../util';
+import { findBaseValues, getColorText } from '../../util';
 import { AbstractTaintProblem, TaintFlowFunction } from './AbstractTaintProblem';
+import { CONSTRUCTORFUCNNAME, INSTANCE_INIT_METHOD_NAME } from '../../../core/common/Const';
+import { ClassCategory } from '../../../core/model/ArkClass';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintProblem');
 
@@ -118,10 +120,10 @@ export class TaintProblem extends AbstractTaintProblem {
         const self = this;
 
         return {
-            getDataFacts: (fact: TaintFact): Set<TaintFact> => {
+            getDataFacts: (currFact: TaintFact): Set<TaintFact> => {
                 logger.debug(getColorText(`debugg CallFlow`, 'blue'),
                     srcStmt.toString(),
-                    getColorText(`${fact.toString()}`, 'blue'));
+                    getColorText(`${currFact.toString()}`, 'blue'));
 
                 const result = new Set<TaintFact>();
 
@@ -130,16 +132,11 @@ export class TaintProblem extends AbstractTaintProblem {
                     return result;
                 }
 
-                if (fact.isZeroFact()) {
-                    result.add(fact);
-                    return result;
-                }
-
                 const factKillingStatus: FactKillingStatus = {
                     killAllFacts: false,
                     killCurrFact: false
                 };
-                const factsOfRules = this.ruleManager.applyCallRules(srcStmt, method, fact, factKillingStatus);
+                const factsOfRules = this.ruleManager.applyCallRules(srcStmt, method, currFact, factKillingStatus);
 
                 if (factKillingStatus.killAllFacts) {
                     return new Set<TaintFact>();
@@ -149,8 +146,14 @@ export class TaintProblem extends AbstractTaintProblem {
                     result.add(fact);
                 });
 
+                if (currFact.isZeroFact()) {
+                    result.add(currFact);
+                    return result;
+                }
+
+
                 // 污点路径转化：实参 -> 形参、this 指针转化
-                const factsFromCallerToCallee: Set<TaintFact> = self.transFactsFromCallerToCallee(srcStmt, method, fact);
+                const factsFromCallerToCallee: Set<TaintFact> = self.transFactsFromCallerToCallee(srcStmt, method, currFact);
                 factsFromCallerToCallee.forEach(fact => {
                     result.add(fact);
                 });
@@ -278,11 +281,13 @@ export class TaintProblem extends AbstractTaintProblem {
 
                 // 静态字段 fact 在 ContextFlowSensitive 模式下不走 call-to-return 边，
                 // 强制走 call -> return 边以保证上下文敏感性。
-                // 除非所有 callee 都是被排除的方法或没有 callee。
+                // 除非所有 callee 都是被排除的方法、没有 callee、或 callee 无 CFG 可进入。
+                // 若 callee 无 CFG，则 CallFlow 无法将污点传入 callee，污点只能走 CallToReturn 边存活。
                 if (fact.getAccessPath().isStaticFieldRef()) {
                     const anyCalleeExcluded = Array.from(callees).some(callee => self.isExcludedMethod(callStmt, callee));
                     const noCallees = callees.size === 0;
-                    if (anyCalleeExcluded || noCallees) {
+                    const anyCalleeWithoutCfg = Array.from(callees).some(callee => !callee.getCfg());
+                    if (anyCalleeExcluded || noCallees || anyCalleeWithoutCfg) {
                         result.add(fact);
                     }
                     // 否则静态字段 fact 由 StaticPropagationRule 走 call/return 边处理
@@ -344,7 +349,7 @@ export class TaintProblem extends AbstractTaintProblem {
         }
 
         // 提取出 rhs 的所有操作数. 如 y = a + b 中的 [a, b]
-        const rightValues = getBaseValues(rhs);
+        const rightValues = findBaseValues(rhs);
         const result: Set<TaintFact> = new Set();
 
         for (const rv of rightValues) {

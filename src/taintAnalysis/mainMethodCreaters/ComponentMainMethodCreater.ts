@@ -4,9 +4,6 @@ import { ArkMethod } from "../../core/model/ArkMethod";
 import { Callback } from "../CallbackCollector";
 import { BaseMainMethodCreater, CFGContext } from "./MainMethodCreater";
 
-const COMPONENT_PRE_LIFECYCLE = ['aboutToAppear'];
-const COMPONENT_POST_LIFECYCLE = ['aboutToDisappear'];
-
 export class ComponentMainMethodCreater extends BaseMainMethodCreater {
     constructor(
         private component: ArkClass,
@@ -36,16 +33,32 @@ export class ComponentMainMethodCreater extends BaseMainMethodCreater {
         const componentLocal = this.getOrCreateClassLocal(this.component);
 
         // 2. Component 前序生命周期（示例：aboutToAppear）
-        this.addLifecycleCalls(this.component, componentLocal, COMPONENT_PRE_LIFECYCLE);
+        this.addLifecycleCalls(this.component, componentLocal, ['aboutToAppear']);
+        this.addLifecycleCalls(this.component, componentLocal, ['onDidBuild']);
 
-        // 3. 遍历该 Component 的 Callbacks
-        const callbacks = this.componentToCallbacksMap.get(this.component) ?? new Set();
-        for (const callback of callbacks) {
-            this.wrapWithIfBranch(() => this.addCallbackInvoke(callback));
-        }
+        this.wrapWithIfBranch(() => {
+            this.wrapWithDoWhileLoop(() => {
+                this.addLifecycleCalls(this.component, componentLocal, ['aboutToRecycle']);
+                this.addLifecycleCalls(this.component, componentLocal, ['aboutToReuse']);
+            })
+        });
+
+        this.wrapWithDoWhileLoop(() => {
+            this.addLifecycleCalls(this.component, componentLocal, ['onPageShow']);
+
+            // 3. 遍历该 Component 的 Callbacks
+            const callbacks = this.componentToCallbacksMap.get(this.component) ?? new Set();
+            this.wrapWithDoWhileLoop(() => {
+                for (const callback of callbacks) {
+                    this.wrapWithIfBranch(() => this.addCallbackInvoke(callback));
+                }
+            });
+
+            this.addLifecycleCalls(this.component, componentLocal, ['onPageHide']);
+        });
 
         // 4. Component 后序生命周期（示例：aboutToDisappear）
-        this.addLifecycleCalls(this.component, componentLocal, COMPONENT_POST_LIFECYCLE);
+        this.addLifecycleCalls(this.component, componentLocal, ['aboutToDisappear']);
     }
 }
 
@@ -68,8 +81,10 @@ export class BuilderMainMethodCreater extends BaseMainMethodCreater {
      */
     public addStmtsToCfg(): void {
         const callbacks = this.builderToCallbacksMap.get(this.builder) ?? new Set();
-        for (const callback of callbacks) {
-            this.wrapWithIfBranch(() => this.addCallbackInvoke(callback));
-        }
+        this.wrapWithDoWhileLoop(() => {
+            for (const callback of callbacks) {
+                this.wrapWithIfBranch(() => this.addCallbackInvoke(callback));
+            }
+        });
     }
 }

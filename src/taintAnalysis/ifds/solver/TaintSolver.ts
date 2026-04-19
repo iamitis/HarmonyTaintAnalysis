@@ -9,6 +9,7 @@ import { IFDSManager } from '../IFDSManager';
 import { ArkMethod } from '../../../core/model/ArkMethod';
 import { AbstractTaintSolver } from './AbstractTaintSolver';
 import { SolverPeerGroup } from './SolverPeerGroup';
+import { LexicalEnvType } from '../../../core/base/Type';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintSolver');
 
@@ -52,7 +53,17 @@ export class TaintSolver extends AbstractTaintSolver {
             return [];
         }
 
-        const startIdx = method.getParameters().length + 1;
+        let startIdx = method.getParameters().length + 1;
+
+        // 若有闭包, 还需加上闭包数量
+        if (method.isAnonymousMethod() &&
+            method.getParameters()[0] &&
+            method.getParameters()[0].getType() instanceof LexicalEnvType
+        ) {
+            const lexicalEnv = method.getParameters()[0].getType() as LexicalEnvType;
+            startIdx += lexicalEnv.getClosures().length;
+        }
+
         if (cfg.getStmts().length > startIdx) {
             return [cfg.getStmts()[startIdx]];
         } else {

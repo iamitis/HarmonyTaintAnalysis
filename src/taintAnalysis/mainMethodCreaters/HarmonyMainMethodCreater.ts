@@ -12,6 +12,7 @@ import { checkAndUpdateMethod } from "../../core/model/builder/ArkMethodBuilder"
 import { ArkSignatureBuilder } from "../../core/model/builder/ArkSignatureBuilder";
 import { addCfg2Stmt } from "../../utils/entryMethodUtils";
 import { Callback } from "../CallbackCollector";
+import { BackupExtensionAbilityMainMethodCreater } from "./extensionAbilities/BackupExtensionAbilityMainMethodCreater";
 import { FormExtensionAbilityMainMethodCreater } from "./extensionAbilities/FormExtensionAbilityMainMethodCreater";
 import { BaseMainMethodCreater, MainMethodCreater, CFGContext } from "./MainMethodCreater";
 import { UIAbilityMainMethodCreater } from "./UIAbilityMainMethodCreater";
@@ -75,6 +76,7 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
         );
         dummyMainClass.setSignature(dummyMainClassSignature);
         dummyMainFile.addArkClass(dummyMainClass);
+        dummyMainFile.setDefaultClass(dummyMainClass);
 
         // 2. 创建虚拟的 ArkMethod
         this.dummyMain = new ArkMethod();
@@ -95,7 +97,7 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
         cfg.addBlock(firstBlock);
 
         // 设置计数变量用于创建条件表达式，并设置 Cfg.startingStmt!
-        const countLocal = new Local('count', NumberType.getInstance());
+        const countLocal = new Local('harmonyDummyMainCount', NumberType.getInstance());
         const zero = ValueUtil.getOrCreateNumberConst(0);
         const countAssignStmt = new ArkAssignStmt(countLocal, zero);
         firstBlock.addStmt(countAssignStmt);
@@ -113,37 +115,42 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
 
         // 5. 遍历每个 Ability，调用 AbilityMainMethodCreater
         // TODO: 找起始 Ability，找 startAbility 调用
-        for (const ability of this.abilities) {
-            let abilityMainMethodCreater: MainMethodCreater | undefined;
+        this.wrapWithDoWhileLoop(() => {
+            for (const ability of this.abilities) {
+                let abilityMainMethodCreater: MainMethodCreater | undefined;
 
-            if (this.isUIAbility(ability)) {
-                abilityMainMethodCreater = new UIAbilityMainMethodCreater(
-                    ability,
-                    this.abilityToComponentsMap,
-                    this.abilityToBuildersMap,
-                    this.componentToCallbacksMap,
-                    this.builderToCallbacksMap,
-                    this.cfgContext,
-                    this.classToLocalMap
-                );
-            } else if (this.isExtensionAbility(ability)) {
-                const extensionAbilityType = this.getExtensionAbilityType(ability);
-                switch (extensionAbilityType) {
-                    case 'FormExtensionAbility':
-                        abilityMainMethodCreater = new FormExtensionAbilityMainMethodCreater();
-                        break;
-                    default:
-                        logger.error(`Unsupported extension ability type: ${extensionAbilityType}`);
-                        break;
+                if (this.isUIAbility(ability)) {
+                    abilityMainMethodCreater = new UIAbilityMainMethodCreater(
+                        ability,
+                        this.abilityToComponentsMap,
+                        this.abilityToBuildersMap,
+                        this.componentToCallbacksMap,
+                        this.builderToCallbacksMap,
+                        this.cfgContext,
+                        this.classToLocalMap
+                    );
+                } else if (this.isExtensionAbility(ability)) {
+                    const extensionAbilityType = this.getExtensionAbilityType(ability);
+                    switch (extensionAbilityType) {
+                        case 'FormExtensionAbility':
+                            abilityMainMethodCreater = new FormExtensionAbilityMainMethodCreater();
+                            break;
+                        case 'BackupExtensionAbility':
+                            abilityMainMethodCreater = new BackupExtensionAbilityMainMethodCreater(ability, this.cfgContext);
+                            break;
+                        default:
+                            logger.error(`Unsupported extension ability type: ${extensionAbilityType}`);
+                            break;
+                    }
+                } else {
+                    logger.error(`Unsupported ability: ${ability.getSignature()}. It is not a UIAbility or ExtensionAbility`);
                 }
-            } else {
-                logger.error(`Unsupported ability: ${ability.getSignature()}. It is not a UIAbility or ExtensionAbility`);
-            }
 
-            if (abilityMainMethodCreater) {
-                this.wrapWithIfBranch(() => abilityMainMethodCreater.addStmtsToCfg());
+                if (abilityMainMethodCreater) {
+                    this.wrapWithIfBranch(() => abilityMainMethodCreater.addStmtsToCfg());
+                }
             }
-        }
+        });
 
         // 6. 添加 return 语句
         const returnStmt = new ArkReturnVoidStmt();
@@ -219,14 +226,34 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
     }
 
     private isUIAbility(cls: ArkClass): boolean {
-        return true;
+        const heritageClasses = cls.getAllHeritageClasses();
+
+        if (heritageClasses.some(cls => cls.getName() === 'UIAbility')) {
+            return true;
+        }
+
+        return heritageClasses.some((cls) => this.isUIAbility(cls));
     }
 
     private isExtensionAbility(cls: ArkClass): boolean {
-        return false;
+        const heritageClasses = cls.getAllHeritageClasses();
+
+        if (heritageClasses.some(cls => cls.getName() === 'ExtensionAbility' || cls.getName() === 'BackupExtensionAbility')) {
+            return true;
+        }
+
+        return heritageClasses.some((cls) => this.isExtensionAbility(cls));
     }
 
     private getExtensionAbilityType(cls: ArkClass): string {
-        return '';
+        // TODO
+        const heritageClasses = cls.getAllHeritageClasses();
+        if (heritageClasses.some(cls => cls.getName() === 'FormExtensionAbility')) {
+            return 'FormExtensionAbility';
+        } else if (heritageClasses.some(cls => cls.getName() === 'BackupExtensionAbility')) {
+            return 'BackupExtensionAbility';
+        } else {
+            return 'UnsupportedExtensionAbility';
+        }
     }
 }

@@ -2,7 +2,7 @@
     "sources": [
         {
             "methodName": "sourceField",
-            "declaringClass": {},
+            "declaringClass": "@debug/Alias.ts:%dflt",
             "parameterTypes": [],
             "returnType": "string",
             "isStatic": false,
@@ -37,7 +37,7 @@
         
         {
             "methodName": "sinkField",
-            "declaringClass": {},
+            "declaringClass": "@debug/Alias.ts:%dflt",
             "parameterTypes": ["string"],
             "returnType": "void",
             "isStatic": false,

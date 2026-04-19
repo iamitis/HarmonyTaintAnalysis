@@ -8,18 +8,20 @@ import {
     LOG_MODULE_TYPE,
     DotMethodPrinter
 } from '../../src';
+import { Sdk } from '../../src/Config';
 import { ArkIRMethodPrinter } from '../../src/save/arkir/ArkIRMethodPrinter';
 import { AliasingStrategy } from '../../src/taintAnalysis/config/IFDSConfig';
 import { SourceAndSinkFileType, TaintAnalysisConfig, TaintAnalysisProjectType } from '../../src/taintAnalysis/config/TaintAnalysisConfig';
+import path from 'path';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintAnalysisTest');
 Logger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.DEBUG, false);
 
 // 构建 Harmony 项目的 scene
 function buildHarmonyScene(configPath: string) {
-    let config: SceneConfig = new SceneConfig();
+    const config: SceneConfig = new SceneConfig();
     config.buildFromJson(configPath);
-    let projectScene: Scene = new Scene();
+    const projectScene: Scene = new Scene();
     projectScene.buildBasicInfo(config);
     projectScene.buildScene4HarmonyProject();
     projectScene.inferTypes();
@@ -29,9 +31,9 @@ function buildHarmonyScene(configPath: string) {
 
 // 从普通目录构建 scene
 function buildDirectoryScene(dirPath: string) {
-    let config: SceneConfig = new SceneConfig();
+    const config: SceneConfig = new SceneConfig();
     config.buildFromProjectDir(dirPath);
-    let directoryScene: Scene = new Scene();
+    const directoryScene: Scene = new Scene();
     directoryScene.buildSceneFromProjectDir(config);
     directoryScene.inferTypes();
     logger.info('buildDirectoryScene exit.');
@@ -65,14 +67,14 @@ function harmonyTest() {
 // 测试 IFDS
 const DEBUG_DIR = './tests/resources/taintAnalysis/debug';
 const DEBUG_DEFINITION_FILE = './tests/resources/taintAnalysis/debug/SourceSinkDefinition.json';
-const UNIT_DIR = './tests/resources/taintAnalysis';
-const UNIT_DEFINITION_FILE = './tests/resources/taintAnalysis/SourceSinkDefinition.json';
+const FLOWDROID_UNIT_DIR = './tests/resources/taintAnalysis/transFromFlowDroid';
+const FLOWDROID_DEFINITION_FILE = './tests/resources/taintAnalysis/transFromFlowDroid/SourceSinkDefinition.json';
 function ifdsTest() {
-    const scene = buildDirectoryScene(UNIT_DIR);
+    const scene = buildDirectoryScene(FLOWDROID_UNIT_DIR);
     const taintAnalysisConfig = new TaintAnalysisConfig();
     taintAnalysisConfig.projectType = TaintAnalysisProjectType.Directory;
     taintAnalysisConfig.sourceAndSinkConfig = {
-        definitionFilePath: UNIT_DEFINITION_FILE,
+        definitionFilePath: FLOWDROID_DEFINITION_FILE,
         definitionFileType: SourceAndSinkFileType.JSON
     }
 
@@ -112,13 +114,13 @@ function ifdsTest() {
     // findMethodAndTest('arrayAliasTest2');
     // findMethodAndTest('debugOverwriteBaseObjectTest2');
     // findMethodAndTest('debugMultiLevelTaint');
-    // findMethodAndTest('debugSimpleTest');
+    findMethodAndTest('debugSimpleTest');
     // findMethodAndTest('debugReturnAliasTest');
     // findMethodAndTest('debugTwoLevelTest');
     // findMethodAndTest('debugTestAliases');
     // findMethodAndTest('debugNegativeTest');
     // findMethodAndTest('debugFunctionAliasTest');
-    findMethodAndTest('debugFieldBaseOverwriteTest');
+    // findMethodAndTest('debugFieldBaseOverwriteTest');
     // findMethodAndTest('debugDoubleAliasTest');
     // findMethodAndTest('debugUnAliasParameterTest');
     // findMethodAndTest('debugCallSiteCreatesAlias');
@@ -143,8 +145,66 @@ function ifdsTest() {
             });
             console.log(`------------------ ${methodName} Taint Analysis Result End ------------------`);
             printCFG(method);
+            const yClass = scene.getClasses().find((arkClass) => arkClass.getName() === 'Y');
+            if (yClass) {
+                const set = yClass.getMethods().find((method) => method.getName() === 'set');
+                if (set) {
+                    printCFG(set);
+                }
+            }
         }
     }
 }
 
-ifdsTest();
+const HAP_BENCH_DIR = './tests/resources/taintAnalysis/hapBench';
+const HAP_BENCH_DEFINITION_FILE = './tests/resources/taintAnalysis/hapBench/SourceSinkDefinition.json';
+const sdk: Sdk = {
+    name: "etsSdk",
+    path: "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
+    moduleName: ""
+}
+
+function hapBenchTest(dir: string, name: string) {
+    const sceneConfig = new SceneConfig();
+    sceneConfig.buildConfig(name, path.join(HAP_BENCH_DIR, dir), [sdk]);
+    const scene = new Scene();
+    scene.buildSceneFromProjectDir(sceneConfig);
+    scene.inferTypes();
+
+    const taintAnalysisConfig = new TaintAnalysisConfig();
+    taintAnalysisConfig.projectType = TaintAnalysisProjectType.OpenHarmony;
+    taintAnalysisConfig.sourceAndSinkConfig = {
+        definitionFilePath: HAP_BENCH_DEFINITION_FILE,
+        definitionFileType: SourceAndSinkFileType.JSON
+    }
+    taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
+
+    const setup = new TaintAnalysis(scene, taintAnalysisConfig);
+    setup.analyze();
+
+    console.log(`------------------ ${dir} Taint Analysis Result ------------------`);
+    setup.getTaintAnalysisResult().forEach((res) => {
+        console.log(`-----`);
+        console.log(res.toString());
+    });
+    console.log(`------------------ ${dir} Taint Analysis Result End ------------------`);
+
+    printCFG(setup.getDummyMain()!);
+    const ability = scene.getClasses().find((arkClass) => arkClass.getName() === 'EntryAbility');
+    if (ability) {
+        const onCreate = ability.getMethods().find((method) => method.getName() === 'onCreate');
+        onCreate && printCFG(onCreate);
+        const onForeground = ability.getMethods().find((method) => method.getName() === 'onForeground');
+        onForeground && printCFG(onForeground);
+    }
+    const build = scene.getMethods().find((method) => method.getName() === 'build');
+    build && printCFG(build);
+    const cb = scene.getMethods().find((method) => method.getName() === '%AM0$build');
+    cb && printCFG(cb);
+}
+
+// harmonyTest();
+
+// ifdsTest();
+
+hapBenchTest('Lifecycle Modeling/EventOdering', 'EventOdering');

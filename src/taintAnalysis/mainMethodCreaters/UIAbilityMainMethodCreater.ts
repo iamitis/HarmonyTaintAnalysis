@@ -5,8 +5,16 @@ import { Callback } from "../CallbackCollector";
 import { ComponentMainMethodCreater, BuilderMainMethodCreater } from "./ComponentMainMethodCreater";
 import { BaseMainMethodCreater, CFGContext } from "./MainMethodCreater";
 
-const ABILITY_PRE_LIFECYCLE = ['onCreate'];
-const ABILITY_POST_LIFECYCLE = ['onDestroy'];
+// TODO: 添加更多生命周期, 完善生命周期调用顺序
+
+const ABILITY_POST_LIFECYCLE = [
+    'onWillBackground',
+    'onBackground',
+    'onDidBackground',
+    'onWindowStageWillDestroy',
+    'onWindowStageDestroy',
+    'onDestroy'
+]
 
 export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
     private ability: ArkClass;
@@ -37,34 +45,48 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
 
     /**
      * 向 CFG 中添加 Ability 相关语句
-     * 结构：
-     *   1. Ability 实例化 + 构造函数
-     *   2. Ability 前序生命周期（onCreate）
-     *   3. 遍历 Components，调用 ComponentMainMethodCreater
-     *   4. 遍历 Builders，调用 BuilderMainMethodCreater
-     *   5. Ability 后序生命周期（onDestroy）
      */
     public addStmtsToCfg(): void {
 
-        // 1. 创建 Ability 实例
+        // 创建 Ability 实例
         const abilityLocal = this.getOrCreateClassLocal(this.ability);
 
-        // 2. Ability 前序生命周期（示例：onCreate）
-        this.addLifecycleCalls(this.ability, abilityLocal, ABILITY_PRE_LIFECYCLE);
+        // Ability 前序生命周期
+        this.addLifecycleCalls(this.ability, abilityLocal, ['onCreate']);
 
-        // 3. 遍历该 Ability 的 Components
+        this.wrapWithIfBranch(() => {
+            this.addLifecycleCalls(this.ability, abilityLocal, ['onNewWant']);
+        })
+
+        this.addLifecycleCalls(this.ability, abilityLocal, [
+            'onWindowStageCreate',
+            'onWillForeground',
+            'onForeground',
+            'onDidForeground',
+        ]);
+
+        // 添加 Ability 事件生命周期
+        this.wrapWithDoWhileLoop(() => {
+            this.wrapWithIfBranch(() => {
+                this.addLifecycleCalls(this.ability, abilityLocal, ['onShare']);
+            })
+        });
+
+        // 遍历该 Ability 的 Components
         const components = this.abilityToComponentsMap.get(this.ability) ?? new Set();
-        for (const component of components) {
-            const componentCreater = new ComponentMainMethodCreater(
-                component,
-                this.componentToCallbacksMap,
-                this.cfgContext,
-                this.classToLocalMap
-            );
-            this.wrapWithIfBranch(() => componentCreater.addStmtsToCfg());
-        }
+        this.wrapWithDoWhileLoop(() => {
+            for (const component of components) {
+                const componentCreater = new ComponentMainMethodCreater(
+                    component,
+                    this.componentToCallbacksMap,
+                    this.cfgContext,
+                    this.classToLocalMap
+                );
+                this.wrapWithIfBranch(() => componentCreater.addStmtsToCfg());
+            }
+        });
 
-        // 4. 遍历该 Ability 的 Builders
+        // 遍历该 Ability 的 Builders
         const builders = this.abilityToBuildersMap.get(this.ability) ?? new Set();
         for (const builder of builders) {
             const builderCreater = new BuilderMainMethodCreater(
@@ -76,7 +98,7 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
             this.wrapWithIfBranch(() => builderCreater.addStmtsToCfg());
         }
 
-        // 5. Ability 后序生命周期（示例：onDestroy）
+        // Ability 后序生命周期
         this.addLifecycleCalls(this.ability, abilityLocal, ABILITY_POST_LIFECYCLE);
     }
 }

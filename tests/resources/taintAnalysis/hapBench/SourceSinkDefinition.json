@@ -1,0 +1,29 @@
+{
+    "sources": [
+        {
+            "methodName": "getLastLocation",
+            "declaringClass": "@etsSdk/api/@ohos.geoLocationManager.d.ts:geoLocationManager.%dflt",
+            "parameterTypes": [],
+            "returnType": "@etsSdk/api/@ohos.geoLocationManager.d.ts:geoLocationManager.Location",
+            "isStatic": false,
+            "paramIndex": -1
+        }
+    ],
+    "sinks": [
+        {
+            "methodName": "info",
+            "declaringClass": "@etsSdk/api/@ohos.hilog.d.ts:hilog.%dflt",
+            "parameterTypes": [
+                "number",
+                "string",
+                "string",
+                "any[]"
+            ],
+            "returnType": "void",
+            "isStatic": false,
+            "paramIndices": [
+                -1
+            ]
+        }
+    ]
+}

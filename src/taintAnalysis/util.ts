@@ -6,7 +6,7 @@ import { Value } from "../core/base/Value";
 /**
  * 获取 value 包含的所有基本值, 如多元运算中的所有操作数、数组的 base
  */
-export function getBaseValues(value: Value): Value[] {
+export function findBaseValues(value: Value): Value[] {
     // TODO: 检查完善更多类型
     if (value instanceof AbstractBinopExpr) {
         // a * b

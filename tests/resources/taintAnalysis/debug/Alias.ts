@@ -4,11 +4,11 @@
  */
 
 class Child {
-    childField: string;
+    childField: string = '';
 }
 
 class Parent {
-    parentField: Child;
+    parentField: Child = new Child();
 }
 
 function sourceField(): string {
@@ -172,7 +172,7 @@ function testFieldAlias13() {
 }
 
 class Grand {
-    grandField: Parent;
+    grandField: Parent = new Parent();
 }
 
 /**
@@ -212,7 +212,7 @@ function functionAliasTest(): void {
     const dc1 = new Child();
     const dc2 = new Child();
     dc1.childField = tainted;
-    this.copy(dc1, dc2);
+    copy(dc1, dc2);
     sinkField(dc2.childField);
 }
 

@@ -2,6 +2,10 @@ import { ArkInvokeStmt, ArkMethod, ArkReturnVoidStmt, Scene, Stmt } from "../../
 import { DataflowSolver } from "../../../core/dataflow/DataflowSolver";
 import { PathEdge, PathEdgePoint } from "../../../core/dataflow/Edge";
 import { getRecallMethodInParam } from "../../../core/dataflow/Util";
+import { AbstractInvokeExpr, ArkPtrInvokeExpr } from "../../../core/base/Expr";
+import { FunctionType } from "../../../core/base/Type";
+import { BasicBlock } from '../../../core/graph/BasicBlock';
+import { Trap } from '../../../core/base/Trap';
 import { AbstractTaintProblem, TaintFlowFunction } from "../problem/AbstractTaintProblem";
 import { TaintFact } from "../TaintFact";
 import { SolverPeerGroup } from "./SolverPeerGroup";
@@ -29,6 +33,88 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
         super(problem, scene);
         this.problem = problem;
         this.peerGroup = peerGroup ?? new SolverPeerGroup();
+    }
+
+    /**
+     * @override
+     * 在正常后继的基础上，补充 BasicBlock 级别的异常后继到 stmtNexts
+     */
+    protected buildStmtMapInBlock(block: BasicBlock): void {
+        super.buildStmtMapInBlock(block);
+
+        const exceptionalSuccessors = block.getExceptionalSuccessorBlocks();
+        if (!exceptionalSuccessors || exceptionalSuccessors.length === 0) {
+            return;
+        }
+
+        const stmts = block.getStmts();
+        if (stmts.length === 0) {
+            return;
+        }
+
+        const lastStmt = stmts[stmts.length - 1];
+        const existingNexts = this.stmtNexts.get(lastStmt);
+        if (!existingNexts) {
+            return;
+        }
+
+        for (const excSucc of exceptionalSuccessors) {
+            const head = excSucc.getHead();
+            if (head) {
+                existingNexts.add(head);
+            }
+        }
+    }
+
+    /**
+     * @override
+     * 在构建完所有 block 的正常/异常边后，基于 Trap 信息补充非尾部 try block 到 catch block 的异常边
+     */
+    protected buildStmtMapInClass(): void {
+        super.buildStmtMapInClass();
+
+        const methods = this.scene.getMethods();
+        methods.push(this.problem.getEntryMethod());
+        for (const method of methods) {
+            this.supplementExceptionalEdgesFromTraps(method);
+        }
+    }
+
+    /**
+     * 基于 Trap 信息补充 try block 到 catch block 的异常边.
+     *
+     * TrapBuilder 仅为 try 区域的尾部 block 添加了 exceptionalSuccessorBlocks,
+     * 非尾部 try block（如 try 内含 if-else 产生的多个 block）没有异常边.
+     * 此方法遍历所有 Trap, 将每个 tryBlock 的尾语句到 catchBlock 的首语句的边补充到 stmtNexts 中.
+     */
+    protected supplementExceptionalEdgesFromTraps(method: ArkMethod): void {
+        const traps = method.getBody()?.getTraps();
+        if (!traps) {
+            return;
+        }
+
+        for (const trap of traps) {
+            const catchBlocks = trap.getCatchBlocks();
+            if (catchBlocks.length === 0) {
+                continue;
+            }
+            const catchHead = catchBlocks[0].getHead();
+            if (!catchHead) {
+                continue;
+            }
+
+            for (const tryBlock of trap.getTryBlocks()) {
+                const tryTail = tryBlock.getTail();
+                if (!tryTail) {
+                    continue;
+                }
+
+                const existingNexts = this.stmtNexts.get(tryTail);
+                if (existingNexts && !existingNexts.has(catchHead)) {
+                    existingNexts.add(catchHead);
+                }
+            }
+        }
     }
 
     /**
@@ -65,11 +151,24 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
 
         // 查找 callee
         const invokeStmt = callEdgePoint.node as ArkInvokeStmt;
+        const invokeExpr = invokeStmt.getInvokeExpr();
         let callees: Set<ArkMethod>;
-        if (this.scene.getFile(invokeStmt.getInvokeExpr().getMethodSignature().getDeclaringClassSignature().getDeclaringFileSignature())) {
+        if (this.scene.getFile(invokeExpr.getMethodSignature().getDeclaringClassSignature().getDeclaringFileSignature())) {
             callees = this.getAllCalleeMethods(callEdgePoint.node as ArkInvokeStmt);
+            // 过滤掉作为函数类型参数传入的匿名方法 callee,
+            // 这些匿名方法应在进入实际 callee 后, 通过 callee 内部的调用语句(如 ptrinvoke)被正确处理,
+            // 而非在当前调用者的上下文中被当作直接 callee.
+            callees = this.filterParamAnonymousCallees(invokeExpr, callees);
         } else {
             callees = new Set([getRecallMethodInParam(invokeStmt)!]);
+        }
+
+        // 当 ptrinvoke 的所有 callee 均无 CFG 时, 尝试解析函数指针指向的实际匿名方法实现
+        if (invokeExpr instanceof ArkPtrInvokeExpr && ![...callees].some(c => c.getCfg())) {
+            const realCallees = this.resolvePtrInvokeRealCallee(invokeExpr);
+            for (const rc of realCallees) {
+                callees.add(rc);
+            }
         }
 
         // caller 的 return site, 即 call site 的下一条语句
@@ -79,7 +178,7 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
             // 应用 caller call site point -> callee start point 的流函数
             for (const callee of callees) {
                 let callFlowFunc: TaintFlowFunction = this.problem.getCallFlowFunction(invokeStmt, callee);
-                if (!callee.getCfg()) {
+                if (!callee.getCfg() || this.problem.isExcludedMethod(invokeStmt, callee)) {
                     continue;
                 }
 
@@ -292,6 +391,81 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
      */
     protected findReturnStmts(method: ArkMethod): readonly Stmt[] {
         return this.problem.findReturnStmts(method);
+    }
+
+    /**
+     * 从 getAllCalleeMethods 返回的 callee 集合中, 过滤掉作为函数类型参数传入的匿名方法.
+     *
+     * CHA 的 getParamAnonymousMethod 会将 invokeExpr 的函数类型参数对应的匿名方法
+     * 也作为 callee 返回, 但这些匿名方法不是当前调用语句的直接 callee.
+     * 例如 staticinvoke callA(%AM0) 中, %AM0 是 callA 的参数, 而非 callA 调用语句的 callee;
+     * %AM0 应在进入 callA 后, 通过 callA 内部的 ptrinvoke <callback()>() 被正确处理.
+     *
+     * @param invokeExpr 调用表达式
+     * @param callees CHA 解析出的 callee 集合
+     * @returns 过滤后的 callee 集合
+     */
+    private filterParamAnonymousCallees(invokeExpr: AbstractInvokeExpr, callees: Set<ArkMethod>): Set<ArkMethod> {
+        // 收集 invokeExpr 中函数类型参数对应的匿名方法签名
+        const paramMethodSigStrings: Set<string> = new Set();
+        for (const arg of invokeExpr.getArgs()) {
+            const argType = arg.getType();
+            if (argType instanceof FunctionType) {
+                paramMethodSigStrings.add(argType.getMethodSignature().toString());
+            }
+        }
+
+        if (paramMethodSigStrings.size === 0) {
+            return callees;
+        }
+
+        // 过滤掉签名匹配的匿名方法 callee
+        const filtered = new Set<ArkMethod>();
+        for (const callee of callees) {
+            if (!paramMethodSigStrings.has(callee.getSignature().toString())) {
+                filtered.add(callee);
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * 当 ptrinvoke 的 callee 无 CFG 时, 通过函数指针的类型信息搜索场景中
+     * 具有相同匿名方法前缀且有 CFG 的方法作为实际 callee.
+     *
+     * 根因: FunctionType.getMethodSignature() 指向 resolveFunctionTypeNode
+     * 创建的合成方法（无 body/CFG），而非 callableNodeToValueAndStmts
+     * 创建的实际实现（有 body/CFG）。
+     * 命名约定: 合成方法为 %AM{N}, 实际实现为 %AM{N}$<enclosingMethod>
+     */
+    private resolvePtrInvokeRealCallee(invokeExpr: ArkPtrInvokeExpr): ArkMethod[] {
+        const funPtr = invokeExpr.getFuncPtrLocal();
+        const ptrType = funPtr.getType();
+        if (!(ptrType instanceof FunctionType)) {
+            return [];
+        }
+
+        const syntheticMethodName = ptrType.getMethodSignature()
+            .getMethodSubSignature().getMethodName();
+
+        // 仅处理 %AM{N} 模式的匿名方法合成名
+        if (!/^%AM\d+$/.test(syntheticMethodName)) {
+            return [];
+        }
+
+        // 搜索场景中名称以 "%AM{N}$" 开头且有 CFG 的方法
+        const realMethodPrefix = syntheticMethodName + '$';
+        const realCallees: ArkMethod[] = [];
+
+        for (const arkClass of this.scene.getClasses()) {
+            for (const method of arkClass.getMethods(true)) {
+                if (method.getName().startsWith(realMethodPrefix) && method.getCfg()) {
+                    realCallees.push(method);
+                }
+            }
+        }
+
+        return realCallees;
     }
 
     protected edgeEquals(edge1: PathEdge<TaintFact>, edge2: PathEdge<TaintFact>) {

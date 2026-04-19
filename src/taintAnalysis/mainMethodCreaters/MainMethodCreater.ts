@@ -2,7 +2,7 @@ import { Logger } from "../..";
 import { ArkConditionExpr, RelationalBinaryOperator, ArkNewExpr, ArkInstanceInvokeExpr, ArkStaticInvokeExpr } from "../../core/base/Expr";
 import { Local } from "../../core/base/Local";
 import { ArkIfStmt, ArkAssignStmt, ArkInvokeStmt } from "../../core/base/Stmt";
-import { ClassType, Type } from "../../core/base/Type";
+import { AliasType, ClassType, Type } from "../../core/base/Type";
 import { CONSTRUCTOR_NAME } from "../../core/common/TSConst";
 import { ValueUtil } from "../../core/common/ValueUtil";
 import { BasicBlock } from "../../core/graph/BasicBlock";
@@ -93,6 +93,71 @@ export abstract class BaseMainMethodCreater implements MainMethodCreater {
     }
 
     /**
+     * 在 CFG 中创建 do-while 循环结构
+     * 
+     * 结构：
+     * currentBlock:
+     *   ...之前的语句...
+     *   → loopBlock
+     * 
+     * loopBlock:                         ← 循环入口
+     *   <body() 添加的语句>
+     *   if (0 != 0) goto loopBlock        ← true: 回边
+     *              else goto loopExitBlock ← false: 退出
+     * 
+     * loopExitBlock:
+     *   ...后续语句...
+     * 
+     * @param body 循环体的回调函数
+     */
+    protected wrapWithDoWhileLoop(body: () => void): void {
+        if (!this.cfgContext) {
+            logger.warn('CFGContext is null');
+            return;
+        }
+
+        // 创建循环体 block 和循环出口 block
+        const loopBlock = new BasicBlock();
+        loopBlock.setId(this.cfgContext.nextBlockId++);
+        const loopExitBlock = new BasicBlock();
+        loopExitBlock.setId(this.cfgContext.nextBlockId++);
+        this.cfgContext.cfg.addBlock(loopBlock);
+        this.cfgContext.cfg.addBlock(loopExitBlock);
+
+        // currentBlock → loopBlock（进入循环）
+        this.cfgContext.currentBlock.addSuccessorBlock(loopBlock);
+        loopBlock.addPredecessorBlock(this.cfgContext.currentBlock);
+
+        // 保存 loopBlock 引用，供回边使用
+        const loopEntry = loopBlock;
+
+        // 切换到 loopBlock，执行 body
+        this.cfgContext.currentBlock = loopBlock;
+        body();
+
+        // body 执行后 currentBlock 可能已改变（如 body 内部嵌套了 wrapWithIfBranch）
+        const lastBodyBlock = this.cfgContext.currentBlock;
+
+        // 在 body 最后停留的 block 末尾添加 if 语句
+        // TODO: 修改 condition
+        const zero = ValueUtil.getOrCreateNumberConst(0);
+        const condition = new ArkConditionExpr(zero, zero, RelationalBinaryOperator.InEquality);
+        const ifStmt = new ArkIfStmt(condition);
+        lastBodyBlock.addStmt(ifStmt);
+
+        // true 分支：回边到 loopBlock
+        lastBodyBlock.addSuccessorBlock(loopEntry);
+        loopEntry.addPredecessorBlock(lastBodyBlock);
+
+        // false 分支：退出到 loopExitBlock
+        lastBodyBlock.addSuccessorBlock(loopExitBlock);
+        loopExitBlock.addPredecessorBlock(lastBodyBlock);
+
+        // 后续语句添加到 loopExitBlock
+        this.cfgContext.currentBlock = loopExitBlock;
+    }
+
+    /**
      * 获取或创建类的 Local 变量，并添加实例化 + 构造函数调用
      */
     protected getOrCreateClassLocal(cls: ArkClass): Local {
@@ -145,6 +210,10 @@ export abstract class BaseMainMethodCreater implements MainMethodCreater {
 
     /**
      * 为方法参数创建 Local 变量
+     * 
+     * 对于 ClassType 参数，创建 new 表达式赋值；
+     * 对于非 ClassType 参数，尝试从父类同名方法获取正确的 ClassType，
+     * 并递归展开 AliasType 获取其 originalType 中的 ClassType。
      */
     protected createParamLocals(method: ArkMethod): Local[] {
         if (!this.cfgContext) {
@@ -152,8 +221,16 @@ export abstract class BaseMainMethodCreater implements MainMethodCreater {
         }
 
         const paramLocals: Local[] = [];
-        for (const param of method.getParameters()) {
-            let paramType: Type | undefined = param.getType();
+        const params = method.getParameters();
+
+        for (let i = 0; i < params.length; i++) {
+            let paramType: Type = params[i].getType();
+
+            // 若参数类型不是 ClassType，尝试从父类同名方法获取（SDK 方法通常有正确的 ClassType）
+            if (!(paramType instanceof ClassType)) {
+                paramType = this.resolveParamType(method, i, paramType);
+            }
+
             const paramLocal = new Local('%' + this.cfgContext.tempLocalIndex++, paramType);
             paramLocals.push(paramLocal);
 
@@ -164,6 +241,52 @@ export abstract class BaseMainMethodCreater implements MainMethodCreater {
             }
         }
         return paramLocals;
+    }
+
+    /**
+     * 尝试将参数类型解析为 ClassType
+     * 策略：
+     * 1. 从父类同名方法获取参数类型（SDK 中的方法通常有正确的 ClassType）
+     * 2. 递归展开 AliasType 获取 originalType
+     */
+    private resolveParamType(method: ArkMethod, paramIndex: number, paramType: Type): Type {
+        // 1. 尝试从父类同名方法获取参数类型
+        const superCls = method.getDeclaringArkClass().getSuperClass();
+        const methodInSuperCls = superCls?.getMethodWithName(method.getName());
+        if (methodInSuperCls) {
+            const superParamType = methodInSuperCls.getParameters()[paramIndex]?.getType();
+            if (superParamType instanceof ClassType) {
+                return superParamType;
+            }
+            // 父类方法的参数类型也不是 ClassType 时，用父类类型继续尝试解析
+            if (superParamType && !(superParamType instanceof ClassType)) {
+                paramType = superParamType;
+            }
+        }
+
+        // 2. 递归展开 AliasType，获取其 originalType 中的 ClassType
+        if (paramType instanceof AliasType) {
+            const resolved = this.resolveAliasType(paramType);
+            if (resolved instanceof ClassType) {
+                return resolved;
+            }
+        }
+
+        return paramType;
+    }
+
+    /**
+     * 递归展开 AliasType，返回其 originalType 链中的 ClassType
+     */
+    private resolveAliasType(type: AliasType): Type {
+        const originalType = type.getOriginalType();
+        if (originalType instanceof ClassType) {
+            return originalType;
+        }
+        if (originalType instanceof AliasType) {
+            return this.resolveAliasType(originalType);
+        }
+        return type;
     }
 
     /**

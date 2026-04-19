@@ -172,7 +172,7 @@ export class AliasProblem extends AbstractTaintProblem {
 
         let newFact: TaintFact | undefined = undefined;
 
-        if (newValue instanceof Local || newValue instanceof ArkInstanceFieldRef || newValue instanceof ArkStaticFieldRef) {
+        if (newValue instanceof Local || newValue instanceof ArkInstanceFieldRef || newValue instanceof ArkStaticFieldRef || newValue instanceof ArkArrayRef) {
             // stmt: a = b, taintedVar = a.f.* => newFact = b.f.*
             // === OR ===
             // stmt: a = b.bf, taintedVar = a.f.* => newFact = b.bf.f.*
@@ -184,6 +184,10 @@ export class AliasProblem extends AbstractTaintProblem {
             } else {
                 // === OR ===
                 // stmt: a = b, a is tainted by a[i] => newFact = b
+                if (newValue instanceof ArkArrayRef) {
+                    // 处理多维数组
+                    newValue = newValue.getBase();
+                }
                 newAP = AccessPath.createElementTaintedArrayAccessPath(newValue as Local);
             }
 

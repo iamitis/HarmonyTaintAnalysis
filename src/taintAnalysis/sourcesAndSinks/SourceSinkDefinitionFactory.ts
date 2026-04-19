@@ -21,6 +21,7 @@ import { SourceDefinition, SinkDefinition, SourceSinkType } from './SourceSinkDe
 import { MethodSourceDefinition, MethodSinkDefinition } from './matchers/MethodMatcher';
 import { FieldSourceDefinition, FieldSinkDefinition, FieldAccessType } from './matchers/FieldMatcher';
 import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
+import { DEFAULT_ARK_CLASS_NAME } from '../../core/common/Const';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'SourceSinkDefinitionFactory');
 
@@ -204,17 +205,20 @@ export class SourceSinkDefinitionFactory {
         }
 
         // 处理对象形式
-        if (!json || !json.className || !json.fileSignature) {
-            return ClassSignature.DEFAULT;
+        const className = json.className ?? DEFAULT_ARK_CLASS_NAME;
+        let fileSignature: FileSignature | undefined;
+        if (!json.fileSignature?.projectName || !json.fileSignature?.fileName) {
+            fileSignature = FileSignature.DEFAULT;
+        } else {
+            fileSignature = new FileSignature(
+                json.fileSignature.projectName,
+                json.fileSignature.fileName
+            );
         }
-        const fileSignature = new FileSignature(
-            json.fileSignature.projectName,
-            json.fileSignature.fileName
-        );
         const namespaceSignature = json.namespace
             ? this.buildNamespaceSignatureFromJson(json.namespace, fileSignature)
             : null;
-        return new ClassSignature(json.className, fileSignature, namespaceSignature);
+        return new ClassSignature(className, fileSignature, namespaceSignature);
     }
 
     /**
