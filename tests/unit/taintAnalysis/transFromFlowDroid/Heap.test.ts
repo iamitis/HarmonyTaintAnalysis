@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import path from 'path';
 import { Scene } from '../../../../src/Scene';
 import { SceneConfig } from '../../../../src/Config';
-import { TaintAnalysis } from '../../../../src/taintAnalysis/SetupApplication';
+import { TaintAnalysis } from '../../../../src/taintAnalysis/TaintAnalysis';
 import { TaintAnalysisConfig, TaintAnalysisProjectType, SourceAndSinkFileType } from '../../../../src/taintAnalysis/config/TaintAnalysisConfig';
 import { ArkMethod } from '../../../../src/core/model/ArkMethod';
 import { AliasingStrategy } from '../../../../src/taintAnalysis/config/IFDSConfig';

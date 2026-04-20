@@ -1,4 +1,4 @@
-export { TaintAnalysis } from './SetupApplication';
+export { TaintAnalysis } from './TaintAnalysis';
 
 // IFDS 污点分析
 export { TaintFact } from './ifds/TaintFact';
