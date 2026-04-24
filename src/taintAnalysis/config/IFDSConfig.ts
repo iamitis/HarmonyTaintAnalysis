@@ -4,6 +4,8 @@ export class IFDSConfig {
 
     aliasingStrategy: AliasingStrategy = AliasingStrategy.FlowSensitive;
 
+    optimize: boolean = process.env.OPTIMIZE === 'true' || process.env.OPT === 'true';
+
 }
 
 export enum StaticFieldTrackingMode {

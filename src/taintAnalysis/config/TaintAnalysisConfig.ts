@@ -9,7 +9,7 @@ export class TaintAnalysisConfig {
     projectType: TaintAnalysisProjectType = TaintAnalysisProjectType.Directory;
 
     /* source 和 sink 定义文件配置 */
-    sourceAndSinkConfig: SourceAndSinkFileConfig = { definitionFilePath: "", definitionFileType: SourceAndSinkFileType.JSON };
+    sourceAndSinkConfigs: SourceAndSinkFileConfig[] = [{ definitionFilePath: "", definitionFileType: SourceAndSinkFileType.JSON }];
 
     methodToBeAnalyzed?: ArkMethod;
 }

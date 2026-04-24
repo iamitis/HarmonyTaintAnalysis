@@ -13,17 +13,14 @@ import { TaintSolver } from "./ifds/solver/TaintSolver";
 import { HarmonyMainMethodCreater } from "./mainMethodCreaters/HarmonyMainMethodCreater";
 import path from 'path';
 import fs from 'fs';
-import { SourceSinkManager } from "./sourcesAndSinks/SourceSinkManager";
-import { AliasingStrategy, IFDSConfig } from "./config/IFDSConfig";
+import { AliasingStrategy } from "./config/IFDSConfig";
 import { IFDSManager } from "./ifds/IFDSManager";
 import { SolverPeerGroup } from "./ifds/solver/SolverPeerGroup";
 import { SourceAndSinkFileType, TaintAnalysisConfig, TaintAnalysisProjectType } from "./config/TaintAnalysisConfig";
 import { SourceToSinkInfo } from "./results/TaintAnalysisResult";
+import { isAbility } from "./util";
 
-const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'SetupApplication');
-
-// TODO: 详细整理
-const ABILITY_BASE_CLASSES = ['UIExtensionAbility', 'Ability', 'FormExtensionAbility', 'UIAbility', 'BackupExtensionAbility'];
+const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintAnalysis');
 
 export class TaintAnalysis {
     private scene: Scene;
@@ -39,9 +36,12 @@ export class TaintAnalysis {
 
     private dummyMain: ArkMethod | null = null;
 
-    private sourceSinkManager?: SourceSinkManager;
+    private sourceSinkManager?: JsonSourceSinkManager;
 
     private taintAnalysisResult: Set<SourceToSinkInfo> = new Set();
+
+    private ifdsTime: number = 0;
+    private ifdsProcessEdgeCnt: number = 0;
 
     constructor(scene: Scene, taintAnalysisConfig: TaintAnalysisConfig = new TaintAnalysisConfig()) {
         this.scene = scene;
@@ -54,16 +54,20 @@ export class TaintAnalysis {
      */
     private initWithConfig(): void {
         // 初始化 sourceSinkManager
-        const sourceAndSinkConfig = this.taintAnalysisConfig.sourceAndSinkConfig;
-        switch (sourceAndSinkConfig.definitionFileType) {
-            case SourceAndSinkFileType.JSON:
-                const sourceSinkManager = new JsonSourceSinkManager();
-                sourceSinkManager.loadFromFile(sourceAndSinkConfig.definitionFilePath);
-                this.sourceSinkManager = sourceSinkManager;
-                break;
-            default:
-                break;
-        }
+        const sourceAndSinkConfigs = this.taintAnalysisConfig.sourceAndSinkConfigs;
+        sourceAndSinkConfigs.forEach(conf => {
+            switch (conf.definitionFileType) {
+                case SourceAndSinkFileType.JSON:
+                    if (!this.sourceSinkManager) {
+                        const sourceSinkManager = new JsonSourceSinkManager();
+                        this.sourceSinkManager = sourceSinkManager;
+                    }
+                    this.sourceSinkManager.loadFromFile(conf.definitionFilePath);
+                    break;
+                default:
+                    break;
+            }
+        })
 
         // 初始化 dummyMain
         if (this.taintAnalysisConfig.projectType === TaintAnalysisProjectType.Directory) {
@@ -153,7 +157,7 @@ export class TaintAnalysis {
             const moduleConfig = moduleJson.module as { [k: string]: unknown } | undefined;
 
             if (!moduleConfig?.routerMap) {
-                logger.warn(`module.json5 not found for module ${moduleName} at ${moduleJsonPath}`);
+                logger.warn(`routerMap not found for module ${moduleName} at ${moduleJsonPath}`);
                 return;
             }
 
@@ -261,37 +265,27 @@ export class TaintAnalysis {
      */
     public findAbilities(): void {
         this.scene.getClasses().forEach((cls) => {
-            this.isAbility(cls) && this.abilities.push(cls);
+            isAbility(cls) && this.abilities.push(cls);
         })
-    }
-
-    /**
-     * 判断一个类是否是（继承自） Ability
-     */
-    private isAbility(arkClass: ArkClass): boolean {
-        if (ABILITY_BASE_CLASSES.includes(arkClass.getSuperClassName())) {
-            return true;
-        }
-        let superClass = arkClass.getSuperClass();
-        while (superClass) {
-            if (ABILITY_BASE_CLASSES.includes(superClass.getSuperClassName())) {
-                return true;
-            }
-            superClass = superClass.getSuperClass();
-        }
-        return false;
+        logger.info(`Found ${this.abilities.length} abilities`);
     }
 
     /**
      * Find the Components used by each Ability.
      */
     public collectComponents(): void {
+        let componentCnt = 0;
+        let builderCnt = 0;
         this.abilities.forEach((ability) => {
             const collector = new ComponentCollector(this.scene, this.routerMaps, ability);
             collector.collect();
             this.abilityToComponentsMap.set(ability, collector.getComponents());
             this.abilityToBuildersMap.set(ability, collector.getBuilders());
+            componentCnt += collector.getComponents().size;
+            builderCnt += collector.getBuilders().size;
         });
+        logger.info(`Found ${componentCnt} components`);
+        logger.info(`Found ${builderCnt} builders`);
     }
 
     /**
@@ -306,6 +300,9 @@ export class TaintAnalysis {
         callbackAnalyzer.collectCallbacks();
         this.componentToCallbacksMap = callbackAnalyzer.getComponentToCallbacksMap();
         this.builderToCallbacksMap = callbackAnalyzer.getBuilderToCallbacksMap();
+
+        const cbCnt = callbackAnalyzer.getComponentToCallbacksMap().size + callbackAnalyzer.getBuilderToCallbacksMap().size;
+        logger.info(`Found ${cbCnt} callbacks from ViewTree`);
     }
 
     /**
@@ -338,6 +335,7 @@ export class TaintAnalysis {
             return;
         }
 
+        const startTime = Date.now();
         try {
             const ifdsManager = new IFDSManager(this.taintAnalysisConfig.ifdsConfig);
             ifdsManager.setSourceSinkManager(this.sourceSinkManager);
@@ -356,8 +354,7 @@ export class TaintAnalysis {
             switch (this.taintAnalysisConfig.ifdsConfig.aliasingStrategy) {
                 case AliasingStrategy.FlowSensitive:
                     const flowSensitiveAliasStrategy = new FlowSensitiveAliasStrategy(ifdsManager);
-                    const pta = PointerAnalysis.pointerAnalysisForMethod(this.scene, this.dummyMain);
-                    const aliasing = new Aliasing(ifdsManager, flowSensitiveAliasStrategy, pta);
+                    const aliasing = new Aliasing(ifdsManager, flowSensitiveAliasStrategy);
                     ifdsManager.setAliasing(aliasing);
                     break;
                 case AliasingStrategy.None:
@@ -373,8 +370,17 @@ export class TaintAnalysis {
                 const result = SourceToSinkInfo.from(factAtSink);
                 result && this.taintAnalysisResult.add(result);
             });
+
+            logger.info(`Found ${this.taintAnalysisResult.size} leaks`)
+
+            this.ifdsTime = Date.now() - startTime;
+            this.ifdsProcessEdgeCnt = taintSolver.getProcessEdgeCnt() + aliasSolver.getProcessEdgeCnt();
+            logger.info(`Taint analysis completed in ${this.ifdsTime}ms`);
+            logger.info(`Taint analysis processed ${this.ifdsProcessEdgeCnt} edges`);
+
         } catch (error) {
-            logger.error(`Taint analysis failed: ${error}`);
+            const ifdsTime = Date.now() - startTime;
+            logger.error(`Taint analysis failed after ${ifdsTime}ms: ${error}`);
             throw error;
         }
     }
@@ -393,7 +399,15 @@ export class TaintAnalysis {
     /**
      * 设置污点配置
      */
-    public setSourceSinkManager(config: SourceSinkManager): void {
+    public setSourceSinkManager(config: JsonSourceSinkManager): void {
         this.sourceSinkManager = config;
+    }
+
+    public getIfdsTime(): number {
+        return this.ifdsTime;
+    }
+
+    public getIfdsProcessEdgeCnt(): number {
+        return this.ifdsProcessEdgeCnt;
     }
 }

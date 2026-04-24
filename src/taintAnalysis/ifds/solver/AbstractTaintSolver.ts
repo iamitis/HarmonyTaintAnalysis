@@ -1,11 +1,10 @@
-import { ArkInvokeStmt, ArkMethod, ArkReturnVoidStmt, Scene, Stmt } from "../../..";
+import { ArkInvokeStmt, ArkMethod, Scene, Stmt } from "../../..";
 import { DataflowSolver } from "../../../core/dataflow/DataflowSolver";
 import { PathEdge, PathEdgePoint } from "../../../core/dataflow/Edge";
 import { getRecallMethodInParam } from "../../../core/dataflow/Util";
 import { AbstractInvokeExpr, ArkPtrInvokeExpr } from "../../../core/base/Expr";
 import { FunctionType } from "../../../core/base/Type";
 import { BasicBlock } from '../../../core/graph/BasicBlock';
-import { Trap } from '../../../core/base/Trap';
 import { AbstractTaintProblem, TaintFlowFunction } from "../problem/AbstractTaintProblem";
 import { TaintFact } from "../TaintFact";
 import { SolverPeerGroup } from "./SolverPeerGroup";
@@ -24,6 +23,8 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
 
     protected problem: AbstractTaintProblem;
 
+    protected processEdgeCnt: number = 0;
+
     /**
      * (callee, calleeCtxFact) -> Set<PathEdgePoint<TaintFact>>
      */
@@ -40,14 +41,31 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
      * 在正常后继的基础上，补充 BasicBlock 级别的异常后继到 stmtNexts
      */
     protected buildStmtMapInBlock(block: BasicBlock): void {
-        super.buildStmtMapInBlock(block);
+        const stmts = block.getStmts();
 
+        for (let stmtIndex = 0; stmtIndex < stmts.length; stmtIndex++) {
+            const stmt = stmts[stmtIndex];
+            if (stmtIndex !== stmts.length - 1) {
+                this.stmtNexts.set(stmt, new Set([stmts[stmtIndex + 1]]));
+            } else {
+                const set: Set<Stmt> = new Set();
+                for (const successor of block.getSuccessors()) {
+                    if (successor.getHead()) {
+                        set.add(successor.getHead()!);
+                    } else if (successor.getStmts()[0]) {
+                        set.add(successor.getStmts()[0]);
+                    }
+                }
+                this.stmtNexts.set(stmt, set);
+            }
+        }
+
+        // 补充异常边
         const exceptionalSuccessors = block.getExceptionalSuccessorBlocks();
         if (!exceptionalSuccessors || exceptionalSuccessors.length === 0) {
             return;
         }
 
-        const stmts = block.getStmts();
         if (stmts.length === 0) {
             return;
         }
@@ -120,6 +138,29 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
     /**
      * @override
      */
+    protected doSolve(): void {
+        while (this.workList.length > 0) {
+            let pathEdge: PathEdge<TaintFact> = this.workList.shift()!;
+            if (this.laterEdges.has(pathEdge)) {
+                this.laterEdges.delete(pathEdge);
+            }
+
+            let targetStmt: Stmt = pathEdge.edgeEnd.node;
+            if (this.isCallStatement(targetStmt)) {
+                this.processCallNode(pathEdge);
+            } else if (this.isExitStatement(targetStmt)) {
+                this.processExitNode(pathEdge);
+            } else {
+                this.processNormalNode(pathEdge);
+            }
+
+            ++this.processEdgeCnt;
+        }
+    }
+
+    /**
+     * @override
+     */
     protected processNormalNode(edge: PathEdge<TaintFact>): void {
         const ctxPoint = edge.edgeStart;
         const currPoint = edge.edgeEnd;
@@ -158,7 +199,8 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
             // 过滤掉作为函数类型参数传入的匿名方法 callee,
             // 这些匿名方法应在进入实际 callee 后, 通过 callee 内部的调用语句(如 ptrinvoke)被正确处理,
             // 而非在当前调用者的上下文中被当作直接 callee.
-            callees = this.filterParamAnonymousCallees(invokeExpr, callees);
+            // 除非 callee 没有 cfg
+            callees = this.filterArgAnonymousCallees(invokeExpr, callees);
         } else {
             callees = new Set([getRecallMethodInParam(invokeStmt)!]);
         }
@@ -312,31 +354,6 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
     }
 
     /**
-     * @override
-     */
-    // protected callNodeFactPropagate(callSiteEdge: PathEdge<TaintFact>, firstStmt: Stmt, fact: TaintFact, returnSite: Stmt): void {
-    //     // propagate edge(sp, sp)
-    //     let calleeStartPoint: PathEdgePoint<TaintFact> = new PathEdgePoint(firstStmt, fact);
-    //     this.propagate(new PathEdge<TaintFact>(calleeStartPoint, calleeStartPoint));
-
-    //     // 通过 peerGroup 注册 incoming: (calleeMethod, contextFact) -> callSiteEdge
-
-    //     // 从 endSummray 中找到 callee exit point, 应用 callee exit point -> caller return site point 的流函数, 并更新 summaryEdge
-    //     let exitPoints: Set<PathEdgePoint<TaintFact>> = new Set();
-    //     for (const end of Array.from(this.endSummary.keys())) {
-    //         if (end.fact === fact && end.node === firstStmt) {
-    //             exitPoints = this.endSummary.get(end)!;
-    //         }
-    //     }
-    //     for (let exitEdgePoint of exitPoints) {
-    //         let returnFlowFunc = this.problem.getExitToReturnFlowFunction(exitEdgePoint.node, returnSite, callSiteEdge.edgeEnd.node);
-    //         for (let returnFact of returnFlowFunc.getDataFacts(exitEdgePoint.fact)) {
-    //             this.summaryEdge.add(new PathEdge<TaintFact>(callSiteEdge.edgeEnd, new PathEdgePoint<TaintFact>(returnSite, returnFact)));
-    //         }
-    //     }
-    // }
-
-    /**
      * 找 callee context (method, fact) 对应的 call site edges (incoming).
      * 委托给 peerGroup, 以 (calleeMethod, contextFact) 为 key 查找,
      * 实现前向/后向 solver 共享 incoming 表.
@@ -405,24 +422,30 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
      * @param callees CHA 解析出的 callee 集合
      * @returns 过滤后的 callee 集合
      */
-    private filterParamAnonymousCallees(invokeExpr: AbstractInvokeExpr, callees: Set<ArkMethod>): Set<ArkMethod> {
-        // 收集 invokeExpr 中函数类型参数对应的匿名方法签名
-        const paramMethodSigStrings: Set<string> = new Set();
-        for (const arg of invokeExpr.getArgs()) {
-            const argType = arg.getType();
-            if (argType instanceof FunctionType) {
-                paramMethodSigStrings.add(argType.getMethodSignature().toString());
+    private filterArgAnonymousCallees(invokeExpr: AbstractInvokeExpr, callees: Set<ArkMethod>): Set<ArkMethod> {
+        for (const callee of callees) {
+            if (!callee.getCfg()) {
+                return callees;
             }
         }
 
-        if (paramMethodSigStrings.size === 0) {
+        // 收集 invokeExpr 中函数类型参数对应的匿名方法签名
+        const methodFromArg: Set<string> = new Set();
+        for (const arg of invokeExpr.getArgs()) {
+            const argType = arg.getType();
+            if (argType instanceof FunctionType) {
+                methodFromArg.add(argType.getMethodSignature().toString());
+            }
+        }
+
+        if (methodFromArg.size === 0) {
             return callees;
         }
 
         // 过滤掉签名匹配的匿名方法 callee
         const filtered = new Set<ArkMethod>();
         for (const callee of callees) {
-            if (!paramMethodSigStrings.has(callee.getSignature().toString())) {
+            if (!methodFromArg.has(callee.getSignature().toString())) {
                 filtered.add(callee);
             }
         }
@@ -474,5 +497,13 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
 
     protected edgePointEquals(point1: PathEdgePoint<TaintFact>, point2: PathEdgePoint<TaintFact>) {
         return point1.node === point2.node && point1.fact.equals(point2.fact);
+    }
+
+    public getProblem(): AbstractTaintProblem {
+        return this.problem;
+    }
+
+    public getProcessEdgeCnt(): number {
+        return this.processEdgeCnt;
     }
 }
