@@ -1,20 +1,26 @@
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { describe, expect, it, beforeAll, afterAll, afterEach } from 'vitest';
 import path from 'path';
+import fs from 'fs';
 import { Scene } from '../../../../src/Scene';
 import { SceneConfig } from '../../../../src/Config';
 import { TaintAnalysis } from '../../../../src/taintAnalysis/TaintAnalysis';
 import { TaintAnalysisConfig, TaintAnalysisProjectType, SourceAndSinkFileType } from '../../../../src/taintAnalysis/config/TaintAnalysisConfig';
 import { ArkMethod } from '../../../../src/core/model/ArkMethod';
 import { AliasingStrategy } from '../../../../src/taintAnalysis/config/IFDSConfig';
-import ConsoleLogger, { LOG_LEVEL } from '../../../../src/utils/logger';
+import ConsoleLogger, { LOG_LEVEL, LOG_MODULE_TYPE } from '../../../../src/utils/logger';
 import { ArkIRMethodPrinter } from '../../../../src/save/arkir/ArkIRMethodPrinter';
 import { SourceToSinkInfo } from '../../../../src/taintAnalysis/results/TaintAnalysisResult';
+import { Logger } from '../../../../src';
 
 describe('Heap Taint Analysis Test', () => {
     let scene: Scene;
     let taintAnalysis: TaintAnalysis;
     let testResourceDir: string;
     let sourceSinkConfigPath: string;
+    let timeUseFilePath: string;
+    let totalIFDSTime: number = 0;
+    let totalIFDSProcessEdgeCnt: number = 0;
+    const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'SetupApplication');
 
     beforeAll(() => {
         // Uncomment to enable debug logging
@@ -31,10 +37,19 @@ describe('Heap Taint Analysis Test', () => {
 
         // Load Source/Sink configuration from JSON
         sourceSinkConfigPath = path.join(testResourceDir, 'SourceSinkDefinition.json');
+
+        // Initialize HeapTimeUse.txt
+        timeUseFilePath = path.join(__dirname, 'HeapTimeUse.txt');
+        fs.writeFileSync(timeUseFilePath, '');
     });
 
     afterAll(() => {
         scene.dispose();
+        logger.error('Total IFDS time: ' + totalIFDSTime + 'ms')
+        logger.error('Total IFDS process edge count: ' + totalIFDSProcessEdgeCnt)
+
+        fs.appendFileSync(timeUseFilePath, `Total: ${totalIFDSTime}\n`);
+        fs.appendFileSync(timeUseFilePath, `Total edge count: ${totalIFDSProcessEdgeCnt}\n`);
     });
 
     /**
@@ -62,14 +77,24 @@ describe('Heap Taint Analysis Test', () => {
         const config = new TaintAnalysisConfig();
         config.projectType = TaintAnalysisProjectType.Directory;
         config.methodToBeAnalyzed = entryMethod;
-        config.sourceAndSinkConfig = {
-            definitionFilePath: sourceSinkConfigPath,
-            definitionFileType: SourceAndSinkFileType.JSON,
-        };
+        config.sourceAndSinkConfigs = [
+            {
+                definitionFilePath: sourceSinkConfigPath,
+                definitionFileType: SourceAndSinkFileType.JSON,
+            }
+        ];
         config.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
 
         taintAnalysis = new TaintAnalysis(scene, config);
         taintAnalysis.analyze();
+
+        totalIFDSTime += taintAnalysis.getIfdsTime();
+        totalIFDSProcessEdgeCnt += taintAnalysis.getIfdsProcessEdgeCnt();
+
+        logger.error('edge count: ' + taintAnalysis.getIfdsProcessEdgeCnt());
+
+        const testName = entryMethod.getName();
+        fs.appendFileSync(timeUseFilePath, `${testName}: ${taintAnalysis.getIfdsTime()}\n`);
 
         return taintAnalysis.getTaintAnalysisResult();
     }

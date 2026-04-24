@@ -2,6 +2,9 @@ import { A, B, Book, Container1, Container2, DataClass, FirstLevel, MyArrayList,
 import { AccountManager, AppLocation, ConnectionManager, LocationManager, TelephonyManager } from "./UtilClasses";
 
 class DebugBasicTest {
+    private a: A = new A();
+    private b: A = new A();
+
     debugOverwriteInCalleeTest2(): void {
         let loc: AppLocation = LocationManager.getLastKnownLocation();
         this.debugCalleeOverwriteNull(loc);
@@ -21,6 +24,20 @@ class DebugBasicTest {
         let cm: ConnectionManager = new ConnectionManager();
         cm.publish(loc.getLongitude().toString());
     }
+
+    debugBasicSimpleTest(): void {
+        let loc: AppLocation = LocationManager.getLastKnownLocation();
+        let cm: ConnectionManager = new ConnectionManager();
+        cm.publish(loc.getLatitude().toString());
+    }
+
+    debugMyTest() {
+        this.a.b = TelephonyManager.getDeviceId();
+        this.b = this.a;
+
+        let cm: ConnectionManager = new ConnectionManager();
+        cm.publish(this.b.toString());
+    }
 }
 
 class DebugHeapTest {
@@ -29,6 +46,8 @@ class DebugHeapTest {
     alias: Book | null = null;
     static staticB1: B | null = null;
     static staticB2: B | null = null;
+    static staticStr1: string = '';
+    static staticStr2: string = '';
 
     debugNegativeTest(): void {
         const taint = TelephonyManager.getDeviceId();
@@ -253,5 +272,33 @@ class DebugHeapTest {
         DebugHeapTest.staticB1!.attr.b = TelephonyManager.getDeviceId();
         const cm = new ConnectionManager();
         cm.publish(DebugHeapTest.staticB2!.attr.b);
+    }
+
+    debugArrayAliasTest(): void {
+        const a: string[] = [''];
+        const b = a;
+        a[0] = TelephonyManager.getDeviceId();
+        const c = b;
+        const cm = new ConnectionManager();
+        cm.publish(c[0]);
+    }
+
+    debugMyStaticTest(): void {
+        DebugHeapTest.staticStr1 = TelephonyManager.getDeviceId();
+        DebugHeapTest.staticStr2 = DebugHeapTest.staticStr1;
+        const cm = new ConnectionManager();
+        cm.publish(DebugHeapTest.staticStr2);
+    }
+
+    intData: number = 0;
+
+    private debugSetIntData(): void {
+        this.intData = TelephonyManager.getIMEI();
+    }
+
+    debugIntAliasTest(): void {
+        this.debugSetIntData();
+        const cm = new ConnectionManager();
+        cm.publishInt(this.intData);
     }
 }

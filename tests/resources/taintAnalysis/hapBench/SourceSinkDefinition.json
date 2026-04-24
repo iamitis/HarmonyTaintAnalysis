@@ -7,6 +7,69 @@
             "returnType": "@etsSdk/api/@ohos.geoLocationManager.d.ts:geoLocationManager.Location",
             "isStatic": false,
             "paramIndex": -1
+        },
+        {
+            "methodName": "readText",
+            "declaringClass": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt",
+            "parameterTypes": [
+                "string",
+                "@etsSdk/api/@ohos.file.fs.d.ts:ReadTextOptions"
+            ],
+            "returnType": "@built-in/lib.es5.d.ts:Promise<string>",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "readTextSync",
+            "declaringClass": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt",
+            "parameterTypes": [
+                "string",
+                "@etsSdk/api/@ohos.file.fs.d.ts:ReadTextOptions"
+            ],
+            "returnType": "string",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "listFile",
+            "declaringClass": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt",
+            "parameterTypes": [
+                "string",
+                "@etsSdk/api/@ohos.file.fs.d.ts:ListFileOptions"
+            ],
+            "returnType": "@built-in/lib.es5.d.ts:Promise<string[]>",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "statSync",
+            "declaringClass": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt",
+            "parameterTypes": [
+                "string|number"
+            ],
+            "returnType": "@etsSdk/api/@ohos.file.fs.d.ts:Stat",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "getBundleInfoForSelf",
+            "declaringClass": "@etsSdk/api/@ohos.bundle.bundleManager.d.ts:bundleManager.%dflt",
+            "parameterTypes": [
+                "number"
+            ],
+            "returnType": "@built-in/lib.es5.d.ts:Promise<@etsSdk/api/@ohos.bundle.bundleManager.d.ts: bundleManager.%dflt.[static]%dflt()#BundleInfo>",
+            "isStatic": false,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "generateRandomUUID",
+            "declaringClass": "@etsSdk/api/@ohos.util.d.ts:util.%dflt",
+            "parameterTypes": [
+                "boolean"
+            ],
+            "returnType": "string",
+            "isStatic": false,
+            "paramIndex": -1
         }
     ],
     "sinks": [

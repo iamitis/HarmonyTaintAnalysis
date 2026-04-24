@@ -5,7 +5,7 @@ import { Stmt } from '../../core/base/Stmt';
 import { SinkDefinition, SourceDefinition } from './SourceSinkDefinition';
 import { SourceSinkDefinitionFactory, TaintDefinitionsJson, SourceDefinitionJson, SinkDefinitionJson } from './SourceSinkDefinitionFactory';
 
-const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintConfig');
+const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'JsonSourceSinkManager');
 
 /**
  * 基于 JSON 配置的 SourceSink 管理器
@@ -103,21 +103,30 @@ export class JsonSourceSinkManager implements SourceSinkManager {
             return;
         }
 
+        let srcCnt = 0;
+        let sinkCnt = 0;
+
         if (json.sources) {
             for (const sourceJson of json.sources) {
                 const source = SourceSinkDefinitionFactory.createSourceFromJson(sourceJson as SourceDefinitionJson);
-                source && this.addSource(source);
+                if (source) {
+                    this.addSource(source);
+                    srcCnt++;
+                }
             }
         }
 
         if (json.sinks) {
             for (const sinkJson of json.sinks) {
                 const sink = SourceSinkDefinitionFactory.createSinkFromJson(sinkJson as SinkDefinitionJson);
-                sink && this.addSink(sink);
+                if (sink) {
+                    this.addSink(sink);
+                    sinkCnt++;
+                }
             }
         }
 
         logger.info(`Loaded taint definitions from ${filePath}: ` +
-            `${this.sources.length} sources, ${this.sinks.length} sinks`);
+            `${srcCnt} sources, ${sinkCnt} sinks`);
     }
 }

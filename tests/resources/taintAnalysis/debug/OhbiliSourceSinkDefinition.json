@@ -1,0 +1,36 @@
+{
+    "sinks": [
+        {
+            "methodName": "i",
+            "declaringClass": "@Ohbili/entry/src/main/ets/utils/BLog.ets:BLog",
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "d",
+            "declaringClass": "@Ohbili/entry/src/main/ets/utils/BLog.ets:BLog",
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "w",
+            "declaringClass": "@Ohbili/entry/src/main/ets/utils/BLog.ets:BLog",
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": true,
+            "paramIndex": -1
+        },
+        {
+            "methodName": "e",
+            "declaringClass": "@Ohbili/entry/src/main/ets/utils/BLog.ets:BLog",
+            "parameterTypes": ["string"],
+            "returnType": "void",
+            "isStatic": true,
+            "paramIndex": -1
+        }
+    ]
+}

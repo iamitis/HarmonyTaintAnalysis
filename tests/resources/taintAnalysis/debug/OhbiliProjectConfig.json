@@ -1,0 +1,15 @@
+{
+    "targetProjectName": "Ohbili",
+    "targetProjectDirectory": "/home/wzy/code/ohapp-for-test/ohbili",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

@@ -1,10 +1,10 @@
 {
-    "targetProjectName": "AppSampleD",
+    "targetProjectName": "MyStore",
     "targetProjectDirectory": "/home/wzy/code/my-store-ohos",
     "sdks": [
         {
             "name": "etsSdk",
-            "path": "/media/wzy/Data/DevEco/DevEco Studio/sdk/default/openharmony/ets",
+            "path": "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
             "moduleName": ""
         }
     ],

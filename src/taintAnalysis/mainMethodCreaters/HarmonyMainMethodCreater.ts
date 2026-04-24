@@ -12,6 +12,7 @@ import { checkAndUpdateMethod } from "../../core/model/builder/ArkMethodBuilder"
 import { ArkSignatureBuilder } from "../../core/model/builder/ArkSignatureBuilder";
 import { addCfg2Stmt } from "../../utils/entryMethodUtils";
 import { Callback } from "../CallbackCollector";
+import { isExtensionAbility, isUIAbility } from "../util";
 import { BackupExtensionAbilityMainMethodCreater } from "./extensionAbilities/BackupExtensionAbilityMainMethodCreater";
 import { FormExtensionAbilityMainMethodCreater } from "./extensionAbilities/FormExtensionAbilityMainMethodCreater";
 import { BaseMainMethodCreater, MainMethodCreater, CFGContext } from "./MainMethodCreater";
@@ -107,7 +108,8 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
             cfg,
             currentBlock: firstBlock,
             tempLocalIndex: 0,
-            nextBlockId: 1
+            nextBlockId: 1,
+            classToLocalMap: new Map<ArkClass, Local>()
         };
 
         // 4. 添加静态初始化（按需触发原则：此处仅添加全局静态初始化）
@@ -119,7 +121,7 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
             for (const ability of this.abilities) {
                 let abilityMainMethodCreater: MainMethodCreater | undefined;
 
-                if (this.isUIAbility(ability)) {
+                if (isUIAbility(ability)) {
                     abilityMainMethodCreater = new UIAbilityMainMethodCreater(
                         ability,
                         this.abilityToComponentsMap,
@@ -127,9 +129,8 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
                         this.componentToCallbacksMap,
                         this.builderToCallbacksMap,
                         this.cfgContext,
-                        this.classToLocalMap
                     );
-                } else if (this.isExtensionAbility(ability)) {
+                } else if (isExtensionAbility(ability)) {
                     const extensionAbilityType = this.getExtensionAbilityType(ability);
                     switch (extensionAbilityType) {
                         case 'FormExtensionAbility':
@@ -147,7 +148,7 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
                 }
 
                 if (abilityMainMethodCreater) {
-                    this.wrapWithIfBranch(() => abilityMainMethodCreater.addStmtsToCfg());
+                    this.wrapWithIfBranch(() => abilityMainMethodCreater!.addStmtsToCfg());
                 }
             }
         });
@@ -166,7 +167,7 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
         }
 
         // 9. 组装 ArkBody
-        const localSet = new Set(Array.from(this.classToLocalMap.values()));
+        const localSet = new Set(Array.from(this.cfgContext.classToLocalMap.values()));
         const dummyBody = new ArkBody(localSet, cfg);
         this.dummyMain.setBody(dummyBody);
         addCfg2Stmt(this.dummyMain);
@@ -223,26 +224,6 @@ export class HarmonyMainMethodCreater extends BaseMainMethodCreater {
                 break; // 重新遍历，因为 Set 在迭代中被修改
             }
         }
-    }
-
-    private isUIAbility(cls: ArkClass): boolean {
-        const heritageClasses = cls.getAllHeritageClasses();
-
-        if (heritageClasses.some(cls => cls.getName() === 'UIAbility')) {
-            return true;
-        }
-
-        return heritageClasses.some((cls) => this.isUIAbility(cls));
-    }
-
-    private isExtensionAbility(cls: ArkClass): boolean {
-        const heritageClasses = cls.getAllHeritageClasses();
-
-        if (heritageClasses.some(cls => cls.getName() === 'ExtensionAbility' || cls.getName() === 'BackupExtensionAbility')) {
-            return true;
-        }
-
-        return heritageClasses.some((cls) => this.isExtensionAbility(cls));
     }
 
     private getExtensionAbilityType(cls: ArkClass): string {

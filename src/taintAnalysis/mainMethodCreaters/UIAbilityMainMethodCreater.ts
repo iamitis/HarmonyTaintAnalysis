@@ -1,4 +1,3 @@
-import { Local } from "../../core/base/Local";
 import { ArkClass } from "../../core/model/ArkClass";
 import { ArkMethod } from "../../core/model/ArkMethod";
 import { Callback } from "../CallbackCollector";
@@ -30,7 +29,6 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
         componentToCallbacksMap: Map<ArkClass, Set<Callback>>,
         builderToCallbacksMap: Map<ArkMethod, Set<Callback>>,
         cfgContext: CFGContext | null,
-        classToLocalMap: Map<ArkClass, Local>
     ) {
         super();
 
@@ -40,7 +38,6 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
         this.componentToCallbacksMap = componentToCallbacksMap;
         this.builderToCallbacksMap = builderToCallbacksMap;
         this.cfgContext = cfgContext;
-        this.classToLocalMap = classToLocalMap;
     }
 
     /**
@@ -80,7 +77,6 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
                     component,
                     this.componentToCallbacksMap,
                     this.cfgContext,
-                    this.classToLocalMap
                 );
                 this.wrapWithIfBranch(() => componentCreater.addStmtsToCfg());
             }
@@ -93,7 +89,6 @@ export class UIAbilityMainMethodCreater extends BaseMainMethodCreater {
                 builder,
                 this.builderToCallbacksMap,
                 this.cfgContext,
-                this.classToLocalMap
             );
             this.wrapWithIfBranch(() => builderCreater.addStmtsToCfg());
         }

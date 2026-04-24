@@ -1,10 +1,9 @@
 import { Scene } from '../../../Scene';
 import { Stmt } from '../../../core/base/Stmt';
-import { PathEdge, PathEdgePoint } from '../../../core/dataflow/Edge';
+import { PathEdge } from '../../../core/dataflow/Edge';
 import { TaintFact } from '../TaintFact';
 import { IFDSManager } from '../IFDSManager';
 import { BasicBlock } from '../../../core/graph/BasicBlock';
-import { Trap } from '../../../core/base/Trap';
 import { AliasProblem, ArkMethod, CallGraphBuilder, ClassHierarchyAnalysis, LexicalEnvType, LOG_MODULE_TYPE, Logger } from '../../..';
 import { CallGraph } from '../../../callgraph/model/CallGraph';
 import { AbstractTaintSolver } from './AbstractTaintSolver';
@@ -134,7 +133,7 @@ export class AliasSolver extends AbstractTaintSolver {
             logger.warn('Method ' + method.getName() + ' has no cfg');
             return [];
         }
-        
+
         const paramCount = method.getParameters().length;
         let closureCount = 0;
         if (method.isAnonymousMethod() &&

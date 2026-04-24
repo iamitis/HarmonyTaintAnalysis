@@ -22,6 +22,7 @@ export interface CFGContext {
     currentBlock: BasicBlock;
     tempLocalIndex: number;
     nextBlockId: number;
+    classToLocalMap: Map<ArkClass, Local>;
 }
 
 export interface MainMethodCreater {
@@ -31,7 +32,6 @@ export interface MainMethodCreater {
 
 export abstract class BaseMainMethodCreater implements MainMethodCreater {
     protected cfgContext: CFGContext | null = null;
-    protected classToLocalMap: Map<ArkClass, Local> = new Map();
 
     // TODO: 是否像 FlowDroid 一样单独创建 method，然后再 invoke
     public createMainMethod(): ArkMethod | null {
@@ -165,13 +165,13 @@ export abstract class BaseMainMethodCreater implements MainMethodCreater {
             throw new Error('CFGContext is null');
         }
 
-        if (this.classToLocalMap.has(cls)) {
-            return this.classToLocalMap.get(cls)!;
+        if (this.cfgContext.classToLocalMap.has(cls)) {
+            return this.cfgContext.classToLocalMap.get(cls)!;
         }
 
         const clsType = new ClassType(cls.getSignature());
-        const local = new Local('%' + this.cfgContext.tempLocalIndex++, clsType);
-        this.classToLocalMap.set(cls, local);
+        const local = new Local('%' + cls.getName() + this.cfgContext.tempLocalIndex++, clsType);
+        this.cfgContext.classToLocalMap.set(cls, local);
 
         // 添加实例化语句
         const assStmt = new ArkAssignStmt(local, new ArkNewExpr(clsType));

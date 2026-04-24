@@ -22,12 +22,32 @@ export class SpecialMethodRule extends AbstractRule {
             return;
         }
 
-        if (invokeExpr && invokeExpr instanceof ArkInstanceInvokeExpr) {
-            // 若 base 是污点, 不进入 callee
+        if (invokeExpr instanceof ArkInstanceInvokeExpr && this.isLhsTaintedByBase(method.getSignature())) {
             if (fact.getAccessPath().isLocal() && fact.getAccessPath().getBase() === invokeExpr.getBase()) {
                 factKillingStatus.killAllFacts = true;
             }
         }
+
+        // 处理 taint.then((taintData) => {})
+        // if (invokeExpr instanceof ArkInstanceInvokeExpr &&
+        //     invokeExpr.getBase() === fact.getAccessPath().getBase() &&
+        //     method.getSubSignature().getMethodName() === 'then'
+        // ) {
+        //     const paramLocals: Local[] = [];
+        //     method.getParameters().forEach(p => {
+        //         method.getBody()?.getLocals()?.forEach(local => {
+        //             local.getName() === p.getName() && paramLocals.push(local);
+        //         });
+        //     });
+        //     paramLocals.forEach(pl => {
+        //         const fields = [...fact.getAccessPath().getFields() ?? []];
+        //         const newAP = AccessPath.createAccessPath(pl, fields);
+        //         if (newAP) {
+        //             const newFact = fact.deriveWithNewAccessPath(newAP, pl, srcStmt);
+        //             newFact && result.add(newFact);
+        //         }
+        //     });
+        // }
     }
 
     /**
@@ -133,6 +153,6 @@ export class SpecialMethodRule extends AbstractRule {
             'JSON.stringify',
             'JSON.parse',
         ].includes(simpleSig) ||
-        className.includes('RegExp');
+            className.includes('RegExp');
     }
 }

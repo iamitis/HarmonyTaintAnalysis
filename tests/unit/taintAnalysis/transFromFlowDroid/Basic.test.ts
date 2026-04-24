@@ -18,7 +18,7 @@ describe('Basic Taint Analysis Test', () => {
 
     beforeAll(() => {
         // 初始化 log4js，开启 console 输出，日志级别设为 DEBUG
-        ConsoleLogger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.DEBUG, false);
+        ConsoleLogger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.INFO, false);
 
         // Build scene from test resources
         const config: SceneConfig = new SceneConfig();
@@ -62,10 +62,12 @@ describe('Basic Taint Analysis Test', () => {
         const config = new TaintAnalysisConfig();
         config.projectType = TaintAnalysisProjectType.Directory;
         config.methodToBeAnalyzed = entryMethod;
-        config.sourceAndSinkConfig = {
-            definitionFilePath: sourceSinkConfigPath,
-            definitionFileType: SourceAndSinkFileType.JSON,
-        };
+        config.sourceAndSinkConfigs = [
+            {
+                definitionFilePath: sourceSinkConfigPath,
+                definitionFileType: SourceAndSinkFileType.JSON,
+            }
+        ];
         config.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
 
         taintAnalysis = new TaintAnalysis(scene, config);

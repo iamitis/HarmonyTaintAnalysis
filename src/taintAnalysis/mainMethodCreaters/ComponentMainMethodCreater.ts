@@ -1,4 +1,3 @@
-import { Local } from "../../core/base/Local";
 import { ArkClass } from "../../core/model/ArkClass";
 import { ArkMethod } from "../../core/model/ArkMethod";
 import { Callback } from "../CallbackCollector";
@@ -9,11 +8,9 @@ export class ComponentMainMethodCreater extends BaseMainMethodCreater {
         private component: ArkClass,
         private componentToCallbacksMap: Map<ArkClass, Set<Callback>>,
         cfgContext: CFGContext | null,
-        classToLocalMap: Map<ArkClass, Local>
     ) {
         super();
         this.cfgContext = cfgContext;
-        this.classToLocalMap = classToLocalMap;
     }
 
     public createMainMethod(): ArkMethod | null {
@@ -54,7 +51,16 @@ export class ComponentMainMethodCreater extends BaseMainMethodCreater {
                 }
             });
 
+            this.wrapWithIfBranch(() => {
+                this.addLifecycleCalls(this.component, componentLocal, ['onBackPress']);
+            })
+
             this.addLifecycleCalls(this.component, componentLocal, ['onPageHide']);
+
+
+            this.wrapWithIfBranch(() => {
+                this.addLifecycleCalls(this.component, componentLocal, ['onNewWant']);
+            })
         });
 
         // 4. Component 后序生命周期（示例：aboutToDisappear）
@@ -67,11 +73,9 @@ export class BuilderMainMethodCreater extends BaseMainMethodCreater {
         private builder: ArkMethod,
         private builderToCallbacksMap: Map<ArkMethod, Set<Callback>>,
         cfgContext: CFGContext | null,
-        classToLocalMap: Map<ArkClass, Local>
     ) {
         super();
         this.cfgContext = cfgContext;
-        this.classToLocalMap = classToLocalMap;
     }
 
     /**

@@ -15,7 +15,7 @@ import { SourceAndSinkFileType, TaintAnalysisConfig, TaintAnalysisProjectType } 
 import path from 'path';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintAnalysisTest');
-Logger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.DEBUG, false);
+Logger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.INFO, false);
 
 // 构建 Harmony 项目的 scene
 function buildHarmonyScene(configPath: string) {
@@ -52,16 +52,42 @@ function printCFG(method: ArkMethod) {
 }
 
 // 从 Harmony 项目跑全流程示例
-const HARMONY_CONFIG_PATH = './tests/resources/taintAnalysis/debug/HarmonyProjectConfig.json';
-function harmonyTest() {
-    const scene = buildHarmonyScene(HARMONY_CONFIG_PATH);
+const PROJECT_CONFIGS = [
+    './tests/resources/taintAnalysis/debug/MyStoreProjectConfig.json',
+    './tests/resources/taintAnalysis/debug/OhbiliProjectConfig.json',
+];
+const OHBILI_DEFINITION_FILE = './tests/resources/taintAnalysis/debug/OhbiliSourceSinkDefinition.json';
 
-    const analyzer = new TaintAnalysis(scene);
+function harmonyTest() {
+    const scene = buildHarmonyScene(PROJECT_CONFIGS[1]);
+
+    const taintAnalysisConfig = new TaintAnalysisConfig();
+    taintAnalysisConfig.projectType = TaintAnalysisProjectType.OpenHarmony;
+    taintAnalysisConfig.sourceAndSinkConfigs = [
+        {
+            definitionFilePath: HAP_BENCH_DEFINITION_FILE,
+            definitionFileType: SourceAndSinkFileType.JSON
+        },
+        {
+            definitionFilePath: OHBILI_DEFINITION_FILE,
+            definitionFileType: SourceAndSinkFileType.JSON
+        }
+    ]
+    taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
+
+    const analyzer = new TaintAnalysis(scene, taintAnalysisConfig);
     analyzer.analyzeHarmonyApp();
+
+    // console.log(`------------------ Harmony Taint Analysis Result ------------------`);
+    // analyzer.getTaintAnalysisResult().forEach((res) => {
+    //     console.log(`-----`);
+    //     console.log(res.toString());
+    // });
+    // console.log(`------------------ Harmony Taint Analysis Result End ------------------`);
 
     // 打印 DummyMain 的 IR
     const dummyMain = analyzer.getDummyMain();
-    dummyMain && printCFG(dummyMain);
+    // dummyMain && printCFG(dummyMain);
 }
 
 // 测试 IFDS
@@ -73,10 +99,12 @@ function ifdsTest() {
     const scene = buildDirectoryScene(FLOWDROID_UNIT_DIR);
     const taintAnalysisConfig = new TaintAnalysisConfig();
     taintAnalysisConfig.projectType = TaintAnalysisProjectType.Directory;
-    taintAnalysisConfig.sourceAndSinkConfig = {
-        definitionFilePath: FLOWDROID_DEFINITION_FILE,
-        definitionFileType: SourceAndSinkFileType.JSON
-    }
+    taintAnalysisConfig.sourceAndSinkConfigs = [
+        {
+            definitionFilePath: FLOWDROID_DEFINITION_FILE,
+            definitionFileType: SourceAndSinkFileType.JSON
+        }
+    ]
 
     // findMethodAndTest('simpleTest1');
     // findMethodAndTest('simpleTest2');
@@ -113,8 +141,10 @@ function ifdsTest() {
     // findMethodAndTest('arrayAliasTest1');
     // findMethodAndTest('arrayAliasTest2');
     // findMethodAndTest('debugOverwriteBaseObjectTest2');
+    // findMethodAndTest('debugBasicSimpleTest');
+    // findMethodAndTest('debugMyTest');
     // findMethodAndTest('debugMultiLevelTaint');
-    findMethodAndTest('debugSimpleTest');
+    // findMethodAndTest('debugSimpleTest');
     // findMethodAndTest('debugReturnAliasTest');
     // findMethodAndTest('debugTwoLevelTest');
     // findMethodAndTest('debugTestAliases');
@@ -130,6 +160,9 @@ function ifdsTest() {
     // findMethodAndTest('debugLhsNotUpwardsInAliasFlow');
     // findMethodAndTest('debugStaticAliasTest');
     // findMethodAndTest('debugStaticAliasTest2');
+    // findMethodAndTest('debugArrayAliasTest');
+    // findMethodAndTest('debugMyStaticTest');
+    findMethodAndTest('debugIntAliasTest');
 
     function findMethodAndTest(methodName: string) {
         const method = scene.getMethods().find((method) => method.getName() === methodName);
@@ -145,13 +178,6 @@ function ifdsTest() {
             });
             console.log(`------------------ ${methodName} Taint Analysis Result End ------------------`);
             printCFG(method);
-            const yClass = scene.getClasses().find((arkClass) => arkClass.getName() === 'Y');
-            if (yClass) {
-                const set = yClass.getMethods().find((method) => method.getName() === 'set');
-                if (set) {
-                    printCFG(set);
-                }
-            }
         }
     }
 }
@@ -173,10 +199,12 @@ function hapBenchTest(dir: string, name: string) {
 
     const taintAnalysisConfig = new TaintAnalysisConfig();
     taintAnalysisConfig.projectType = TaintAnalysisProjectType.OpenHarmony;
-    taintAnalysisConfig.sourceAndSinkConfig = {
-        definitionFilePath: HAP_BENCH_DEFINITION_FILE,
-        definitionFileType: SourceAndSinkFileType.JSON
-    }
+    taintAnalysisConfig.sourceAndSinkConfigs = [
+        {
+            definitionFilePath: HAP_BENCH_DEFINITION_FILE,
+            definitionFileType: SourceAndSinkFileType.JSON
+        }
+    ]
     taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
 
     const setup = new TaintAnalysis(scene, taintAnalysisConfig);
@@ -190,21 +218,20 @@ function hapBenchTest(dir: string, name: string) {
     console.log(`------------------ ${dir} Taint Analysis Result End ------------------`);
 
     printCFG(setup.getDummyMain()!);
-    const ability = scene.getClasses().find((arkClass) => arkClass.getName() === 'EntryAbility');
-    if (ability) {
-        const onCreate = ability.getMethods().find((method) => method.getName() === 'onCreate');
-        onCreate && printCFG(onCreate);
-        const onForeground = ability.getMethods().find((method) => method.getName() === 'onForeground');
-        onForeground && printCFG(onForeground);
-    }
-    const build = scene.getMethods().find((method) => method.getName() === 'build');
-    build && printCFG(build);
-    const cb = scene.getMethods().find((method) => method.getName() === '%AM0$build');
-    cb && printCFG(cb);
+    // const ability = scene.getClasses().find((arkClass) => arkClass.getName() === 'EntryAbility');
+    // if (ability) {
+    //     const onCreate = ability.getMethods().find((method) => method.getName() === 'onCreate');
+    //     onCreate && printCFG(onCreate);
+    //     const onForeground = ability.getMethods().find((method) => method.getName() === 'onForeground');
+    //     onForeground && printCFG(onForeground);
+    // }
+    const onPageHide = scene.getMethods().find((method) => method.getName() === 'onPageHide');
+    onPageHide && printCFG(onPageHide);
+
 }
 
-// harmonyTest();
+harmonyTest();
 
 // ifdsTest();
 
-hapBenchTest('Lifecycle Modeling/EventOdering', 'EventOdering');
+// hapBenchTest('Lifecycle Modeling/Button2', 'Button2');

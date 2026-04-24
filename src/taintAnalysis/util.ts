@@ -1,7 +1,7 @@
 import { AbstractBinopExpr, ArkCastExpr } from "../core/base/Expr";
-import { Local } from "../core/base/Local";
-import { AbstractFieldRef, ArkArrayRef } from "../core/base/Ref";
+import { ArkArrayRef } from "../core/base/Ref";
 import { Value } from "../core/base/Value";
+import { ArkClass } from "../core/model/ArkClass";
 
 /**
  * 获取 value 包含的所有基本值, 如多元运算中的所有操作数、数组的 base
@@ -36,4 +36,28 @@ export const COLORS = new Map<string, string>([
 export function getColorText(text: string, colorKey?: string) {
     const color = COLORS.get(colorKey ?? 'reset') ?? COLORS.get('reset')!;
     return `${color}${text}${COLORS.get('reset')!}`;
+}
+
+export function isUIAbility(cls: ArkClass): boolean {
+    const heritageClasses = cls.getAllHeritageClasses();
+
+    if (heritageClasses.some(cls => cls.getName() === 'UIAbility')) {
+        return true;
+    }
+
+    return heritageClasses.some((cls) => isUIAbility(cls));
+}
+
+export function isExtensionAbility(cls: ArkClass): boolean {
+    const heritageClasses = cls.getAllHeritageClasses();
+
+    if (heritageClasses.some(cls => cls.getName() === 'ExtensionAbility' || cls.getName() === 'BackupExtensionAbility')) {
+        return true;
+    }
+
+    return heritageClasses.some((cls) => isExtensionAbility(cls));
+}
+
+export function isAbility(cls: ArkClass): boolean {
+    return isUIAbility(cls) || isExtensionAbility(cls);
 }

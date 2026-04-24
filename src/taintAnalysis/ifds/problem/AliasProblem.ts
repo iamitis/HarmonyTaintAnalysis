@@ -470,7 +470,7 @@ export class AliasProblem extends AbstractTaintProblem {
                             const ctxFact = ctxNode.fact;
                             ctxStmts.forEach(s => {
                                 const newCtxPoint = new PathEdgePoint<TaintFact>(s, ctxFact);
-                                const anotherPoint = new PathEdgePoint<TaintFact>(s, anotherFact);
+                                const anotherPoint = new PathEdgePoint<TaintFact>(s, anotherFact!);
                                 forwardSolver.processEdge(new PathEdge<TaintFact>(newCtxPoint, anotherPoint));
                             })
                         }

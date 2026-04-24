@@ -56,10 +56,12 @@ describe('HapBench Test', () => {
         // setup taint analysis
         const taintAnalysisConfig = new TaintAnalysisConfig();
         taintAnalysisConfig.projectType = TaintAnalysisProjectType.OpenHarmony;
-        taintAnalysisConfig.sourceAndSinkConfig = {
-            definitionFilePath: SOURCE_SINK_CONFIG,
-            definitionFileType: SourceAndSinkFileType.JSON,
-        };
+        taintAnalysisConfig.sourceAndSinkConfigs = [
+            {
+                definitionFilePath: SOURCE_SINK_CONFIG,
+                definitionFileType: SourceAndSinkFileType.JSON,
+            }
+        ];
         taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
 
         taintAnalysis = new TaintAnalysis(scene, taintAnalysisConfig);

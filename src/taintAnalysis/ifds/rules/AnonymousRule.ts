@@ -1,4 +1,3 @@
-import { ArkInstanceInvokeExpr } from "../../../core/base/Expr";
 import { Local } from "../../../core/base/Local";
 import { ArkAssignStmt, Stmt } from "../../../core/base/Stmt";
 import { ClosureType, LexicalEnvType } from "../../../core/base/Type";
@@ -7,7 +6,6 @@ import { THIS_NAME } from "../../../core/common/TSConst";
 import { ArkMethod } from "../../../core/model/ArkMethod";
 import { findBaseValues } from "../../util";
 import { AccessPath } from "../AccessPath";
-import { FactAtSink } from "../FactAtSink";
 import { TaintFact } from "../TaintFact";
 import { AbstractRule, FactKillingStatus } from "./Rule";
 
@@ -104,7 +102,7 @@ export class AnonymousRule extends AbstractRule {
                 const defStmt = cfg.getStmts()[idx + 1];
                 if (defStmt && defStmt instanceof ArkAssignStmt) {
                     const localFromClo = defStmt.getLeftOp();
-                    localFromClo instanceof Local && local2CloMap.set(localFromClo, clo);
+                    localFromClo instanceof Local && local2CloMap!.set(localFromClo, clo);
 
                     // if clo tainted, then localFromClo tainted
                     if (fact.getAccessPath().isLocal() && fact.getAccessPath().getBase() === clo) {
@@ -119,7 +117,22 @@ export class AnonymousRule extends AbstractRule {
 
         // 将箭头函数的 this 映射到定义时的 this
         if (method.isAnonymousMethod()) {
-            const outerThis = method.getOuterMethod()?.getBody()?.getLocals().get(THIS_NAME);
+            let outerThis: Local | undefined = undefined;
+
+            if (method.getOuterMethod()?.getName() === 'build') {
+                // 组件树里的 onClick(() => {})
+                const compName = method.getOuterMethod()!.getDeclaringArkClass().getName();
+                const dummyMainLocalMap = this.ifdsManager.getForwardSolver()?.getProblem().getEntryMethod().getBody()?.getLocals() ?? new Map<string, Local>();
+                for (const [localName, local] of dummyMainLocalMap) {
+                    if (localName.includes(compName)) {
+                        outerThis = local;
+                        break;
+                    }
+                }
+            } else {
+                outerThis = method.getOuterMethod()?.getBody()?.getLocals().get(THIS_NAME);
+            }
+
             const innerThis = method.getBody()?.getLocals().get(THIS_NAME);
             if (outerThis && innerThis) {
                 let innerToOuter = this.innerThisToOuterThisMap.get(method);

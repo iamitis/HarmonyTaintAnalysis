@@ -6,7 +6,7 @@ import Logger, { LOG_MODULE_TYPE } from '../utils/logger';
 import path from "path";
 import { ArkMethod } from "..";
 import { Local } from "../core/base/Local";
-import { ClassType } from "../core/base/Type";
+import { ClassType, FunctionType } from "../core/base/Type";
 import { ArkAssignStmt } from "../core/base/Stmt";
 import { ArkInstanceFieldRef, ArkArrayRef } from "../core/base/Ref";
 import { Value } from "../core/base/Value";
@@ -17,6 +17,7 @@ import { ViewTreeNode } from "../core/graph/ViewTree";
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'ComponentCollector');
 
 const ROUTER_METHOD = ['pushUrl', 'replaceUrl'];
+const ROUTER_NS = 'router';
 const NAVIGATION_ROUTE_METHOD = ['pushPath', 'pushDestination', 'replacePath', 'replaceDestination'];
 const NAVIGATION_ROUTE_METHOD_BYNAME = ['pushPathByName', 'pushDestinationByName', 'replacePathByName', 'replaceDestinationByName'];
 
@@ -252,18 +253,21 @@ export class ComponentCollector {
      * Find all pushUrl/replaceUrl calls in a component and extract their url parameters.
      */
     private findRoutePathsUsedByComponent(component: ArkClass): string[] {
-        const routes: string[] = [];
+        const routes: Set<string> = new Set();
         for (const method of component.getMethods()) {
-            routes.push(...this.findRoutePathsUsedByMethod(method));
+            this.findRoutePathsUsedByMethod(method, routes, new Set());
         }
-        return routes;
+        return Array.from(routes);
     }
 
     /**
      * Find all pushUrl/replaceUrl calls in a single method.
      */
-    private findRoutePathsUsedByMethod(method: ArkMethod): string[] {
-        const routes: string[] = [];
+    private findRoutePathsUsedByMethod(method: ArkMethod, routes: Set<string>, processedMethods: Set<ArkMethod>) {
+        if (processedMethods.has(method)) {
+            return;
+        }
+
         const stmts = method.getCfg()?.getStmts() ?? [];
 
         for (const stmt of stmts) {
@@ -273,20 +277,32 @@ export class ComponentCollector {
             }
 
             const calledMethodName = invokeExpr.getMethodSignature().getMethodSubSignature().getMethodName();
-            if (!ROUTER_METHOD.includes(calledMethodName)) {
-                continue;
-            }
+            const namespace = invokeExpr.getMethodSignature().getDeclaringClassSignature().getDeclaringNamespaceSignature();
+            if (ROUTER_METHOD.includes(calledMethodName) &&
+                namespace?.getNamespaceName() === ROUTER_NS
+            ) {
+                // 找到 pushUrl/replaceUrl
+                const firstArg = invokeExpr.getArgs()[0];
+                if (!firstArg) {
+                    continue;
+                }
 
-            const firstArg = invokeExpr.getArgs()[0];
-            if (!firstArg) {
-                continue;
+                const url = this.extractUrlFromRouterOptions(firstArg);
+                url && routes.add(url);
+            } else {
+                // 不是 pushUrl/replaceUrl
+                // 查找 arg 中有没有回调
+                invokeExpr.getArgs().forEach((arg) => {
+                    const argType = arg.getType();
+                    if (argType instanceof FunctionType) {
+                        const method = this.scene.getMethod(argType.getMethodSignature());
+                        method && this.findRoutePathsUsedByMethod(method, routes, processedMethods);
+                    }
+                });
             }
-
-            const url = this.extractUrlFromRouterOptions(firstArg);
-            url && routes.push(url);
         }
-
-        return routes;
+        
+        processedMethods.add(method);
     }
 
     /**
