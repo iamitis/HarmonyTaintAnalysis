@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "libNMC",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

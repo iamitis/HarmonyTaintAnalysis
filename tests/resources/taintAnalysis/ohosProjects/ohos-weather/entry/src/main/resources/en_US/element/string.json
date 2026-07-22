@@ -1,0 +1,152 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Weather App"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Weather"
+    },
+    {
+      "name": "weather_page_my_position",
+      "value": "My Position"
+    },
+    {
+      "name": "loading",
+      "value": "Loading..."
+    },
+    {
+      "name": "maximum_temp",
+      "value": "Max temp"
+    },
+    {
+      "name": "minimum_temp",
+      "value": "Min temp"
+    },
+    {
+      "name": "search_weather_placeholder",
+      "value": "Search for cities or airports"
+    },
+    {
+      "name": "page_title_api_key_setting",
+      "value": "API Setting"
+    },
+    {
+      "name": "api_key_input_placeholder",
+      "value": "Enter your qwind apikey"
+    },
+    {
+      "name": "api_key_verify",
+      "value": "Verify"
+    },
+    {
+      "name": "report_hourly",
+      "value": "Hourly Report"
+    },
+    {
+      "name": "report_daily",
+      "value": "Days Report"
+    },
+    {
+      "name": "update_time",
+      "value": "Update Time"
+    },
+    {
+      "name": "day_today",
+      "value": "Today"
+    },
+    {
+      "name": "day_monday",
+      "value": "Mon."
+    },
+    {
+      "name": "day_tuesday",
+      "value": "Tues."
+    },
+    {
+      "name": "day_thursday",
+      "value": "Thurs."
+    },
+    {
+      "name": "day_wednesday",
+      "value": "Wednes."
+    },
+    {
+      "name": "day_friday",
+      "value": "Fri."
+    },
+    {
+      "name": "day_saturday",
+      "value": "Satur."
+    },
+    {
+      "name": "day_sunday",
+      "value": "Sun."
+    },
+    {
+      "name": "setting_language",
+      "value": "Language Setting"
+    },
+    {
+      "name": "setting_unit",
+      "value": "Unit Setting"
+    },
+    {
+      "name": "setting_poi_type",
+      "value": "POI Type"
+    },
+    {
+      "name": "setting_about",
+      "value": "About Weather"
+    },
+    {
+      "name": "hour",
+      "value": "h"
+    },
+    {
+      "name": "now",
+      "value": "Now"
+    },
+    {
+      "name": "setting_item_unit_metric",
+      "value": "Metric"
+    },
+    {
+      "name": "setting_item_unit_imperial",
+      "value": "Imperial"
+    },
+    {
+      "name": "about",
+      "value": "About"
+    },
+    {
+      "name": "setting_request_day",
+      "value": "Request day"
+    },
+    {
+      "name": "setting_request_hour_count",
+      "value": "Request hour"
+    },
+    {
+      "name": "setting_last_request",
+      "value": "Last refresh time"
+    },
+    {
+      "name": "setting_cache_valid_time",
+      "value": "Cache valid time"
+    },
+    {
+      "name": "page_title_setting",
+      "value": "Advanced Settings"
+    },
+    {
+      "name": "api_host_input_placeholder",
+      "value": "Enter your qwind api host"
+    }
+  ]
+}

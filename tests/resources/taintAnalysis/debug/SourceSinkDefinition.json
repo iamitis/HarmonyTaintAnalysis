@@ -1,71 +1,54 @@
 {
     "sources": [
         {
-            "methodName": "sourceField",
-            "declaringClass": "@debug/Alias.ts:%dflt",
-            "parameterTypes": [],
-            "returnType": "string",
-            "isStatic": false,
-            "paramIndex": -1
+            "methodSigString": "@debug/Alias.ts:%dflt.sourceField()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "simpleSource",
-            "declaringClass": {},
-            "parameterTypes": [],
-            "returnType": "string",
-            "isStatic": false,
-            "paramIndex": -1
+            "methodSigString": "@debug/Simple.ts:%dflt.simpleSource()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "sourceArray",
-            "declaringClass": {},
-            "parameterTypes": [],
-            "returnType": "Array<number>",
-            "isStatic": false,
-            "paramIndex": -1
+            "methodSigString": "@debug/Array.ts:%dflt.sourceArray()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "sourceNum",
-            "declaringClass": {},
-            "parameterTypes": [],
-            "returnType": "number",
-            "isStatic": false,
-            "paramIndex": -1
+            "methodSigString": "@debug/Array.ts:%dflt.sourceNum()",
+            "paramIndices": [
+                -1
+            ]
         }
     ],
     "sinks": [
-        
         {
-            "methodName": "sinkField",
-            "declaringClass": "@debug/Alias.ts:%dflt",
-            "parameterTypes": ["string"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@debug/Alias.ts:%dflt.sinkField(string)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "simpleSink",
-            "declaringClass": {},
-            "parameterTypes": ["string"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@debug/Simple.ts:%dflt.simpleSink(string)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "sinkArray",
-            "declaringClass": {},
-            "parameterTypes": ["Array<number>"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@debug/Array.ts:%dflt.sinkArray(Array<number>)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "sinkArrayNum",
-            "declaringClass": {},
-            "parameterTypes": ["number"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@debug/Array.ts:%dflt.sinkArrayNum(number)",
+            "paramIndices": [
+                0
+            ]
         }
     ]
 }

@@ -1,0 +1,68 @@
+{
+  "float": [
+    {
+      "name": "common_padding",
+      "value": "15vp"
+    },
+    {
+      "name": "common_font_size_tiny",
+      "value": "10vp"
+    },
+    {
+      "name": "common_font_size_small",
+      "value": "12vp"
+    },
+    {
+      "name": "common_font_size_medium",
+      "value": "15vp"
+    },
+    {
+      "name": "common_font_size_big",
+      "value": "17vp"
+    },
+    {
+      "name": "common_font_size_huge",
+      "value": "20vp"
+    },
+    {
+      "name": "common_height_tiny",
+      "value": "20vp"
+    },
+    {
+      "name": "common_height_small",
+      "value": "50vp"
+    },
+    {
+      "name": "common_height_medium",
+      "value": "60vp"
+    },
+    {
+      "name": "common_height_big",
+      "value": "100vp"
+    },
+    {
+      "name": "common_height_huge",
+      "value": "150vp"
+    },
+    {
+      "name": "common_width_tiny",
+      "value": "20vp"
+    },
+    {
+      "name": "common_width_small",
+      "value": "50vp"
+    },
+    {
+      "name": "common_width_medium",
+      "value": "60vp"
+    },
+    {
+      "name": "common_width_big",
+      "value": "100vp"
+    },
+    {
+      "name": "common_width_huge",
+      "value": "150vp"
+    }
+  ]
+}

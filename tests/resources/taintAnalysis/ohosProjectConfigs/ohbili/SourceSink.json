@@ -1,0 +1,28 @@
+{
+    "sinks": [
+        {
+            "methodSigString": "@ohbili/entry/src/main/ets/utils/BLog.ets:BLog.[static]i(string)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohbili/entry/src/main/ets/utils/BLog.ets:BLog.[static]d(string)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohbili/entry/src/main/ets/utils/BLog.ets:BLog.[static]w(string)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohbili/entry/src/main/ets/utils/BLog.ets:BLog.[static]e(string)",
+            "paramIndices": [
+                -1
+            ]
+        }
+    ]
+}

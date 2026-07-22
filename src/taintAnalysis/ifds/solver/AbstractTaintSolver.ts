@@ -9,6 +9,16 @@ import { AbstractTaintProblem, TaintFlowFunction } from "../problem/AbstractTain
 import { TaintFact } from "../TaintFact";
 import { SolverPeerGroup } from "./SolverPeerGroup";
 
+export class SolverMetrics {
+    processEdgeCnt: number = 0;
+    solveTime: number = 0;
+    /** TaintSolver only (always 0 for AliasSolver) */
+    normalEdgeCnt: number = 0;
+    callEdgeCnt: number = 0;
+    returnEdgeCnt: number = 0;
+    prunedEdgeCnt: number = 0;
+}
+
 /**
  * 给正向/反向 solver 继承, 提取共用逻辑.
  * @extends DataflowSolver 改动并抽象出 "获取方法 start point、exit point" 等逻辑
@@ -23,7 +33,7 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
 
     protected problem: AbstractTaintProblem;
 
-    protected processEdgeCnt: number = 0;
+    protected metrics: SolverMetrics = new SolverMetrics();
 
     /**
      * (callee, calleeCtxFact) -> Set<PathEdgePoint<TaintFact>>
@@ -139,6 +149,7 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
      * @override
      */
     protected doSolve(): void {
+        const t0 = Date.now();
         while (this.workList.length > 0) {
             let pathEdge: PathEdge<TaintFact> = this.workList.shift()!;
             if (this.laterEdges.has(pathEdge)) {
@@ -154,8 +165,9 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
                 this.processNormalNode(pathEdge);
             }
 
-            ++this.processEdgeCnt;
+            ++this.metrics.processEdgeCnt;
         }
+        this.metrics.solveTime += Date.now() - t0;
     }
 
     /**
@@ -200,7 +212,8 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
             // 这些匿名方法应在进入实际 callee 后, 通过 callee 内部的调用语句(如 ptrinvoke)被正确处理,
             // 而非在当前调用者的上下文中被当作直接 callee.
             // 除非 callee 没有 cfg
-            callees = this.filterArgAnonymousCallees(invokeExpr, callees);
+            // 暂时不 filter 了, 宁愿误报, 不要漏报
+            // callees = this.filterArgAnonymousCallees(invokeExpr, callees);
         } else {
             callees = new Set([getRecallMethodInParam(invokeStmt)!]);
         }
@@ -460,6 +473,8 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
      * 创建的合成方法（无 body/CFG），而非 callableNodeToValueAndStmts
      * 创建的实际实现（有 body/CFG）。
      * 命名约定: 合成方法为 %AM{N}, 实际实现为 %AM{N}$<enclosingMethod>
+     * 
+     * TODO: 上述约定并不严谨
      */
     private resolvePtrInvokeRealCallee(invokeExpr: ArkPtrInvokeExpr): ArkMethod[] {
         const funPtr = invokeExpr.getFuncPtrLocal();
@@ -504,6 +519,14 @@ export abstract class AbstractTaintSolver extends DataflowSolver<TaintFact> {
     }
 
     public getProcessEdgeCnt(): number {
-        return this.processEdgeCnt;
+        return this.metrics.processEdgeCnt;
+    }
+
+    public getSolveTime(): number {
+        return this.metrics.solveTime;
+    }
+
+    public getMetrics(): SolverMetrics {
+        return this.metrics;
     }
 }

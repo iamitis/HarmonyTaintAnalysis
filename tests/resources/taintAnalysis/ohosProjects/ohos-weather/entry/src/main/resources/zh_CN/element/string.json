@@ -1,0 +1,152 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "模块描述"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "天气应用"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "天气"
+    },
+    {
+      "name": "weather_page_my_position",
+      "value": "我的位置"
+    },
+    {
+      "name": "loading",
+      "value": "加载中..."
+    },
+    {
+      "name": "maximum_temp",
+      "value": "最高"
+    },
+    {
+      "name": "minimum_temp",
+      "value": "最低"
+    },
+    {
+      "name": "search_weather_placeholder",
+      "value": "搜索城市或机场"
+    },
+    {
+      "name": "page_title_api_key_setting",
+      "value": "密钥设置"
+    },
+    {
+      "name": "api_key_input_placeholder",
+      "value": "输入你的和风天气API密钥"
+    },
+    {
+      "name": "api_key_verify",
+      "value": "校验"
+    },
+    {
+      "name": "report_hourly",
+      "value": "每小时天气预报"
+    },
+    {
+      "name": "report_daily",
+      "value": "日天气预报"
+    },
+    {
+      "name": "update_time",
+      "value": "更新时间"
+    },
+    {
+      "name": "day_today",
+      "value": "今天"
+    },
+    {
+      "name": "day_monday",
+      "value": "周一"
+    },
+    {
+      "name": "day_tuesday",
+      "value": "周二"
+    },
+    {
+      "name": "day_thursday",
+      "value": "周三"
+    },
+    {
+      "name": "day_wednesday",
+      "value": "周四"
+    },
+    {
+      "name": "day_friday",
+      "value": "周五"
+    },
+    {
+      "name": "day_saturday",
+      "value": "周六"
+    },
+    {
+      "name": "day_sunday",
+      "value": "周日"
+    },
+    {
+      "name": "setting_language",
+      "value": "语言设置"
+    },
+    {
+      "name": "setting_unit",
+      "value": "单位设置"
+    },
+    {
+      "name": "setting_poi_type",
+      "value": "兴趣点类型"
+    },
+    {
+      "name": "setting_about",
+      "value": "关于天气"
+    },
+    {
+      "name": "hour",
+      "value": "时"
+    },
+    {
+      "name": "now",
+      "value": "现在"
+    },
+    {
+      "name": "setting_item_unit_metric",
+      "value": "公制"
+    },
+    {
+      "name": "setting_item_unit_imperial",
+      "value": "英制"
+    },
+    {
+      "name": "about",
+      "value": "关于"
+    },
+    {
+      "name": "setting_request_day",
+      "value": "日预报请求"
+    },
+    {
+      "name": "setting_request_hour_count",
+      "value": "小时预报请求"
+    },
+    {
+      "name": "setting_last_request",
+      "value": "最后更新时间"
+    },
+    {
+      "name": "setting_cache_valid_time",
+      "value": "缓存有效期"
+    },
+    {
+      "name": "page_title_setting",
+      "value": "高级设置"
+    },
+    {
+      "name": "api_host_input_placeholder",
+      "value": "输入你的和风天气API Host"
+    }
+  ]
+}

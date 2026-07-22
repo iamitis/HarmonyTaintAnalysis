@@ -1,0 +1,15 @@
+{
+    "targetProjectName": "ohbili",
+    "targetProjectDirectory": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/ohosProjects/ohbili",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/sdk/default/openharmony/ets",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

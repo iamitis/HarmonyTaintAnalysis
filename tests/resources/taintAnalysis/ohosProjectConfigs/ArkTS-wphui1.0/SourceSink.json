@@ -1,0 +1,16 @@
+{
+    "sources": [
+        {
+            "methodSigString": "@ArkTS-wphui1.0/entry/src/main/ets/datasource/DataUtils.ets:%dflt.getCardInfo(string)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.app.ability.abilityDelegatorRegistry.d.ts: abilityDelegatorRegistry.%dflt.getArguments()",
+            "paramIndices": [
+                -1
+            ]
+        }
+    ]
+}

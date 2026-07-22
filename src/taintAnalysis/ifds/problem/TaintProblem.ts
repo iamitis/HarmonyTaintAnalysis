@@ -3,7 +3,7 @@ import { ArkMethod } from '../../../core/model/ArkMethod';
 import { TaintFact } from '../TaintFact';
 import { Value } from '../../../core/base/Value';
 import { Local } from '../../../core/base/Local';
-import { ArkInstanceInvokeExpr } from '../../../core/base/Expr';
+import { ArkInstanceInvokeExpr, ArkPtrInvokeExpr } from '../../../core/base/Expr';
 import { ArkArrayRef, ArkInstanceFieldRef, ArkStaticFieldRef } from '../../../core/base/Ref';
 import { AccessPath } from '../AccessPath';
 import { RuleManager } from '../rules/RuleManager';
@@ -284,14 +284,15 @@ export class TaintProblem extends AbstractTaintProblem {
                 // 除非所有 callee 都是被排除的方法、没有 callee、或 callee 无 CFG 可进入。
                 // 若 callee 无 CFG，则 CallFlow 无法将污点传入 callee，污点只能走 CallToReturn 边存活。
                 if (fact.getAccessPath().isStaticFieldRef()) {
-                    const anyCalleeExcluded = Array.from(callees).some(callee => self.isExcludedMethod(callStmt, callee));
-                    const noCallees = callees.size === 0;
-                    const anyCalleeWithoutCfg = Array.from(callees).some(callee => !callee.getCfg());
-                    if (anyCalleeExcluded || noCallees || anyCalleeWithoutCfg) {
-                        result.add(fact);
-                    }
-                    // 否则静态字段 fact 由 StaticPropagationRule 走 call/return 边处理
-                    return result;
+                    // const anyCalleeExcluded = Array.from(callees).some(callee => self.isExcludedMethod(callStmt, callee));
+                    // const noCallees = callees.size === 0;
+                    // const anyCalleeWithoutCfg = Array.from(callees).some(callee => !callee.getCfg());
+                    // if (anyCalleeExcluded || noCallees || anyCalleeWithoutCfg) {
+                    //     result.add(fact);
+                    // }
+                    // // 否则静态字段 fact 由 StaticPropagationRule 走 call/return 边处理
+                    // return result;
+                    result.add(fact);
                 }
 
                 // 判断 fact 是否是基本类型, 若是则需在方法外传播
@@ -500,32 +501,36 @@ export class TaintProblem extends AbstractTaintProblem {
         }
 
         const invokeExpr = srcStmt.getInvokeExpr()!;
-        const factBase = fact.getAccessPath().getBase();
-        const factFields = [...(fact.getAccessPath().getFields() ?? [])];
+        if (invokeExpr instanceof ArkPtrInvokeExpr ||
+            invokeExpr.getMethodSignature().getMethodSubSignature().getMethodName() === method.getSignature().getMethodSubSignature().getMethodName()
+        ) {
+            const factBase = fact.getAccessPath().getBase();
+            const factFields = [...(fact.getAccessPath().getFields() ?? [])];
 
-        // 若是实例方法调用, 如 obj.method(), 且 fact 的 base 为 obj, 将 fact 的 base 改为 method 的 thisLocal
-        if (invokeExpr instanceof ArkInstanceInvokeExpr) {
-            if (factBase === invokeExpr.getBase()) {
-                // 获取 method 的 thisLocal
-                const calleeThisLocal = method.getBody()!.getLocals().get(THIS_NAME);
-                if (calleeThisLocal) {
-                    // AP{base=obj} -> AP{base=this}
-                    const newAccessPath = AccessPath.createAccessPath(calleeThisLocal, factFields);
-                    newAccessPath && accessPathToValueMap.set(newAccessPath, calleeThisLocal);
+            // 若是实例方法调用, 如 obj.method(), 且 fact 的 base 为 obj, 将 fact 的 base 改为 method 的 thisLocal
+            if (invokeExpr instanceof ArkInstanceInvokeExpr) {
+                if (factBase === invokeExpr.getBase()) {
+                    // 获取 method 的 thisLocal
+                    const calleeThisLocal = method.getBody()!.getLocals().get(THIS_NAME);
+                    if (calleeThisLocal) {
+                        // AP{base=obj} -> AP{base=this}
+                        const newAccessPath = AccessPath.createAccessPath(calleeThisLocal, factFields);
+                        newAccessPath && accessPathToValueMap.set(newAccessPath, calleeThisLocal);
+                    }
                 }
             }
+
+            // 若某个实参 与 fact 的 base 相同, 则创建 AP{base=paramLocal, fields=factFields}
+            invokeExpr.getArgs().forEach((arg, i) => {
+                if (arg === factBase) {
+                    const paramLocal = this.findParamLocal(method, i);
+                    if (paramLocal) {
+                        const newAccessPath = AccessPath.createAccessPath(paramLocal, factFields);
+                        newAccessPath && accessPathToValueMap.set(newAccessPath, paramLocal);
+                    }
+                }
+            });
         }
-
-        // 若某个实参 与 fact 的 base 相同, 则创建 AP{base=paramLocal, fields=factFields}
-        invokeExpr.getArgs().forEach((arg, i) => {
-            if (arg === factBase) {
-                const paramLocal = this.findParamLocal(method, i);
-                if (paramLocal) {
-                    const newAccessPath = AccessPath.createAccessPath(paramLocal, factFields);
-                    newAccessPath && accessPathToValueMap.set(newAccessPath, paramLocal);
-                }
-            }
-        });
 
         accessPathToValueMap.forEach((value, ap) => {
             const newFact = fact.deriveWithNewAccessPath(ap, value, srcStmt);

@@ -23,6 +23,8 @@ export interface SourceDefinition {
     matches(stmt: Stmt): boolean;
 
     toString(): string;
+
+    getParamIndices?(): number[];
 }
 
 /**
@@ -37,6 +39,7 @@ export interface SinkDefinition {
      * @returns 如果匹配返回 true，否则返回 false
      */
     matches(stmt: Stmt): boolean;
+
     /**
      * 获取 Sink 的参数索引列表（仅对 METHOD 类型的 Sink 有效）
      * @returns 参数索引数组

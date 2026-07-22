@@ -1,6 +1,7 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import geoLocationManager from '@ohos.geoLocationManager';
+import fs from '@ohos.file.fs';
 
 class A{
   str: string = ''

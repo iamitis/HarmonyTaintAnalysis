@@ -1,0 +1,64 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "primary_color",
+      "value": "#DD1A21"
+    },
+    {
+      "name": "text_black",
+      "value": "#333333"
+    },
+    {
+      "name": "text_red",
+      "value": "#DD1A21"
+    },
+    {
+      "name": "text_light_red",
+      "value": "#fa1e32"
+    },
+    {
+      "name": "text_yellow",
+      "value": "#FFDEBB75"
+    },
+    {
+      "name": "text_gray",
+      "value": "#666666"
+    },
+    {
+      "name": "text_light_gray",
+      "value": "#999999"
+    },
+    {
+      "name": "app_dark_red",
+      "value": "#ab2b2b"
+    },
+    {
+      "name": "back_ground_color",
+      "value": "#eeeeee"
+    },
+    {
+      "name": "back_red",
+      "value": "#FFE02020"
+    },
+    {
+      "name": "back_red_light",
+      "value": "#FFFBE7E8"
+    },
+    {
+      "name": "back_black",
+      "value": "#FF12161C"
+    },
+    {
+      "name": "app_white",
+      "value": "#FFFFFFFF"
+    },
+    {
+      "name": "app_test_color",
+      "value": "#FFF8F2F3"
+    }
+  ]
+}

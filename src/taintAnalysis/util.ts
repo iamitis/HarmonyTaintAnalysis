@@ -1,4 +1,4 @@
-import { AbstractBinopExpr, ArkCastExpr } from "../core/base/Expr";
+import { AbstractBinopExpr, ArkAwaitExpr, ArkCastExpr } from "../core/base/Expr";
 import { ArkArrayRef } from "../core/base/Ref";
 import { Value } from "../core/base/Value";
 import { ArkClass } from "../core/model/ArkClass";
@@ -16,6 +16,8 @@ export function findBaseValues(value: Value): Value[] {
         return [value.getBase()];
     } else if (value instanceof ArkCastExpr) {
         // a as string
+        return value.getUses();
+    } else if (value instanceof ArkAwaitExpr) {
         return value.getUses();
     }
     return [value];

@@ -20,3 +20,11 @@ builtIn/
 arktools/
 lib/
 .qoder
+**/flowDroidExample/* 
+tests/resources/taintAnalysis/sdk
+tests/resources/taintAnalysis/transFromFlowDroid/Needs.md
+tests/unit/taintAnalysis/transFromFlowDroid/calculate.ts
+tests/unit/taintAnalysis/transFromFlowDroid/HeapTimeUse.txt
+tests/unit/taintAnalysis/transFromFlowDroid/HeapTimeUseOpt.txt
+.venv/
+undergraduate/tmp/

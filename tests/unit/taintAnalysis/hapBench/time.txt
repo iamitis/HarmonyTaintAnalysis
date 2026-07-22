@@ -1,0 +1,70 @@
+totalUsedTime: 117726ms
+totalBuildSceneTime: 117425ms
+
+Aliasing/After: usedTime=2419ms, buildSceneTime=2402ms
+Aliasing/Before: usedTime=1942ms, buildSceneTime=1937ms
+Aliasing/InstanceAlias: usedTime=1842ms, buildSceneTime=1836ms
+Aliasing/Inter: usedTime=1802ms, buildSceneTime=1796ms
+Aliasing/Merge: usedTime=1805ms, buildSceneTime=1797ms
+Aliasing/ParamAlias: usedTime=1787ms, buildSceneTime=1783ms
+Anonymous Constructs/AnonymousClass1: usedTime=1752ms, buildSceneTime=1748ms
+Anonymous Constructs/AnonymousClass2: usedTime=1847ms, buildSceneTime=1843ms
+Anonymous Constructs/AnonymousMethod1: usedTime=1744ms, buildSceneTime=1741ms
+Anonymous Constructs/AnonymousMethod2: usedTime=1756ms, buildSceneTime=1752ms
+Anonymous Constructs/AnonymousMethod3: usedTime=1783ms, buildSceneTime=1780ms
+Anonymous Constructs/AnonymousMethod4: usedTime=1686ms, buildSceneTime=1684ms
+Anonymous Constructs/AnonymousMethod5: usedTime=1774ms, buildSceneTime=1770ms
+Anonymous Constructs/AnonymousMethod6: usedTime=1725ms, buildSceneTime=1718ms
+Anonymous Constructs/AnonymousMethod7: usedTime=1745ms, buildSceneTime=1743ms
+Anonymous Constructs/AnonymousMethod8: usedTime=1707ms, buildSceneTime=1704ms
+Array-Like Structures/ArrayAccess: usedTime=1721ms, buildSceneTime=1719ms
+Array-Like Structures/ArrayCopy: usedTime=1777ms, buildSceneTime=1774ms
+Array-Like Structures/ArrayIndexNoLeak: usedTime=1759ms, buildSceneTime=1757ms
+Array-Like Structures/Map: usedTime=1747ms, buildSceneTime=1745ms
+Array-Like Structures/MultidimentionalArray: usedTime=1801ms, buildSceneTime=1798ms
+Field And Object Sensitivity/FieldSensitivity1: usedTime=1713ms, buildSceneTime=1705ms
+Field And Object Sensitivity/FieldSensitivity2: usedTime=1788ms, buildSceneTime=1781ms
+Field And Object Sensitivity/FieldSensitivity3: usedTime=1743ms, buildSceneTime=1740ms
+Field And Object Sensitivity/FieldSensitivity4: usedTime=1710ms, buildSceneTime=1707ms
+Field And Object Sensitivity/InheritedObjects: usedTime=1723ms, buildSceneTime=1719ms
+Field And Object Sensitivity/ObjectSensitivity1: usedTime=1746ms, buildSceneTime=1743ms
+General Language Features/Clone1: usedTime=1775ms, buildSceneTime=1773ms
+General Language Features/Clone2: usedTime=1691ms, buildSceneTime=1688ms
+General Language Features/Closure1: usedTime=1719ms, buildSceneTime=1717ms
+General Language Features/Closure2: usedTime=1706ms, buildSceneTime=1703ms
+General Language Features/Condition: usedTime=1727ms, buildSceneTime=1724ms
+General Language Features/Exceptions1: usedTime=1757ms, buildSceneTime=1755ms
+General Language Features/Exceptions2: usedTime=1864ms, buildSceneTime=1861ms
+General Language Features/Exceptions3: usedTime=1738ms, buildSceneTime=1734ms
+General Language Features/Exceptions4: usedTime=1756ms, buildSceneTime=1754ms
+General Language Features/LocalFunction: usedTime=1718ms, buildSceneTime=1714ms
+General Language Features/Loop1: usedTime=1716ms, buildSceneTime=1712ms
+General Language Features/MulFields: usedTime=1765ms, buildSceneTime=1758ms
+General Language Features/Param1: usedTime=1820ms, buildSceneTime=1816ms
+General Language Features/Param2: usedTime=1683ms, buildSceneTime=1681ms
+General Language Features/PrivateDataLeak: usedTime=1718ms, buildSceneTime=1710ms
+General Language Features/PublicAPILeak1: usedTime=1730ms, buildSceneTime=1723ms
+General Language Features/StaticFieldInit: usedTime=1783ms, buildSceneTime=1780ms
+General Language Features/StringPatternMatching: usedTime=1741ms, buildSceneTime=1739ms
+General Language Features/UnreachableMethod: usedTime=1797ms, buildSceneTime=1796ms
+General Language Features/VirtualDispatch1: usedTime=1727ms, buildSceneTime=1719ms
+General Language Features/VirtualDispatch2: usedTime=1698ms, buildSceneTime=1695ms
+General Language Features/VirtualDispatch3: usedTime=1696ms, buildSceneTime=1693ms
+Lifecycle Modeling/ActivityLifecycle1: usedTime=1687ms, buildSceneTime=1684ms
+Lifecycle Modeling/ActivityLifecycle2: usedTime=1710ms, buildSceneTime=1706ms
+Lifecycle Modeling/ActivityLifecycle3: usedTime=1701ms, buildSceneTime=1698ms
+Lifecycle Modeling/ActivityLifecycle4: usedTime=1719ms, buildSceneTime=1713ms
+Lifecycle Modeling/BackupExtensionAbility: usedTime=1753ms, buildSceneTime=1747ms
+Lifecycle Modeling/Button1: usedTime=1717ms, buildSceneTime=1705ms
+Lifecycle Modeling/Button2: usedTime=1761ms, buildSceneTime=1751ms
+Lifecycle Modeling/Button3: usedTime=1738ms, buildSceneTime=1729ms
+Lifecycle Modeling/ComponentLifecycle1: usedTime=1719ms, buildSceneTime=1711ms
+Lifecycle Modeling/ComponentLifecycle2: usedTime=1738ms, buildSceneTime=1729ms
+Lifecycle Modeling/ComponentLifecycle3: usedTime=1749ms, buildSceneTime=1739ms
+Lifecycle Modeling/EventOdering: usedTime=1743ms, buildSceneTime=1740ms
+Lifecycle Modeling/UnreachableFlow: usedTime=1693ms, buildSceneTime=1691ms
+OpenHarmony Specific APIs/CallbackInSource: usedTime=1697ms, buildSceneTime=1695ms
+OpenHarmony Specific APIs/DirectLeak: usedTime=1705ms, buildSceneTime=1703ms
+OpenHarmony Specific APIs/DirectLeak-want: usedTime=1700ms, buildSceneTime=1699ms
+OpenHarmony Specific APIs/FileReadWrite: usedTime=1763ms, buildSceneTime=1760ms
+OpenHarmony Specific APIs/NoLeak: usedTime=1764ms, buildSceneTime=1758ms

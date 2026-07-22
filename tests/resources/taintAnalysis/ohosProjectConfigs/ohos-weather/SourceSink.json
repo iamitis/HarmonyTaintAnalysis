@@ -1,0 +1,42 @@
+{
+    "sources": [
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/manager/RdbManager.ets: RdbManager.getAllStoredCities()",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/api/ApiManager.ets: ApiManager.getCurrentLocation()",
+            "paramIndices": [
+                -1
+            ]
+        }
+    ],
+    "sinks": [
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/Logger.ts:Logger.[static]info(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/Logger.ts:Logger.[static]warn(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/Logger.ts:Logger.[static]log(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohos-weather/libNMC/src/main/ets/Logger.ts:Logger.[static]err(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        }
+    ]
+}

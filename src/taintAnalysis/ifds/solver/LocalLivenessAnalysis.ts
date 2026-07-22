@@ -1,7 +1,6 @@
 import { Local } from '../../../core/base/Local';
-import { ArkStaticFieldRef } from '../../../core/base/Ref';
 import { Stmt } from '../../../core/base/Stmt';
-import { Value } from '../../../core/base/Value';
+import { ClosureType, LexicalEnvType } from '../../../core/base/Type';
 import { ArkMethod } from '../../../core/model/ArkMethod';
 import Logger, { LOG_MODULE_TYPE } from '../../../utils/logger';
 
@@ -29,6 +28,9 @@ export class LocalLivenessAnalysis {
 
     /** 已完成分析的方法集合 */
     private analyzedMethods: Set<ArkMethod> = new Set();
+
+    /** 累积的活跃变量分析耗时 (ms) */
+    private totalAnalysisTime: number = 0;
 
     /**
      * 为指定方法预计算活跃变量信息。
@@ -73,6 +75,7 @@ export class LocalLivenessAnalysis {
         }
 
         // 迭代至收敛
+        const t0 = Date.now();
         let changed = true;
         let iteration = 0;
         const MAX_ITERATIONS = 100;
@@ -118,6 +121,8 @@ export class LocalLivenessAnalysis {
             logger.warn(`LocalLivenessAnalysis: method ${method.getName()} did not converge after ${MAX_ITERATIONS} iterations`);
         }
 
+        this.totalAnalysisTime += Date.now() - t0;
+
         // 3. 缓存结果
         this.stmtToUsesMap.set(method, useSetMap);
         this.stmtToLiveOutMap.set(method, liveOutMap);
@@ -159,6 +164,30 @@ export class LocalLivenessAnalysis {
                 locals.add(value);
             }
         }
+
+        const invokeExpr = stmt.getInvokeExpr();
+        if (invokeExpr) {
+            // 考虑 stmt: invoke m1(m2WhichCarryingClosure)
+            // 闭包参数捕获的外部局部变量也视为被当前调用语句使用
+            for (const arg of invokeExpr.getArgs()) {
+                const argType = arg.getType();
+                if (argType instanceof ClosureType) {
+                    for (const closure of argType.getLexicalEnv().getClosures()) {
+                        locals.add(closure);
+                    }
+                }
+            }
+            // 考虑 stmt: invoke methodWhichCarryingClosure
+            for (const arg of invokeExpr.getArgs()) {
+                const argType = arg.getType();
+                if (argType instanceof LexicalEnvType) {
+                    for (const closure of argType.getClosures()) {
+                        locals.add(closure);
+                    }
+                }
+            }
+        }
+
         return locals;
     }
 
@@ -175,6 +204,10 @@ export class LocalLivenessAnalysis {
             locals.add(def);
         }
         return locals;
+    }
+
+    public getTotalAnalysisTime(): number {
+        return this.totalAnalysisTime;
     }
 
     /**

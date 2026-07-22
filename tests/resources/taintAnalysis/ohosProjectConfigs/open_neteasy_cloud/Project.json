@@ -1,0 +1,20 @@
+{
+    "targetProjectName": "open_neteasy_cloud",
+    "targetProjectDirectory": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/ohosProjects/open_neteasy_cloud",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/sdk/default/openharmony/ets",
+            "moduleName": ""
+        },
+        {
+            "name": "ohos-axios",
+            "path": "/home/wzy/code/ohos-lib/oh_modules",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

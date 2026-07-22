@@ -1,0 +1,15 @@
+{
+    "targetProjectName": "my-store-ohos",
+    "targetProjectDirectory": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/ohosProjects/my-store-ohos",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/sdk/default/openharmony/ets",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

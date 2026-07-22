@@ -1,0 +1,15 @@
+{
+    "targetProjectName": "ohos-weather",
+    "targetProjectDirectory": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/ohosProjects/ohos-weather",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/sdk/default/openharmony/ets",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

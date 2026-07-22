@@ -3,9 +3,18 @@ import Logger, { LOG_MODULE_TYPE } from '../../utils/logger';
 import { SourceSinkManager } from './SourceSinkManager';
 import { Stmt } from '../../core/base/Stmt';
 import { SinkDefinition, SourceDefinition } from './SourceSinkDefinition';
-import { SourceSinkDefinitionFactory, TaintDefinitionsJson, SourceDefinitionJson, SinkDefinitionJson } from './SourceSinkDefinitionFactory';
+import { MethodSinkDefinition, MethodSourceDefinition } from './matchers/MethodMatcher';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'JsonSourceSinkManager');
+
+/**
+ * JSON 定义文件中方法签名的通用格式
+ */
+export interface MethodDefinitionJson {
+    type?: 'METHOD';
+    methodSigString: string;
+    paramIndices?: number[];
+}
 
 /**
  * 基于 JSON 配置的 SourceSink 管理器
@@ -95,9 +104,9 @@ export class JsonSourceSinkManager implements SourceSinkManager {
             return;
         }
 
-        let json: TaintDefinitionsJson;
+        let json: any;
         try {
-            json = JSON.parse(fileContent) as TaintDefinitionsJson;
+            json = JSON.parse(fileContent) as any;
         } catch (error) {
             logger.error(`Failed to parse taint definition file: ${error}`);
             return;
@@ -108,7 +117,7 @@ export class JsonSourceSinkManager implements SourceSinkManager {
 
         if (json.sources) {
             for (const sourceJson of json.sources) {
-                const source = SourceSinkDefinitionFactory.createSourceFromJson(sourceJson as SourceDefinitionJson);
+                const source = this.createSourceFromJson(sourceJson);
                 if (source) {
                     this.addSource(source);
                     srcCnt++;
@@ -118,7 +127,7 @@ export class JsonSourceSinkManager implements SourceSinkManager {
 
         if (json.sinks) {
             for (const sinkJson of json.sinks) {
-                const sink = SourceSinkDefinitionFactory.createSinkFromJson(sinkJson as SinkDefinitionJson);
+                const sink = this.createSinkFromJson(sinkJson);
                 if (sink) {
                     this.addSink(sink);
                     sinkCnt++;
@@ -128,5 +137,51 @@ export class JsonSourceSinkManager implements SourceSinkManager {
 
         logger.info(`Loaded taint definitions from ${filePath}: ` +
             `${srcCnt} sources, ${sinkCnt} sinks`);
+    }
+
+    /**
+     * 从 JSON 格式创建 SourceDefinition
+     * @param json Source 配置的 JSON 对象
+     * @returns SourceDefinition 实例
+     */
+    public createSourceFromJson(json: any): SourceDefinition | undefined {
+        if (this.isMethodDefinitionJSON(json)) {
+            return this.createMethodSourceFromJson(json as MethodDefinitionJson);
+        } else {
+            logger.error(`Failed to create SourceDefinition from JSON: ${JSON.stringify(json)}`);
+        }
+    }
+
+    /**
+     * 从 JSON 格式创建 SinkDefinition
+     * @param json Sink 配置的 JSON 对象
+     * @returns SinkDefinition 实例
+     */
+    public createSinkFromJson(json: any): SinkDefinition | undefined {
+        if (this.isMethodDefinitionJSON(json)) {
+            return this.createMethodSinkFromJson(json as MethodDefinitionJson);
+        } else {
+            logger.error(`Failed to create SinkDefinition from JSON: ${JSON.stringify(json)}`);
+        }
+    }
+
+    /**
+     * 从 JSON 格式创建 MethodSourceDefinition
+     */
+    private createMethodSourceFromJson(json: MethodDefinitionJson): MethodSourceDefinition {
+        const paramIndices = json.paramIndices ?? [-1];
+        return new MethodSourceDefinition(json.methodSigString, paramIndices);
+    }
+
+    /**
+     * 从 JSON 格式创建 MethodSinkDefinition
+     */
+    private createMethodSinkFromJson(json: MethodDefinitionJson): MethodSinkDefinition {
+        const paramIndices = json.paramIndices ?? [-1];
+        return new MethodSinkDefinition(json.methodSigString, paramIndices);
+    }
+
+    private isMethodDefinitionJSON(json: any): json is MethodDefinitionJson {
+        return json.methodSigString !== undefined;
     }
 }

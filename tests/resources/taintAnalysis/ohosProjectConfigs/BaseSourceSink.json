@@ -1,0 +1,147 @@
+{
+    "sources": [
+        {
+            "methodSigString": "@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.%dflt.getLastLocation()",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.file.fs.d.ts: %dflt.read(number, @built-in/lib.es5.d.ts: ArrayBuffer, @etsSdk/api/@ohos.file.fs.d.ts: ReadOptions)",
+            "paramIndices": [
+                1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.file.fs.d.ts: %dflt.readText(string, @etsSdk/api/@ohos.file.fs.d.ts: ReadTextOptions)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt.readTextSync(string, @etsSdk/api/@ohos.file.fs.d.ts: ReadTextOptions)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.file.fs.d.ts: %dflt.listFile(string, @etsSdk/api/@ohos.file.fs.d.ts: ListFileOptions)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.file.fs.d.ts:%dflt.statSync(string|number)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.bundle.bundleManager.d.ts:bundleManager.%dflt.getBundleInfoForSelf(number)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.util.d.ts:util.%dflt.generateRandomUUID(boolean)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.%dflt.getCurrentLocation(@etsSdk/api/@ohos.base.d.ts: AsyncCallback<@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.Location,void>)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.%dflt.getCurrentLocation(@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.CurrentLocationRequest|@etsSdk/api/@ohos.geoLocationManager.d.ts: geoLocationManager.SingleLocationRequest)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.data.preferences.d.ts: preferences.Preferences.getSync(string, @etsSdk/api/@ohos.data.preferences.d.ts: preferences.%dflt.[static]%dflt()#ValueType)",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.router.d.ts: router.%dflt.getParams()",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@ohos-axios/@ohos/axios/index.d.ts: Axios.post(string, D = any, @ohos-axios/@ohos/axios/index.d.ts: AxiosRequestConfig<D = any>)",
+            "paramIndices": [
+                -1
+            ]
+        } 
+    ],
+    "sinks": [
+        {
+            "methodSigString": "@etsSdk/api/@ohos.hilog.d.ts:hilog.%dflt.info(number, string, string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.hilog.d.ts:hilog.%dflt.debug(number, string, string, any[])",
+            "isStatic": false,
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.hilog.d.ts:hilog.%dflt.warn(number, string, string, any[])",
+            "isStatic": false,
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.hilog.d.ts:hilog.%dflt.error(number, string, string, any[])",
+            "isStatic": false,
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@internal/full/global.d.ts: console.[static]log(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@internal/full/global.d.ts: console.[static]debug(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@internal/full/global.d.ts: console.[static]warn(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@internal/full/global.d.ts: console.[static]error(string, any[])",
+            "paramIndices": [
+                -1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.web.webview.d.ts: webview.WebCookieManager.[static]setCookie(string, string)",
+            "paramIndices": [
+                1
+            ]
+        },
+        {
+            "methodSigString": "@etsSdk/api/@ohos.data.preferences.d.ts: preferences.Preferences.put(string, @etsSdk/api/@ohos.data.preferences.d.ts: preferences.%dflt.[static]%dflt()#ValueType)",
+            "paramIndices": [
+                1
+            ]
+        }
+    ]
+}

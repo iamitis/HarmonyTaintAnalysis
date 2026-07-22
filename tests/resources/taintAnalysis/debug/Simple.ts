@@ -7,7 +7,7 @@ function simpleSink(source: string) {
 }
 
 class A {
-    v: string;
+    v: string = '';
     static staticV: string;
 }
 
@@ -110,7 +110,7 @@ function simpleTest10() {
 }
 
 class B {
-    ba: A;
+    ba: A = new A();
 }
 
 /**

@@ -102,4 +102,8 @@ export class SourceToSinkInfo {
 
         return new SourceToSinkInfo(srcDef, sinkDef, sourceAtSink, taintingStmtOfTaintAtSink, preTaints, propagationStmts, sinkStmt);
     }
+
+    public getSinkStmt(): Stmt {
+        return this.sinkStmt;
+    }
 }

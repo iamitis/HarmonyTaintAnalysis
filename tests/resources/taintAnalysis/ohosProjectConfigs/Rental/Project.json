@@ -1,0 +1,20 @@
+{
+    "targetProjectName": "Rental",
+    "targetProjectDirectory": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/ohosProjects/Rental",
+    "sdks": [
+        {
+            "name": "etsSdk",
+            "path": "/home/wzy/code/arkanalyzer/tests/resources/taintAnalysis/sdk/default/openharmony/ets",
+            "moduleName": ""
+        },
+        {
+            "name": "ohos-axios",
+            "path": "/home/wzy/code/ohos-lib/oh_modules",
+            "moduleName": ""
+        }
+    ],
+
+    "options": {
+        "enableLeadingComments": true
+    }
+}

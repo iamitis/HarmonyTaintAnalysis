@@ -1,0 +1,24 @@
+{
+  "routerMap": [
+    {
+      "name": "ProductDetail",
+      "pageSourceFile": "src/main/ets/pages/ProductDetail.ets",
+      "buildFunction": "ProductDetailBuilder"
+    },
+    {
+      "name": "BuyPage",
+      "pageSourceFile": "src/main/ets/pages/BuyPage.ets",
+      "buildFunction": "BuyPageBuilder"
+    },
+    {
+      "name": "ProductList",
+      "pageSourceFile": "src/main/ets/pages/ProductList.ets",
+      "buildFunction": "ProductListBuilder"
+    },
+    {
+      "name": "OrderDetail",
+      "pageSourceFile": "src/main/ets/pages/OrderDetail.ets",
+      "buildFunction" : "OrderDetailBuilder"
+    }
+  ]
+}

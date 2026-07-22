@@ -1,0 +1,10 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/EditPage",
+    "pages/ApiKeySettingPage",
+    "pages/WeatherMapPage",
+    "pages/AboutPage",
+    "pages/SettingPage"
+  ]
+}

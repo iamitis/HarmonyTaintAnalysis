@@ -1,0 +1,1479 @@
+{
+  "normal": {
+    "optimize": false,
+    "timestamp": "2026-04-30T15:25:54.265Z",
+    "runsPerProject": 3,
+    "projectsInfo": {
+      "total": 10,
+      "succeeded": 10,
+      "failed": 0,
+      "names": [
+        "ArkTS-wphui1.0",
+        "HarmoneyOpenEye",
+        "Harmonic",
+        "IbestKnowTeach",
+        "Rental",
+        "harmony-netease",
+        "my-store-ohos",
+        "ohbili",
+        "ohos-weather",
+        "open_neteasy_cloud"
+      ]
+    },
+    "results": {
+      "perProject": [
+        {
+          "projectName": "ArkTS-wphui1.0",
+          "status": "success",
+          "sourceDefNum": 15,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 1345,
+          "solveTime": 66,
+          "dataflowAnalysisTime": 157,
+          "taintAnalysisTime": 162,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 1331,
+          "aliasSolverEdgeCnt": 14,
+          "taintSolverNormalEdgeCnt": 862,
+          "taintSolverCallEdgeCnt": 319,
+          "taintSolverReturnEdgeCnt": 150,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 2383,
+          "classCnt": 245,
+          "methodCnt": 646,
+          "abilityCnt": 2,
+          "componentCnt": 20,
+          "callbackCnt": 11,
+          "runs": 3,
+          "solveTimeRuns": [
+            68,
+            65,
+            64
+          ],
+          "solveTimeStdDev": 2.08
+        },
+        {
+          "projectName": "HarmoneyOpenEye",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 4101,
+          "solveTime": 351,
+          "dataflowAnalysisTime": 476,
+          "taintAnalysisTime": 485,
+          "leakPathNum": 3,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 4048,
+          "aliasSolverEdgeCnt": 53,
+          "taintSolverNormalEdgeCnt": 1887,
+          "taintSolverCallEdgeCnt": 1431,
+          "taintSolverReturnEdgeCnt": 730,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 4765,
+          "classCnt": 431,
+          "methodCnt": 1076,
+          "abilityCnt": 2,
+          "componentCnt": 17,
+          "callbackCnt": 13,
+          "runs": 3,
+          "solveTimeRuns": [
+            373,
+            341,
+            340
+          ],
+          "solveTimeStdDev": 18.77
+        },
+        {
+          "projectName": "Harmonic",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 75462,
+          "solveTime": 50503,
+          "dataflowAnalysisTime": 30671,
+          "taintAnalysisTime": 30690,
+          "leakPathNum": 7,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 34222,
+          "aliasSolverEdgeCnt": 41240,
+          "taintSolverNormalEdgeCnt": 23532,
+          "taintSolverCallEdgeCnt": 9244,
+          "taintSolverReturnEdgeCnt": 1446,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 10228,
+          "classCnt": 1025,
+          "methodCnt": 2377,
+          "abilityCnt": 2,
+          "componentCnt": 16,
+          "callbackCnt": 101,
+          "runs": 3,
+          "solveTimeRuns": [
+            50079,
+            51463,
+            49966
+          ],
+          "solveTimeStdDev": 833.59
+        },
+        {
+          "projectName": "IbestKnowTeach",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 3940,
+          "solveTime": 242,
+          "dataflowAnalysisTime": 371,
+          "taintAnalysisTime": 380,
+          "leakPathNum": 2,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 3790,
+          "aliasSolverEdgeCnt": 150,
+          "taintSolverNormalEdgeCnt": 2281,
+          "taintSolverCallEdgeCnt": 964,
+          "taintSolverReturnEdgeCnt": 545,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 5174,
+          "classCnt": 437,
+          "methodCnt": 989,
+          "abilityCnt": 2,
+          "componentCnt": 27,
+          "callbackCnt": 29,
+          "runs": 3,
+          "solveTimeRuns": [
+            257,
+            242,
+            227
+          ],
+          "solveTimeStdDev": 15
+        },
+        {
+          "projectName": "Rental",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 2188,
+          "solveTime": 93,
+          "dataflowAnalysisTime": 249,
+          "taintAnalysisTime": 262,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 2162,
+          "aliasSolverEdgeCnt": 26,
+          "taintSolverNormalEdgeCnt": 1222,
+          "taintSolverCallEdgeCnt": 525,
+          "taintSolverReturnEdgeCnt": 415,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 5801,
+          "classCnt": 666,
+          "methodCnt": 1516,
+          "abilityCnt": 2,
+          "componentCnt": 55,
+          "callbackCnt": 29,
+          "runs": 3,
+          "solveTimeRuns": [
+            92,
+            93,
+            93
+          ],
+          "solveTimeStdDev": 0.58
+        },
+        {
+          "projectName": "harmony-netease",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 27394,
+          "solveTime": 11149,
+          "dataflowAnalysisTime": 6976,
+          "taintAnalysisTime": 6988,
+          "leakPathNum": 7,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 14672,
+          "aliasSolverEdgeCnt": 12722,
+          "taintSolverNormalEdgeCnt": 10771,
+          "taintSolverCallEdgeCnt": 3190,
+          "taintSolverReturnEdgeCnt": 711,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 6429,
+          "classCnt": 777,
+          "methodCnt": 1981,
+          "abilityCnt": 2,
+          "componentCnt": 16,
+          "callbackCnt": 42,
+          "runs": 3,
+          "solveTimeRuns": [
+            10734,
+            10881,
+            11832
+          ],
+          "solveTimeStdDev": 596.04
+        },
+        {
+          "projectName": "my-store-ohos",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 9585,
+          "solveTime": 1373,
+          "dataflowAnalysisTime": 1305,
+          "taintAnalysisTime": 1312,
+          "leakPathNum": 8,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 7128,
+          "aliasSolverEdgeCnt": 2457,
+          "taintSolverNormalEdgeCnt": 4730,
+          "taintSolverCallEdgeCnt": 1813,
+          "taintSolverReturnEdgeCnt": 585,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 1998,
+          "classCnt": 222,
+          "methodCnt": 527,
+          "abilityCnt": 2,
+          "componentCnt": 17,
+          "callbackCnt": 31,
+          "runs": 3,
+          "solveTimeRuns": [
+            1456,
+            1311,
+            1353
+          ],
+          "solveTimeStdDev": 74.61
+        },
+        {
+          "projectName": "ohbili",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 14,
+          "processedEdgeNum": 3564,
+          "solveTime": 267,
+          "dataflowAnalysisTime": 500,
+          "taintAnalysisTime": 510,
+          "leakPathNum": 6,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 3489,
+          "aliasSolverEdgeCnt": 75,
+          "taintSolverNormalEdgeCnt": 2172,
+          "taintSolverCallEdgeCnt": 932,
+          "taintSolverReturnEdgeCnt": 385,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 7731,
+          "classCnt": 624,
+          "methodCnt": 1663,
+          "abilityCnt": 2,
+          "componentCnt": 26,
+          "callbackCnt": 22,
+          "runs": 3,
+          "solveTimeRuns": [
+            283,
+            238,
+            281
+          ],
+          "solveTimeStdDev": 25.42
+        },
+        {
+          "projectName": "ohos-weather",
+          "status": "success",
+          "sourceDefNum": 15,
+          "sinkDefNum": 14,
+          "processedEdgeNum": 4597,
+          "solveTime": 1324,
+          "dataflowAnalysisTime": 1456,
+          "taintAnalysisTime": 1460,
+          "leakPathNum": 10,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 4585,
+          "aliasSolverEdgeCnt": 12,
+          "taintSolverNormalEdgeCnt": 2071,
+          "taintSolverCallEdgeCnt": 1870,
+          "taintSolverReturnEdgeCnt": 644,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 3982,
+          "classCnt": 273,
+          "methodCnt": 784,
+          "abilityCnt": 2,
+          "componentCnt": 15,
+          "callbackCnt": 20,
+          "runs": 3,
+          "solveTimeRuns": [
+            1334,
+            1322,
+            1316
+          ],
+          "solveTimeStdDev": 9.17
+        },
+        {
+          "projectName": "open_neteasy_cloud",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 490,
+          "solveTime": 19,
+          "dataflowAnalysisTime": 55,
+          "taintAnalysisTime": 57,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 434,
+          "aliasSolverEdgeCnt": 56,
+          "taintSolverNormalEdgeCnt": 240,
+          "taintSolverCallEdgeCnt": 133,
+          "taintSolverReturnEdgeCnt": 61,
+          "taintSolverPrunedEdgeCnt": 0,
+          "loc": 1118,
+          "classCnt": 136,
+          "methodCnt": 311,
+          "abilityCnt": 2,
+          "componentCnt": 3,
+          "callbackCnt": 3,
+          "runs": 3,
+          "solveTimeRuns": [
+            20,
+            18,
+            19
+          ],
+          "solveTimeStdDev": 1
+        }
+      ]
+    }
+  },
+  "optimize": {
+    "optimize": true,
+    "timestamp": "2026-04-30T15:28:50.593Z",
+    "runsPerProject": 3,
+    "projectsInfo": {
+      "total": 10,
+      "succeeded": 10,
+      "failed": 0,
+      "names": [
+        "ArkTS-wphui1.0",
+        "HarmoneyOpenEye",
+        "Harmonic",
+        "IbestKnowTeach",
+        "Rental",
+        "harmony-netease",
+        "my-store-ohos",
+        "ohbili",
+        "ohos-weather",
+        "open_neteasy_cloud"
+      ]
+    },
+    "results": {
+      "perProject": [
+        {
+          "projectName": "ArkTS-wphui1.0",
+          "status": "success",
+          "sourceDefNum": 15,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 840,
+          "solveTime": 46,
+          "dataflowAnalysisTime": 174,
+          "taintAnalysisTime": 184,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 3,
+          "taintSolverEdgeCnt": 826,
+          "aliasSolverEdgeCnt": 14,
+          "taintSolverNormalEdgeCnt": 458,
+          "taintSolverCallEdgeCnt": 225,
+          "taintSolverReturnEdgeCnt": 143,
+          "taintSolverPrunedEdgeCnt": 7,
+          "loc": 2383,
+          "classCnt": 245,
+          "methodCnt": 646,
+          "abilityCnt": 2,
+          "componentCnt": 20,
+          "callbackCnt": 11,
+          "runs": 3,
+          "solveTimeRuns": [
+            46,
+            44,
+            48
+          ],
+          "solveTimeStdDev": 2
+        },
+        {
+          "projectName": "HarmoneyOpenEye",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 3606,
+          "solveTime": 404,
+          "dataflowAnalysisTime": 530,
+          "taintAnalysisTime": 537,
+          "leakPathNum": 3,
+          "error": null,
+          "livenessTime": 2,
+          "taintSolverEdgeCnt": 3553,
+          "aliasSolverEdgeCnt": 53,
+          "taintSolverNormalEdgeCnt": 1677,
+          "taintSolverCallEdgeCnt": 1278,
+          "taintSolverReturnEdgeCnt": 598,
+          "taintSolverPrunedEdgeCnt": 103,
+          "loc": 4765,
+          "classCnt": 431,
+          "methodCnt": 1076,
+          "abilityCnt": 2,
+          "componentCnt": 17,
+          "callbackCnt": 13,
+          "runs": 3,
+          "solveTimeRuns": [
+            400,
+            411,
+            400
+          ],
+          "solveTimeStdDev": 6.35
+        },
+        {
+          "projectName": "Harmonic",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 68047,
+          "solveTime": 47202,
+          "dataflowAnalysisTime": 36542,
+          "taintAnalysisTime": 36570,
+          "leakPathNum": 7,
+          "error": null,
+          "livenessTime": 15,
+          "taintSolverEdgeCnt": 26807,
+          "aliasSolverEdgeCnt": 41240,
+          "taintSolverNormalEdgeCnt": 18188,
+          "taintSolverCallEdgeCnt": 7363,
+          "taintSolverReturnEdgeCnt": 1256,
+          "taintSolverPrunedEdgeCnt": 363,
+          "loc": 10228,
+          "classCnt": 1025,
+          "methodCnt": 2377,
+          "abilityCnt": 2,
+          "componentCnt": 16,
+          "callbackCnt": 101,
+          "runs": 3,
+          "solveTimeRuns": [
+            63870,
+            40135,
+            37602
+          ],
+          "solveTimeStdDev": 14490.08
+        },
+        {
+          "projectName": "IbestKnowTeach",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 2862,
+          "solveTime": 133,
+          "dataflowAnalysisTime": 227,
+          "taintAnalysisTime": 232,
+          "leakPathNum": 2,
+          "error": null,
+          "livenessTime": 1,
+          "taintSolverEdgeCnt": 2739,
+          "aliasSolverEdgeCnt": 123,
+          "taintSolverNormalEdgeCnt": 1564,
+          "taintSolverCallEdgeCnt": 708,
+          "taintSolverReturnEdgeCnt": 467,
+          "taintSolverPrunedEdgeCnt": 52,
+          "loc": 5174,
+          "classCnt": 437,
+          "methodCnt": 989,
+          "abilityCnt": 2,
+          "componentCnt": 27,
+          "callbackCnt": 29,
+          "runs": 3,
+          "solveTimeRuns": [
+            135,
+            133,
+            130
+          ],
+          "solveTimeStdDev": 2.52
+        },
+        {
+          "projectName": "Rental",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 2124,
+          "solveTime": 77,
+          "dataflowAnalysisTime": 224,
+          "taintAnalysisTime": 233,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 2098,
+          "aliasSolverEdgeCnt": 26,
+          "taintSolverNormalEdgeCnt": 1202,
+          "taintSolverCallEdgeCnt": 499,
+          "taintSolverReturnEdgeCnt": 397,
+          "taintSolverPrunedEdgeCnt": 12,
+          "loc": 5801,
+          "classCnt": 666,
+          "methodCnt": 1516,
+          "abilityCnt": 2,
+          "componentCnt": 55,
+          "callbackCnt": 29,
+          "runs": 3,
+          "solveTimeRuns": [
+            79,
+            76,
+            75
+          ],
+          "solveTimeStdDev": 2.08
+        },
+        {
+          "projectName": "harmony-netease",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 24845,
+          "solveTime": 7891,
+          "dataflowAnalysisTime": 5141,
+          "taintAnalysisTime": 5153,
+          "leakPathNum": 7,
+          "error": null,
+          "livenessTime": 24,
+          "taintSolverEdgeCnt": 12132,
+          "aliasSolverEdgeCnt": 12713,
+          "taintSolverNormalEdgeCnt": 8838,
+          "taintSolverCallEdgeCnt": 2664,
+          "taintSolverReturnEdgeCnt": 630,
+          "taintSolverPrunedEdgeCnt": 70,
+          "loc": 6429,
+          "classCnt": 777,
+          "methodCnt": 1981,
+          "abilityCnt": 2,
+          "componentCnt": 16,
+          "callbackCnt": 42,
+          "runs": 3,
+          "solveTimeRuns": [
+            8105,
+            7807,
+            7760
+          ],
+          "solveTimeStdDev": 187.1
+        },
+        {
+          "projectName": "my-store-ohos",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 7657,
+          "solveTime": 693,
+          "dataflowAnalysisTime": 593,
+          "taintAnalysisTime": 596,
+          "leakPathNum": 8,
+          "error": null,
+          "livenessTime": 3,
+          "taintSolverEdgeCnt": 5200,
+          "aliasSolverEdgeCnt": 2457,
+          "taintSolverNormalEdgeCnt": 3328,
+          "taintSolverCallEdgeCnt": 1327,
+          "taintSolverReturnEdgeCnt": 545,
+          "taintSolverPrunedEdgeCnt": 40,
+          "loc": 1998,
+          "classCnt": 222,
+          "methodCnt": 527,
+          "abilityCnt": 2,
+          "componentCnt": 17,
+          "callbackCnt": 31,
+          "runs": 3,
+          "solveTimeRuns": [
+            696,
+            683,
+            701
+          ],
+          "solveTimeStdDev": 9.29
+        },
+        {
+          "projectName": "ohbili",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 14,
+          "processedEdgeNum": 2046,
+          "solveTime": 87,
+          "dataflowAnalysisTime": 260,
+          "taintAnalysisTime": 265,
+          "leakPathNum": 6,
+          "error": null,
+          "livenessTime": 1,
+          "taintSolverEdgeCnt": 1971,
+          "aliasSolverEdgeCnt": 75,
+          "taintSolverNormalEdgeCnt": 1097,
+          "taintSolverCallEdgeCnt": 548,
+          "taintSolverReturnEdgeCnt": 326,
+          "taintSolverPrunedEdgeCnt": 72,
+          "loc": 7731,
+          "classCnt": 624,
+          "methodCnt": 1663,
+          "abilityCnt": 2,
+          "componentCnt": 26,
+          "callbackCnt": 22,
+          "runs": 3,
+          "solveTimeRuns": [
+            85,
+            89,
+            86
+          ],
+          "solveTimeStdDev": 2.08
+        },
+        {
+          "projectName": "ohos-weather",
+          "status": "success",
+          "sourceDefNum": 15,
+          "sinkDefNum": 14,
+          "processedEdgeNum": 3291,
+          "solveTime": 420,
+          "dataflowAnalysisTime": 497,
+          "taintAnalysisTime": 500,
+          "leakPathNum": 10,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 3279,
+          "aliasSolverEdgeCnt": 12,
+          "taintSolverNormalEdgeCnt": 1566,
+          "taintSolverCallEdgeCnt": 1237,
+          "taintSolverReturnEdgeCnt": 476,
+          "taintSolverPrunedEdgeCnt": 174,
+          "loc": 3982,
+          "classCnt": 273,
+          "methodCnt": 784,
+          "abilityCnt": 2,
+          "componentCnt": 15,
+          "callbackCnt": 20,
+          "runs": 3,
+          "solveTimeRuns": [
+            391,
+            394,
+            476
+          ],
+          "solveTimeStdDev": 48.23
+        },
+        {
+          "projectName": "open_neteasy_cloud",
+          "status": "success",
+          "sourceDefNum": 13,
+          "sinkDefNum": 10,
+          "processedEdgeNum": 338,
+          "solveTime": 9,
+          "dataflowAnalysisTime": 36,
+          "taintAnalysisTime": 37,
+          "leakPathNum": 0,
+          "error": null,
+          "livenessTime": 0,
+          "taintSolverEdgeCnt": 282,
+          "aliasSolverEdgeCnt": 56,
+          "taintSolverNormalEdgeCnt": 140,
+          "taintSolverCallEdgeCnt": 91,
+          "taintSolverReturnEdgeCnt": 51,
+          "taintSolverPrunedEdgeCnt": 12,
+          "loc": 1118,
+          "classCnt": 136,
+          "methodCnt": 311,
+          "abilityCnt": 2,
+          "componentCnt": 3,
+          "callbackCnt": 3,
+          "runs": 3,
+          "solveTimeRuns": [
+            7,
+            9,
+            10
+          ],
+          "solveTimeStdDev": 1.53
+        }
+      ]
+    }
+  },
+  "diff": {
+    "timestamp": "2026-04-30T15:28:50.594Z",
+    "projectsInfo": {
+      "total": 10,
+      "succeeded": 10,
+      "failed": 0
+    },
+    "comparison": {
+      "averageReduction": {
+        "processedEdgeNum": "22.12%",
+        "solveTime": "35.11%",
+        "dataflowAnalysisTime": "23.68%",
+        "taintAnalysisTime": "23.63%",
+        "leakPathNum": "0.00%",
+        "livenessTime": "0.00%",
+        "taintSolverEdgeCnt": "25.39%",
+        "aliasSolverEdgeCnt": "1.81%",
+        "taintSolverNormalEdgeCnt": "27.69%",
+        "taintSolverCallEdgeCnt": "24.20%",
+        "taintSolverReturnEdgeCnt": "13.06%"
+      },
+      "perProject": [
+        {
+          "projectName": "ArkTS-wphui1.0",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 1345,
+            "optimize": 840,
+            "reduction": 505,
+            "reductionRate": "37.55%"
+          },
+          "solveTime": {
+            "normal": 66,
+            "optimize": 46,
+            "reduction": 20,
+            "reductionRate": "30.30%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 157,
+            "optimize": 174,
+            "reduction": -17,
+            "reductionRate": "-10.83%"
+          },
+          "taintAnalysisTime": {
+            "normal": 162,
+            "optimize": 184,
+            "reduction": -22,
+            "reductionRate": "-13.58%"
+          },
+          "leakPathNum": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 3,
+            "reduction": -3,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 1331,
+            "optimize": 826,
+            "reduction": 505,
+            "reductionRate": "37.94%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 14,
+            "optimize": 14,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 862,
+            "optimize": 458,
+            "reduction": 404,
+            "reductionRate": "46.87%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 319,
+            "optimize": 225,
+            "reduction": 94,
+            "reductionRate": "29.47%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 150,
+            "optimize": 143,
+            "reduction": 7,
+            "reductionRate": "4.67%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 7,
+            "reduction": -7,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "HarmoneyOpenEye",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 4101,
+            "optimize": 3606,
+            "reduction": 495,
+            "reductionRate": "12.07%"
+          },
+          "solveTime": {
+            "normal": 351,
+            "optimize": 404,
+            "reduction": -53,
+            "reductionRate": "-15.10%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 476,
+            "optimize": 530,
+            "reduction": -54,
+            "reductionRate": "-11.34%"
+          },
+          "taintAnalysisTime": {
+            "normal": 485,
+            "optimize": 537,
+            "reduction": -52,
+            "reductionRate": "-10.72%"
+          },
+          "leakPathNum": {
+            "normal": 3,
+            "optimize": 3,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 2,
+            "reduction": -2,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 4048,
+            "optimize": 3553,
+            "reduction": 495,
+            "reductionRate": "12.23%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 53,
+            "optimize": 53,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 1887,
+            "optimize": 1677,
+            "reduction": 210,
+            "reductionRate": "11.13%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 1431,
+            "optimize": 1278,
+            "reduction": 153,
+            "reductionRate": "10.69%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 730,
+            "optimize": 598,
+            "reduction": 132,
+            "reductionRate": "18.08%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 103,
+            "reduction": -103,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "Harmonic",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 75462,
+            "optimize": 68047,
+            "reduction": 7415,
+            "reductionRate": "9.83%"
+          },
+          "solveTime": {
+            "normal": 50503,
+            "optimize": 47202,
+            "reduction": 3301,
+            "reductionRate": "6.54%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 30671,
+            "optimize": 36542,
+            "reduction": -5871,
+            "reductionRate": "-19.14%"
+          },
+          "taintAnalysisTime": {
+            "normal": 30690,
+            "optimize": 36570,
+            "reduction": -5880,
+            "reductionRate": "-19.16%"
+          },
+          "leakPathNum": {
+            "normal": 7,
+            "optimize": 7,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 15,
+            "reduction": -15,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 34222,
+            "optimize": 26807,
+            "reduction": 7415,
+            "reductionRate": "21.67%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 41240,
+            "optimize": 41240,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 23532,
+            "optimize": 18188,
+            "reduction": 5344,
+            "reductionRate": "22.71%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 9244,
+            "optimize": 7363,
+            "reduction": 1881,
+            "reductionRate": "20.35%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 1446,
+            "optimize": 1256,
+            "reduction": 190,
+            "reductionRate": "13.14%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 363,
+            "reduction": -363,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "IbestKnowTeach",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 3940,
+            "optimize": 2862,
+            "reduction": 1078,
+            "reductionRate": "27.36%"
+          },
+          "solveTime": {
+            "normal": 242,
+            "optimize": 133,
+            "reduction": 109,
+            "reductionRate": "45.04%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 371,
+            "optimize": 227,
+            "reduction": 144,
+            "reductionRate": "38.81%"
+          },
+          "taintAnalysisTime": {
+            "normal": 380,
+            "optimize": 232,
+            "reduction": 148,
+            "reductionRate": "38.95%"
+          },
+          "leakPathNum": {
+            "normal": 2,
+            "optimize": 2,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 1,
+            "reduction": -1,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 3790,
+            "optimize": 2739,
+            "reduction": 1051,
+            "reductionRate": "27.73%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 150,
+            "optimize": 123,
+            "reduction": 27,
+            "reductionRate": "18.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 2281,
+            "optimize": 1564,
+            "reduction": 717,
+            "reductionRate": "31.43%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 964,
+            "optimize": 708,
+            "reduction": 256,
+            "reductionRate": "26.56%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 545,
+            "optimize": 467,
+            "reduction": 78,
+            "reductionRate": "14.31%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 52,
+            "reduction": -52,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "Rental",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 2188,
+            "optimize": 2124,
+            "reduction": 64,
+            "reductionRate": "2.93%"
+          },
+          "solveTime": {
+            "normal": 93,
+            "optimize": 77,
+            "reduction": 16,
+            "reductionRate": "17.20%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 249,
+            "optimize": 224,
+            "reduction": 25,
+            "reductionRate": "10.04%"
+          },
+          "taintAnalysisTime": {
+            "normal": 262,
+            "optimize": 233,
+            "reduction": 29,
+            "reductionRate": "11.07%"
+          },
+          "leakPathNum": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 2162,
+            "optimize": 2098,
+            "reduction": 64,
+            "reductionRate": "2.96%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 26,
+            "optimize": 26,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 1222,
+            "optimize": 1202,
+            "reduction": 20,
+            "reductionRate": "1.64%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 525,
+            "optimize": 499,
+            "reduction": 26,
+            "reductionRate": "4.95%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 415,
+            "optimize": 397,
+            "reduction": 18,
+            "reductionRate": "4.34%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 12,
+            "reduction": -12,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "harmony-netease",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 27394,
+            "optimize": 24845,
+            "reduction": 2549,
+            "reductionRate": "9.30%"
+          },
+          "solveTime": {
+            "normal": 11149,
+            "optimize": 7891,
+            "reduction": 3258,
+            "reductionRate": "29.22%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 6976,
+            "optimize": 5141,
+            "reduction": 1835,
+            "reductionRate": "26.30%"
+          },
+          "taintAnalysisTime": {
+            "normal": 6988,
+            "optimize": 5153,
+            "reduction": 1835,
+            "reductionRate": "26.26%"
+          },
+          "leakPathNum": {
+            "normal": 7,
+            "optimize": 7,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 24,
+            "reduction": -24,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 14672,
+            "optimize": 12132,
+            "reduction": 2540,
+            "reductionRate": "17.31%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 12722,
+            "optimize": 12713,
+            "reduction": 9,
+            "reductionRate": "0.07%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 10771,
+            "optimize": 8838,
+            "reduction": 1933,
+            "reductionRate": "17.95%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 3190,
+            "optimize": 2664,
+            "reduction": 526,
+            "reductionRate": "16.49%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 711,
+            "optimize": 630,
+            "reduction": 81,
+            "reductionRate": "11.39%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 70,
+            "reduction": -70,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "my-store-ohos",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 9585,
+            "optimize": 7657,
+            "reduction": 1928,
+            "reductionRate": "20.11%"
+          },
+          "solveTime": {
+            "normal": 1373,
+            "optimize": 693,
+            "reduction": 680,
+            "reductionRate": "49.53%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 1305,
+            "optimize": 593,
+            "reduction": 712,
+            "reductionRate": "54.56%"
+          },
+          "taintAnalysisTime": {
+            "normal": 1312,
+            "optimize": 596,
+            "reduction": 716,
+            "reductionRate": "54.57%"
+          },
+          "leakPathNum": {
+            "normal": 8,
+            "optimize": 8,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 3,
+            "reduction": -3,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 7128,
+            "optimize": 5200,
+            "reduction": 1928,
+            "reductionRate": "27.05%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 2457,
+            "optimize": 2457,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 4730,
+            "optimize": 3328,
+            "reduction": 1402,
+            "reductionRate": "29.64%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 1813,
+            "optimize": 1327,
+            "reduction": 486,
+            "reductionRate": "26.81%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 585,
+            "optimize": 545,
+            "reduction": 40,
+            "reductionRate": "6.84%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 40,
+            "reduction": -40,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "ohbili",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 3564,
+            "optimize": 2046,
+            "reduction": 1518,
+            "reductionRate": "42.59%"
+          },
+          "solveTime": {
+            "normal": 267,
+            "optimize": 87,
+            "reduction": 180,
+            "reductionRate": "67.42%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 500,
+            "optimize": 260,
+            "reduction": 240,
+            "reductionRate": "48.00%"
+          },
+          "taintAnalysisTime": {
+            "normal": 510,
+            "optimize": 265,
+            "reduction": 245,
+            "reductionRate": "48.04%"
+          },
+          "leakPathNum": {
+            "normal": 6,
+            "optimize": 6,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 1,
+            "reduction": -1,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 3489,
+            "optimize": 1971,
+            "reduction": 1518,
+            "reductionRate": "43.51%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 75,
+            "optimize": 75,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 2172,
+            "optimize": 1097,
+            "reduction": 1075,
+            "reductionRate": "49.49%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 932,
+            "optimize": 548,
+            "reduction": 384,
+            "reductionRate": "41.20%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 385,
+            "optimize": 326,
+            "reduction": 59,
+            "reductionRate": "15.32%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 72,
+            "reduction": -72,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "ohos-weather",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 4597,
+            "optimize": 3291,
+            "reduction": 1306,
+            "reductionRate": "28.41%"
+          },
+          "solveTime": {
+            "normal": 1324,
+            "optimize": 420,
+            "reduction": 904,
+            "reductionRate": "68.28%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 1456,
+            "optimize": 497,
+            "reduction": 959,
+            "reductionRate": "65.87%"
+          },
+          "taintAnalysisTime": {
+            "normal": 1460,
+            "optimize": 500,
+            "reduction": 960,
+            "reductionRate": "65.75%"
+          },
+          "leakPathNum": {
+            "normal": 10,
+            "optimize": 10,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 4585,
+            "optimize": 3279,
+            "reduction": 1306,
+            "reductionRate": "28.48%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 12,
+            "optimize": 12,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 2071,
+            "optimize": 1566,
+            "reduction": 505,
+            "reductionRate": "24.38%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 1870,
+            "optimize": 1237,
+            "reduction": 633,
+            "reductionRate": "33.85%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 644,
+            "optimize": 476,
+            "reduction": 168,
+            "reductionRate": "26.09%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 174,
+            "reduction": -174,
+            "reductionRate": "0.00%"
+          }
+        },
+        {
+          "projectName": "open_neteasy_cloud",
+          "status": "both_succeeded",
+          "processedEdgeNum": {
+            "normal": 490,
+            "optimize": 338,
+            "reduction": 152,
+            "reductionRate": "31.02%"
+          },
+          "solveTime": {
+            "normal": 19,
+            "optimize": 9,
+            "reduction": 10,
+            "reductionRate": "52.63%"
+          },
+          "dataflowAnalysisTime": {
+            "normal": 55,
+            "optimize": 36,
+            "reduction": 19,
+            "reductionRate": "34.55%"
+          },
+          "taintAnalysisTime": {
+            "normal": 57,
+            "optimize": 37,
+            "reduction": 20,
+            "reductionRate": "35.09%"
+          },
+          "leakPathNum": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "livenessTime": {
+            "normal": 0,
+            "optimize": 0,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverEdgeCnt": {
+            "normal": 434,
+            "optimize": 282,
+            "reduction": 152,
+            "reductionRate": "35.02%"
+          },
+          "aliasSolverEdgeCnt": {
+            "normal": 56,
+            "optimize": 56,
+            "reduction": 0,
+            "reductionRate": "0.00%"
+          },
+          "taintSolverNormalEdgeCnt": {
+            "normal": 240,
+            "optimize": 140,
+            "reduction": 100,
+            "reductionRate": "41.67%"
+          },
+          "taintSolverCallEdgeCnt": {
+            "normal": 133,
+            "optimize": 91,
+            "reduction": 42,
+            "reductionRate": "31.58%"
+          },
+          "taintSolverReturnEdgeCnt": {
+            "normal": 61,
+            "optimize": 51,
+            "reduction": 10,
+            "reductionRate": "16.39%"
+          },
+          "taintSolverPrunedEdgeCnt": {
+            "normal": 0,
+            "optimize": 12,
+            "reduction": -12,
+            "reductionRate": "0.00%"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "IbestKnow"
+    },
+    {
+      "name": "permission_location",
+      "value": "location_permission"
+    },
+    {
+      "name": "permission_internet",
+      "value": "internet_permission"
+    },
+    {
+      "name": "index_tab_title",
+      "value": "index"
+    },
+    {
+      "name": "learn_tab_title",
+      "value": "learn"
+    },
+    {
+      "name": "message_tab_title",
+      "value": "message"
+    },
+    {
+      "name": "mine_tab_title",
+      "value": "mine"
+    },
+    {
+      "name": "clock_tab_title",
+      "value": "clock"
+    },
+    {
+      "name": "record_tab_title",
+      "value": "record"
+    },
+    {
+      "name": "application_name",
+      "value": "IbestKnow"
+    },
+    {
+      "name": "app_description",
+      "value": "IbestKnow，make learning easier"
+    },
+    {
+      "name": "privacy_policy",
+      "value": "privacy_policy"
+    },
+    {
+      "name": "user_policy",
+      "value": "user_policy"
+    },
+    {
+      "name": "article_info_title",
+      "value": "articleInfo"
+    },
+    {
+      "name": "learn_clock_title",
+      "value": "learnClock"
+    },
+    {
+      "name": "clock_record_title",
+      "value": "clockRecord"
+    },
+    {
+      "name": "learn_target_title",
+      "value": "learnTarget"
+    },
+    {
+      "name": "about_us_title",
+      "value": "aboutUS"
+    },
+    {
+      "name": "mine_collect_title",
+      "value": "mineCollect"
+    },
+    {
+      "name": "set_up_title",
+      "value": "setUP"
+    },
+    {
+      "name": "mine_like_title",
+      "value": "mineLike"
+    },
+    {
+      "name": "mine_info_title",
+      "value": "mineInfo"
+    },
+    {
+      "name": "article_best_new",
+      "value": "New"
+    },
+    {
+      "name": "article_best_hot",
+      "value": "Hot"
+    },
+    {
+      "name": "no_have_article",
+      "value": "period"
+    },
+    {
+      "name": "all_condition",
+      "value": "All"
+    },
+    {
+      "name": "sample_condition",
+      "value": "Sample"
+    },
+    {
+      "name": "medium_condition",
+      "value": "Medium"
+    },
+    {
+      "name": "hard_condition",
+      "value": "Hard"
+    },
+    {
+      "name": "basic_condition",
+      "value": "Basic"
+    },
+    {
+      "name": "advance_condition",
+      "value": "Advance"
+    },
+    {
+      "name": "senior_condition",
+      "value": "Senior"
+    }
+  ]
+}

@@ -173,26 +173,6 @@ export class SinkRule extends AbstractRule {
     }
 
     /**
-     * 简化的别名检查
-     * @param value1 值1
-     * @param value2 值2
-     * @return 如果可能别名返回 true
-     */
-    private mayAlias(value1: any, value2: any): boolean {
-        // TODO: 使用完整的别名分析
-        // 简化实现：只检查是否是同一个本地变量
-        if (!value1 || !value2) {
-            return false;
-        }
-
-        // 获取 base 值进行比较
-        const base1 = value1.getBase ? value1.getBase() : value1;
-        const base2 = value2.getBase ? value2.getBase() : value2;
-
-        return base1 === base2;
-    }
-
-    /**
      * 检查 fact 是否有污染子字段
      */
     private factHasTaintSubFields(fact: TaintFact): boolean {

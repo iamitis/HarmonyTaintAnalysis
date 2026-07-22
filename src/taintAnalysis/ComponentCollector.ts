@@ -8,7 +8,7 @@ import { ArkMethod } from "..";
 import { Local } from "../core/base/Local";
 import { ClassType, FunctionType } from "../core/base/Type";
 import { ArkAssignStmt } from "../core/base/Stmt";
-import { ArkInstanceFieldRef, ArkArrayRef } from "../core/base/Ref";
+import { ArkInstanceFieldRef, ArkArrayRef, ArkStaticFieldRef } from "../core/base/Ref";
 import { Value } from "../core/base/Value";
 import { TEMP_LOCAL_PREFIX } from "../core/common/Const";
 import { ClassSignature, MethodSignature } from "../core/model/ArkSignature";
@@ -486,6 +486,10 @@ export class ComponentCollector {
             return value.getValue();
         }
 
+        if (value instanceof ArkStaticFieldRef) {
+            return this.resolveStaticFieldValue(value);
+        }
+
         return null;
     }
 
@@ -531,6 +535,10 @@ export class ComponentCollector {
             return value.getValue();
         }
 
+        if (value instanceof ArkStaticFieldRef) {
+            return this.resolveStaticFieldValue(value);
+        }
+
         return null;
     }
 
@@ -547,6 +555,60 @@ export class ComponentCollector {
             if (value instanceof StringConstant) {
                 return value.getValue();
             }
+            if (value instanceof ArkStaticFieldRef) {
+                return this.resolveStaticFieldValue(value);
+            }
+        }
+
+        if (arg instanceof ArkStaticFieldRef) {
+            return this.resolveStaticFieldValue(arg);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve an ArkStaticFieldRef to its string constant value.
+     * Handles chained static field references (e.g. A = B where B is also static).
+     */
+    private resolveStaticFieldValue(ref: ArkStaticFieldRef): string | null {
+        const fieldSig = ref.getFieldSignature();
+        const declaringSig = fieldSig.getDeclaringSignature();
+        if (!(declaringSig instanceof ClassSignature)) {
+            return null;
+        }
+
+        const cls = this.scene.getClass(declaringSig);
+        if (!cls) {
+            return null;
+        }
+
+        const field = cls.getStaticFieldWithName(fieldSig.getFieldName());
+        if (!field) {
+            return null;
+        }
+
+        const stmts = field.getInitializer();
+        if (stmts.length === 0) {
+            return null;
+        }
+
+        const assignStmt = stmts[stmts.length - 1];
+        if (!(assignStmt instanceof ArkAssignStmt)) {
+            return null;
+        }
+
+        let value = assignStmt.getRightOp();
+        if (value instanceof Local) {
+            value = this.backtraceLocalInitValue(value);
+        }
+
+        if (value instanceof StringConstant) {
+            return value.getValue();
+        }
+
+        if (value instanceof ArkStaticFieldRef) {
+            return this.resolveStaticFieldValue(value);
         }
 
         return null;

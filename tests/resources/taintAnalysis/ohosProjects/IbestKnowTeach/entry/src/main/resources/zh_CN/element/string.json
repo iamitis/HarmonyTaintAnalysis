@@ -1,0 +1,140 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "模块描述"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "百得知识库"
+    },
+    {
+      "name": "permission_location",
+      "value": "位置权限"
+    },
+    {
+      "name": "permission_internet",
+      "value": "网络权限"
+    },
+    {
+      "name": "index_tab_title",
+      "value": "首页"
+    },
+    {
+      "name": "learn_tab_title",
+      "value": "学习"
+    },
+    {
+      "name": "message_tab_title",
+      "value": "消息"
+    },
+    {
+      "name": "mine_tab_title",
+      "value": "我的"
+    },
+    {
+      "name": "clock_tab_title",
+      "value": "打卡"
+    },
+    {
+      "name": "record_tab_title",
+      "value": "记录"
+    },
+    {
+      "name": "application_name",
+      "value": "百得知识库"
+    },
+    {
+      "name": "app_description",
+      "value": "百得知识库，让学习更简便"
+    },
+    {
+      "name": "privacy_policy",
+      "value": "隐私政策"
+    },
+    {
+      "name": "user_policy",
+      "value": "用户协议"
+    },
+    {
+      "name": "article_info_title",
+      "value": "内容详情"
+    },
+    {
+      "name": "learn_clock_title",
+      "value": "学习打卡"
+    },
+    {
+      "name": "clock_record_title",
+      "value": "打卡记录"
+    },
+    {
+      "name": "learn_target_title",
+      "value": "学习目标"
+    },
+    {
+      "name": "about_us_title",
+      "value": "关于我们"
+    },
+    {
+      "name": "mine_collect_title",
+      "value": "我的收藏"
+    },
+    {
+      "name": "set_up_title",
+      "value": "设置"
+    },
+    {
+      "name": "mine_like_title",
+      "value": "我的点赞"
+    },
+    {
+      "name": "mine_info_title",
+      "value": "个人信息"
+    },
+    {
+      "name": "article_best_new",
+      "value": "最新"
+    },
+    {
+      "name": "article_best_hot",
+      "value": "热门"
+    },
+    {
+      "name": "no_have_article",
+      "value": "没有更多了"
+    },
+    {
+      "name": "all_condition",
+      "value": "全部"
+    },
+    {
+      "name": "sample_condition",
+      "value": "简单"
+    },
+    {
+      "name": "medium_condition",
+      "value": "中等"
+    },
+    {
+      "name": "hard_condition",
+      "value": "困难"
+    },
+    {
+      "name": "basic_condition",
+      "value": "基础"
+    },
+    {
+      "name": "advance_condition",
+      "value": "进阶"
+    },
+    {
+      "name": "senior_condition",
+      "value": "高级"
+    }
+  ]
+}

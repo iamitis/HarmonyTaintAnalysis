@@ -1,0 +1,476 @@
+import { LengthUnit, SymbolGlyphModifier } from '@kit.ArkUI';
+import { media } from '@kit.MediaKit';
+import { avSession as AVSessionManager } from '@kit.AVSessionKit';
+import { getAlbum, getAlbumSong, getArtist, getLyrics, getSong, star, unstar } from '../utils/Api';
+import { Album, Artist, Line, Song, StructuredLyric } from '../utils/Interface';
+import { deviceInfo } from '@kit.BasicServicesKit';
+import { coverImage } from '../utils/Component';
+import reportBuilder from './dialogs/Report';
+
+let deviceTypeInfo: string = deviceInfo.deviceType;
+
+function formatDuration(seconds: number): string {
+  const roundedSeconds = Math.floor(seconds);
+  const hours = Math.floor(roundedSeconds / 3600);
+  const minutes = Math.floor((roundedSeconds % 3600) / 60);
+  const secs = roundedSeconds % 60;
+  const paddedMinutes = minutes.toString().padStart(2, '0');
+  const paddedSeconds = secs.toString().padStart(2, '0');
+  let formattedTime = `${paddedMinutes}:${paddedSeconds}`;
+  if (hours > 0) {
+    const paddedHours = hours.toString().padStart(2, '0');
+    formattedTime = `${paddedHours}:${formattedTime}`;
+  }
+  return formattedTime;
+}
+
+@Builder
+export function AlbumDetailBuilder() {
+  AlbumDetail()
+}
+
+@Component
+export default struct AlbumDetail {
+  @Consume album: Album
+  @Consume pageStack: NavPathStack
+  @StorageLink('baseURL') baseURL: string = ''
+  @StorageLink('username') username: string = ''
+  @StorageLink('password') password: string = ''
+  @Consume salt: string
+  @Consume version: string
+  @Consume client: string
+  @Consume auth: string
+  @Consume getCoverUrl: string
+  @State artists: Artist[] = []
+  @Consume artist: Artist | undefined
+  @Consume nowPlayingSong: Song | undefined
+  @Consume nowPlayingLyrics: StructuredLyric | undefined
+  @Consume nowPlayingLyricsByGroup: Line[][]
+  @Consume nowPlayingList: Song[]
+  @Consume nowPlayingListOriginal: Song[]
+  @Consume nowPlayingIndex: number
+  @Consume starredSongs: Song[]
+  @Consume isPlaying: boolean
+  @Consume startPlaying: boolean
+  @Consume discs: Song[][]
+  @Consume showMenu: boolean
+  @Consume needUpdate: boolean
+  @Consume closePlay: boolean
+  @Consume nowPage: number
+  @Consume showPlay: boolean
+  @Consume displayWidth: number
+  @Consume sidebarType: number
+  @Consume longPressSong: Song | undefined
+  @Consume avPlayer: media.AVPlayer | undefined
+  @StorageLink('playMode') playMode: number = 0
+  @StorageLink('hideReport') hideReport: boolean = false
+  @Consume session: AVSessionManager.AVSession | undefined
+  @State coverSize: number = 256
+  @State showDiscHeader: boolean = false
+  @State discsKeys: number[] = []
+  @State showProgress: boolean = false
+  report: CustomDialogController = new CustomDialogController({
+    builder: reportBuilder(),
+    width: 350,
+    height: 330,
+    backgroundColor: $r('app.color.start_window_background'),
+  })
+
+  getMenus(): NavigationMenuItem[] {
+    const starIcon = new SymbolGlyphModifier(
+      this.album.starred === undefined ? $r('sys.symbol.heart') : $r('sys.symbol.heart_fill')
+    );
+
+    const items: NavigationMenuItem[] = [
+      {
+        value: "star",
+        symbolIcon: starIcon, // 这里是 SymbolGlyphModifier 实例（类型正确）
+        action: async () => {
+          if (this.album.starred !== undefined) {
+            let starStatus = await unstar(this.baseURL, this.auth, this.album.id, 'album')
+            if (starStatus === true) {
+              this.getUIContext().getPromptAction().showToast({
+                message: '取消收藏成功！',
+                duration: 500
+              });
+              this.album.starred = undefined
+              if (this.nowPage === 0) {
+                this.needUpdate = !this.needUpdate
+              }
+            } else {
+              this.getUIContext().getPromptAction().showToast({
+                message: '取消收藏失败，请检查网络！',
+                duration: 500
+              });
+            }
+          } else {
+            let starStatus = await star(this.baseURL, this.auth, this.album.id, 'album')
+            if (starStatus === true) {
+              this.getUIContext().getPromptAction().showToast({
+                message: '收藏成功！',
+                duration: 500
+              });
+              let tmp_album: Album | undefined =
+                await getAlbum(this.baseURL, this.auth, this.album.id)
+              if (tmp_album !== undefined && tmp_album.starred !== undefined) {
+                this.album.starred = tmp_album.starred
+              }
+              if (this.nowPage === 0) {
+                this.needUpdate = !this.needUpdate
+              }
+            } else {
+              this.getUIContext().getPromptAction().showToast({
+                message: '收藏失败，请检查网络！',
+                duration: 500
+              });
+            }
+          }
+        }
+      }
+    ];
+
+    if (!this.hideReport) {
+      items.push({
+        value: "report",
+        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.reports')),
+        action: async () => {
+          this.report.open()
+        }
+      });
+    }
+
+    return items;
+  }
+
+  groupLyrics() {
+    this.nowPlayingLyricsByGroup = []
+    let index = -1
+    for (let line of this.nowPlayingLyrics!.line) {
+      if (this.nowPlayingLyricsByGroup.length === 0 || line.start !== this.nowPlayingLyricsByGroup[index][0].start) {
+        index++
+        this.nowPlayingLyricsByGroup.push([])
+        this.nowPlayingLyricsByGroup[index].push(line)
+      } else {
+        this.nowPlayingLyricsByGroup[index].push(line)
+      }
+    }
+  }
+
+  getNowPlayingIndex(song: Song, list: Song[]) {
+    for (let index = 0; index < list.length; index++) {
+      if (list[index].id === song.id) {
+        this.nowPlayingIndex = index
+        break;
+      }
+    }
+  }
+
+  shuffleList<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      let temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  }
+
+  async aboutToAppear() {
+    this.showProgress = true
+    let tmpAlbum = await getAlbum(this.baseURL, this.auth, this.album.id)
+    this.album = tmpAlbum ? tmpAlbum : this.album
+    this.album.song = await getAlbumSong(this.baseURL, this.auth, this.album.id);
+    const groupedSongsMap = new Map<number, Song[]>();
+    this.album.song!.forEach((song) => {
+      let disc = song.discNumber;
+      if (disc === undefined) {
+        disc = 0;
+      }
+      if (!groupedSongsMap.has(disc)) {
+        groupedSongsMap.set(disc, []);
+      }
+      groupedSongsMap.get(disc)?.push(song);
+    });
+    const sortedKeys = Array.from(groupedSongsMap.keys()).sort((a, b) => a - b);
+    this.discs = sortedKeys.map(key => groupedSongsMap.get(key)!);
+    this.discsKeys = sortedKeys;
+    this.showDiscHeader = !(sortedKeys.length === 1 && (sortedKeys[0] === 0 || sortedKeys[0] === 1));
+    this.showProgress = false
+  }
+
+  build() {
+    NavDestination() {
+      Scroll() {
+        Column() {
+          Row() {
+            Column() {
+              coverImage({
+                url: this.baseURL + this.getCoverUrl + this.auth + `&id=${this.album.id}&size=${this.coverSize}`,
+                radius: 10
+              })
+            }
+            .width(this.displayWidth > 1400 ? 200 : (this.displayWidth > 1000 ? 175 : 150))
+            .aspectRatio(1)
+            .margin({ left: 20 })
+            .justifyContent(FlexAlign.Center)
+
+            Column() {
+              Text(this.album.name)
+                .fontSize(this.displayWidth > 1400 ? 28 : 24)
+                .fontColor($r('app.color.font'))
+                .fontWeight(FontWeight.Medium)
+              Button({ type: ButtonType.Normal }) {
+                Text(this.album.artist)
+                  .fontSize(this.displayWidth > 1400 ? 20 : 18)
+                  .fontColor($r('app.color.font_secondary'))
+              }
+              .margin({ top: 5 })
+              .backgroundColor(Color.Transparent)
+              .stateEffect(false)
+              .onClick(async () => {
+                this.artist = await getArtist(this.baseURL, this.auth, this.album.artistId)
+                this.pageStack.replacePathByName('ArtistDetail', undefined);
+              })
+            }
+            .margin({ left: 15, right: 15 })
+            .padding({ bottom: this.displayWidth > 1400 ? 40 : 20 })
+            .width('100%')
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start)
+          }
+          .width('100%')
+          .height('auto')
+          .margin({ top: 10 })
+          .justifyContent(FlexAlign.Start)
+
+          Row() {
+            Column() {
+              Text(this.album.songCount ? this.album.songCount.toString() : '-')
+                .fontSize(20)
+                .fontColor($r('app.color.font'))
+                .fontWeight(FontWeight.Bold)
+              Text("歌曲")
+                .fontSize(15)
+                .fontColor($r('app.color.font_secondary'))
+                .margin({ top: 5 })
+            }
+
+            Column() {
+              Text(formatDuration(this.album.duration))
+                .fontSize(20)
+                .fontColor($r('app.color.font'))
+                .fontWeight(FontWeight.Bold)
+              Text("时长")
+                .fontSize(15)
+                .fontColor($r('app.color.font_secondary'))
+                .margin({ top: 5 })
+            }
+
+            Column() {
+              Text(this.album.year !== undefined ? this.album.year!.toString() : '-')
+                .fontSize(20)
+                .fontColor($r('app.color.font'))
+                .fontWeight(FontWeight.Bold)
+              Text("年份")
+                .fontSize(15)
+                .fontColor($r('app.color.font_secondary'))
+                .margin({ top: 5 })
+            }
+          }
+          .width('100%')
+          .height('auto')
+          .padding(20)
+          .justifyContent(FlexAlign.SpaceAround)
+
+          Divider()
+            .width('100%')
+            .height(1)
+            .margin({ left: 20, right: 20, bottom: 5 })
+            .color($r('app.color.divider'))
+
+          if (this.showDiscHeader) {
+            ForEach(this.discs, (disc: Song[], index) => {
+              Column() {
+                Text(this.discsKeys[index] === 0 ? "DISC" : "DISC " + this.discsKeys[index])
+                  .width('100%')
+                  .fontSize(16)
+                  .fontColor($r('app.color.font'))
+                  .fontWeight(FontWeight.Bold)
+                  .padding({ left: 20, top: 20 })
+                ForEach(disc, (song: Song, index2) => {
+                  Button({ type: ButtonType.Normal }) {
+                    Row() {
+                      Text(song.track !== undefined ? song.track.toString() : '-')
+                        .fontSize(17)
+                        .fontColor($r('app.color.font_secondary'))
+                        .width(80)
+                        .textAlign(TextAlign.Center)
+                      Column() {
+                        Text(song.title)
+                          .fontSize(17)
+                          .fontColor($r('app.color.font'))
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                        Text(song.artist)
+                          .fontSize(14)
+                          .fontColor($r('app.color.font_secondary'))
+                          .margin({ top: 5 })
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      }
+                      .alignItems(HorizontalAlign.Start)
+                      .padding({ right: 15 })
+                      .width('100%')
+                      .layoutWeight(1)
+                    }
+                    .width('100%')
+                    .height('100%')
+                  }
+                  .width('100%')
+                  .height(72)
+                  .borderRadius(10)
+                  .backgroundColor(Color.Transparent)
+                  .onClick(async () => {
+                    this.startPlaying = true
+                    await this.avPlayer!.reset()
+                    this.isPlaying = true
+                    this.nowPlayingSong = song
+                    this.nowPlayingLyrics = await getLyrics(this.baseURL, this.auth, song.id)
+                    if (this.nowPlayingLyrics !== undefined) {
+                      this.groupLyrics()
+                    }
+                    this.nowPlayingListOriginal = this.album.song!.slice()
+                    if (this.playMode === AVSessionManager.LoopMode.LOOP_MODE_SHUFFLE) {
+                      this.nowPlayingList = this.shuffleList(this.nowPlayingListOriginal.slice())
+                    } else {
+                      this.nowPlayingList = this.nowPlayingListOriginal.slice()
+                    }
+                    this.getNowPlayingIndex(song, this.nowPlayingList)
+                    this.avPlayer!.url = this.baseURL + '/rest/stream' + this.auth + `&id=${song.id}&format=raw`;
+                  })
+                  .gesture(
+                    LongPressGesture()
+                      .onAction(async (event: GestureEvent) => {
+                        this.longPressSong = song
+                        this.showMenu = true
+                        let tmp_song: Song | undefined =
+                          await getSong(this.baseURL, this.auth, this.longPressSong!.id)
+                        if (tmp_song !== undefined && tmp_song.starred !== undefined) {
+                          this.longPressSong!.starred = tmp_song.starred
+                        }
+                      })
+                  )
+                })
+
+                Divider()
+                  .width('100%')
+                  .height(1)
+                  .margin({ top: 10, left: 20, right: 20 })
+                  .color($r('app.color.divider'))
+                  .visibility(index === this.discs.length - 1 ? Visibility.None : Visibility.Visible)
+              }
+            })
+          } else {
+            ForEach(this.discs[0], (song: Song, index) => {
+              Button({ type: ButtonType.Normal }) {
+                Row() {
+                  Text(song.track !== undefined ? song.track.toString() : '-')
+                    .fontSize(17)
+                    .fontColor($r('app.color.font_secondary'))
+                    .width(80)
+                    .textAlign(TextAlign.Center)
+                  Column() {
+                    Text(song.title)
+                      .fontSize(17)
+                      .fontColor($r('app.color.font'))
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    Text(song.artist)
+                      .fontSize(14)
+                      .fontColor($r('app.color.font_secondary'))
+                      .margin({ top: 5 })
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .padding({ right: 15 })
+                  .width('100%')
+                  .layoutWeight(1)
+                }
+                .width('100%')
+                .height('100%')
+              }
+              .width('100%')
+              .height(72)
+              .borderRadius(10)
+              .backgroundColor(Color.Transparent)
+              .onClick(async () => {
+                this.startPlaying = true
+                await this.avPlayer!.reset()
+                this.isPlaying = true
+                this.nowPlayingSong = song
+                this.nowPlayingLyrics = await getLyrics(this.baseURL, this.auth, song.id)
+                if (this.nowPlayingLyrics !== undefined) {
+                  this.groupLyrics()
+                }
+                this.nowPlayingListOriginal = this.album.song!.slice()
+                if (this.playMode === AVSessionManager.LoopMode.LOOP_MODE_SHUFFLE) {
+                  this.nowPlayingList = this.shuffleList(this.nowPlayingListOriginal.slice())
+                } else {
+                  this.nowPlayingList = this.nowPlayingListOriginal.slice()
+                }
+                this.getNowPlayingIndex(song, this.nowPlayingList)
+                this.avPlayer!.url = this.baseURL + '/rest/stream' + this.auth + `&id=${song.id}&format=raw`;
+              })
+              .gesture(
+                LongPressGesture()
+                  .onAction(async (event: GestureEvent) => {
+                    this.longPressSong = song
+                    this.showMenu = true
+                    let tmp_song: Song | undefined =
+                      await getSong(this.baseURL, this.auth, this.longPressSong!.id)
+                    if (tmp_song !== undefined && tmp_song.starred !== undefined) {
+                      this.longPressSong!.starred = tmp_song.starred
+                    }
+                  })
+              )
+            })
+          }
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .padding({ bottom: this.startPlaying === true ? 95 : 10 })
+      .scrollBar(BarState.Off)
+      .align(Alignment.Top)
+      .visibility(this.showProgress === false ? Visibility.Visible : Visibility.None)
+
+      Column() {
+        LoadingProgress()
+          .width("100%")
+          .height(72)
+          .color($r('app.color.font'))
+          .margin({ bottom: 160 })
+      }
+      .height('100%')
+      .width('100%')
+      .justifyContent(FlexAlign.Center)
+      .visibility(this.showProgress === true ? Visibility.Visible : Visibility.None)
+    }
+    .backgroundColor($r('app.color.content_background'))
+    .onBackPressed(() => {
+      if (this.showPlay) {
+        this.closePlay = !this.closePlay
+        return true
+      }
+      return false
+    })
+    .title("", {
+      paddingEnd: {
+        value: deviceTypeInfo === '2in1' ? (this.sidebarType === SideBarContainerType.Embed ? 165 : 0) : 15,
+        unit: LengthUnit.VP
+      }
+    })
+    .menus(this.getMenus())
+  }
+}

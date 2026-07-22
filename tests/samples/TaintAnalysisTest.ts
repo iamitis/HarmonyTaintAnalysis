@@ -13,6 +13,7 @@ import { ArkIRMethodPrinter } from '../../src/save/arkir/ArkIRMethodPrinter';
 import { AliasingStrategy } from '../../src/taintAnalysis/config/IFDSConfig';
 import { SourceAndSinkFileType, TaintAnalysisConfig, TaintAnalysisProjectType } from '../../src/taintAnalysis/config/TaintAnalysisConfig';
 import path from 'path';
+import fs from 'fs';
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintAnalysisTest');
 Logger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.INFO, false);
@@ -52,42 +53,44 @@ function printCFG(method: ArkMethod) {
 }
 
 // 从 Harmony 项目跑全流程示例
-const PROJECT_CONFIGS = [
-    './tests/resources/taintAnalysis/debug/MyStoreProjectConfig.json',
-    './tests/resources/taintAnalysis/debug/OhbiliProjectConfig.json',
-];
-const OHBILI_DEFINITION_FILE = './tests/resources/taintAnalysis/debug/OhbiliSourceSinkDefinition.json';
+const OHOS_PROJECT_CONFIGS_DIR = './tests/resources/taintAnalysis/ohosProjectConfigs';
+const BASE_SOURCE_SINK = path.join(OHOS_PROJECT_CONFIGS_DIR, 'BaseSourceSink.json');
 
-function harmonyTest() {
-    const scene = buildHarmonyScene(PROJECT_CONFIGS[1]);
+function harmonyTest(projectName: string) {
+    const projectConfigPath = path.join(OHOS_PROJECT_CONFIGS_DIR, projectName, 'Project.json');
+    const scene = buildHarmonyScene(projectConfigPath);
 
     const taintAnalysisConfig = new TaintAnalysisConfig();
     taintAnalysisConfig.projectType = TaintAnalysisProjectType.OpenHarmony;
     taintAnalysisConfig.sourceAndSinkConfigs = [
         {
-            definitionFilePath: HAP_BENCH_DEFINITION_FILE,
-            definitionFileType: SourceAndSinkFileType.JSON
-        },
-        {
-            definitionFilePath: OHBILI_DEFINITION_FILE,
+            definitionFilePath: BASE_SOURCE_SINK,
             definitionFileType: SourceAndSinkFileType.JSON
         }
-    ]
+    ];
+    const projectSourceSinkPath = path.join(OHOS_PROJECT_CONFIGS_DIR, projectName, 'SourceSink.json');
+    if (fs.existsSync(projectSourceSinkPath)) {
+        taintAnalysisConfig.sourceAndSinkConfigs.push({
+            definitionFilePath: projectSourceSinkPath,
+            definitionFileType: SourceAndSinkFileType.JSON
+        });
+    }
     taintAnalysisConfig.ifdsConfig.aliasingStrategy = AliasingStrategy.FlowSensitive;
 
     const analyzer = new TaintAnalysis(scene, taintAnalysisConfig);
     analyzer.analyzeHarmonyApp();
 
-    // console.log(`------------------ Harmony Taint Analysis Result ------------------`);
-    // analyzer.getTaintAnalysisResult().forEach((res) => {
-    //     console.log(`-----`);
-    //     console.log(res.toString());
-    // });
-    // console.log(`------------------ Harmony Taint Analysis Result End ------------------`);
+    console.log(`------------------ Harmony Taint Analysis Result ------------------`);
+    analyzer.getTaintAnalysisResult().forEach((res) => {
+        console.log(`-----`);
+        console.log(res.getSinkStmt().toString(), ' --- ', res.getSinkStmt().getOriginPositionInfo().getLineNo());
+    });
+    console.log(`------------------ Harmony Taint Analysis Result End ------------------`);
 
-    // 打印 DummyMain 的 IR
     const dummyMain = analyzer.getDummyMain();
     // dummyMain && printCFG(dummyMain);
+    const getCurrentLocation = scene.getMethods().find((method) => method.getName() === 'getCurrentLocation');
+    console.log(getCurrentLocation?.getSignature().toString() ?? '')
 }
 
 // 测试 IFDS
@@ -178,6 +181,8 @@ function ifdsTest() {
             });
             console.log(`------------------ ${methodName} Taint Analysis Result End ------------------`);
             printCFG(method);
+            const debugSetIntData = scene.getMethods().find((method) => method.getName() === 'debugSetIntData');
+            debugSetIntData && printCFG(debugSetIntData);
         }
     }
 }
@@ -189,10 +194,15 @@ const sdk: Sdk = {
     path: "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
     moduleName: ""
 }
+const ohosAxiosSdk: Sdk = {
+    name: "ohos-axios",
+    path: "/home/wzy/code/ohos-lib/oh_modules",
+    moduleName: ""
+}
 
 function hapBenchTest(dir: string, name: string) {
     const sceneConfig = new SceneConfig();
-    sceneConfig.buildConfig(name, path.join(HAP_BENCH_DIR, dir), [sdk]);
+    sceneConfig.buildConfig(name, path.join(HAP_BENCH_DIR, dir), [sdk, ohosAxiosSdk]);
     const scene = new Scene();
     scene.buildSceneFromProjectDir(sceneConfig);
     scene.inferTypes();
@@ -217,7 +227,6 @@ function hapBenchTest(dir: string, name: string) {
     });
     console.log(`------------------ ${dir} Taint Analysis Result End ------------------`);
 
-    printCFG(setup.getDummyMain()!);
     // const ability = scene.getClasses().find((arkClass) => arkClass.getName() === 'EntryAbility');
     // if (ability) {
     //     const onCreate = ability.getMethods().find((method) => method.getName() === 'onCreate');
@@ -225,13 +234,37 @@ function hapBenchTest(dir: string, name: string) {
     //     const onForeground = ability.getMethods().find((method) => method.getName() === 'onForeground');
     //     onForeground && printCFG(onForeground);
     // }
-    const onPageHide = scene.getMethods().find((method) => method.getName() === 'onPageHide');
-    onPageHide && printCFG(onPageHide);
 
+    // printCFG(setup.getDummyMain()!);
+
+    const onCreate = scene.getMethods().find((method) => method.getName() === 'onCreate');
+    onCreate && printCFG(onCreate);
 }
 
-harmonyTest();
+function main() {
+    const args = process.argv.slice(2);
+    if (args.length === 0) {
+        console.log('Usage:');
+        console.log('  npx ts-node tests/samples/TaintAnalysisTest.ts --harmonyTest <projectName>');
+        console.log('  npx ts-node tests/samples/TaintAnalysisTest.ts --ifdsTest');
+        console.log('  npx ts-node tests/samples/TaintAnalysisTest.ts --hapBenchTest <dir>');
+        return;
+    }
 
-// ifdsTest();
+    const flag = args[0];
+    switch (flag) {
+        case '--harmonyTest':
+            harmonyTest(args[1]);
+            break;
+        case '--ifdsTest':
+            ifdsTest();
+            break;
+        case '--hapBenchTest':
+            hapBenchTest(args[1], args[1].split('/').pop()!);
+            break;
+        default:
+            console.log(`Unknown flag: ${flag}`);
+    }
+}
 
-// hapBenchTest('Lifecycle Modeling/Button2', 'Button2');
+main();

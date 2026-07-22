@@ -12,6 +12,9 @@ const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintFact');
  * 表示 IFDS 分析中的数据流事实
  */
 export class TaintFact {
+    // 测试用, 记录每个项目生成的污点事实数量
+    public static project2TaintFactMap: Map<string, number> = new Map();
+    public static currProject: string = '';
 
     /** 流敏感别名分析的全局开关 */
     protected static flowSensitiveAliasing: boolean = true;
@@ -52,6 +55,7 @@ export class TaintFact {
         this.accessPath = accessPath;
         this.taintedVar = taintedVar;
         this.taintingStmt = taintingStmt;
+        TaintFact.project2TaintFactMap.set(TaintFact.currProject, (TaintFact.project2TaintFactMap.get(TaintFact.currProject) ?? 0) + 1);
     }
 
     /**
@@ -163,6 +167,10 @@ export class TaintFact {
 
     public getSourceDefinition(): SourceDefinition | undefined {
         return this.sourceDefinition;
+    }
+
+    public setSourceDefinition(sourceDefinition: SourceDefinition | undefined): void {
+        this.sourceDefinition = sourceDefinition;
     }
 
     public getPreTaintFact(): TaintFact | undefined {

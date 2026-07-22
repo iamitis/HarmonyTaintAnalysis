@@ -1,0 +1,72 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#F0F3F5"
+    },
+    {
+      "name": "statusbar",
+      "value": "#000000"
+    },
+    {
+      "name": "content_background",
+      "value": "#F0F3F5"
+    },
+    {
+      "name": "bar_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "button_selected",
+      "value": "#E5E8E9"
+    },
+    {
+      "name": "font",
+      "value": "#0F0F0F"
+    },
+    {
+      "name": "font_secondary",
+      "value": "#818181"
+    },
+    {
+      "name": "font_lyrics",
+      "value": "#242424"
+    },
+    {
+      "name": "font_lyrics_secondary",
+      "value": "#4B4B4B"
+    },
+    {
+      "name": "progress",
+      "value": "#1E1E1F"
+    },
+    {
+      "name": "progress_background",
+      "value": "#D6D7D8"
+    },
+    {
+      "name": "divider",
+      "value": "#50000000"
+    },
+    {
+      "name": "indicator",
+      "value": "#1E1E1F"
+    },
+    {
+      "name": "index",
+      "value": "#D6D7D8"
+    },
+    {
+      "name": "radio",
+      "value": "#343434"
+    },
+    {
+      "name": "shadow",
+      "value": "#95000000"
+    },
+    {
+      "name": "textInput",
+      "value": "#E2E3E5"
+    }
+  ]
+}

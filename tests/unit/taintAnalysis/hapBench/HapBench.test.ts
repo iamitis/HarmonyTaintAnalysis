@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import path from 'path';
+import fs from 'fs';
 import { Scene } from '../../../../src/Scene';
 import { SceneConfig, Sdk } from '../../../../src/Config';
 import { TaintAnalysis } from '../../../../src/taintAnalysis/TaintAnalysis';
@@ -23,12 +24,25 @@ describe('HapBench Test', () => {
         path: "/home/wzy/code/hapflow/sdk/default/openharmony/ets",
         moduleName: ""
     }
+    let totalUsedTime = 0;
+    let totalBuildSceneTime = 0;
+    const perTestResults: { name: string; usedTime: number; buildSceneTime: number }[] = [];
+
     beforeAll(() => {
-        ConsoleLogger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.DEBUG, false);
+        ConsoleLogger.configure('', LOG_LEVEL.ERROR, LOG_LEVEL.ERROR, false);
     });
 
     afterAll(() => {
         scene && scene.dispose();
+
+        const lines: string[] = [];
+        lines.push(`totalUsedTime: ${totalUsedTime}ms`);
+        lines.push(`totalBuildSceneTime: ${totalBuildSceneTime}ms`);
+        lines.push('');
+        for (const r of perTestResults) {
+            lines.push(`${r.name}: usedTime=${r.usedTime}ms, buildSceneTime=${r.buildSceneTime}ms`);
+        }
+        fs.writeFileSync(path.join(__dirname, 'time.txt'), lines.join('\n'));
     });
 
     function printCFG(method: ArkMethod) {
@@ -47,11 +61,15 @@ describe('HapBench Test', () => {
      */
     function runTaintAnalysis(projectDir: string, projectName: string): Set<SourceToSinkInfo> {
         // Build scene from test resources
+        const startTime = Date.now();
+        const buildSceneStart = Date.now();
         const sceneConfig = new SceneConfig();
         sceneConfig.buildConfig(projectName, path.join(HAP_BENCH_DIR, projectDir), [sdk]);
         scene = new Scene();
         scene.buildSceneFromProjectDir(sceneConfig);
         scene.inferTypes();
+        const buildSceneEnd = Date.now();
+        const buildSceneTime = buildSceneEnd - buildSceneStart;
 
         // setup taint analysis
         const taintAnalysisConfig = new TaintAnalysisConfig();
@@ -66,8 +84,13 @@ describe('HapBench Test', () => {
 
         taintAnalysis = new TaintAnalysis(scene, taintAnalysisConfig);
         taintAnalysis.analyze();
-        printCFG(taintAnalysis.getDummyMain()!);
+        const endTime = Date.now();
+        const usedTime = endTime - startTime;
+        // printCFG(taintAnalysis.getDummyMain()!);
 
+        totalUsedTime += usedTime;
+        totalBuildSceneTime += buildSceneTime;
+        perTestResults.push({ name: projectDir, usedTime, buildSceneTime });
         return taintAnalysis.getTaintAnalysisResult();
     }
 
@@ -106,9 +129,10 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
+    // 未通过 FN
     it('Anonymous Constructs/AnonymousClass2', () => {
         const res = runTaintAnalysis('Anonymous Constructs/AnonymousClass2', 'AnonymousClass2');
-        expect(res.size).toBe(0);
+        expect(res.size).toBe(1);
     })
 
     it('Anonymous Constructs/AnonymousMethod1', () => {
@@ -146,7 +170,6 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
-    // 未通过, 暂未识别鸿蒙的一些特殊注册型回调
     it('Anonymous Constructs/AnonymousMethod8', () => {
         const res = runTaintAnalysis('Anonymous Constructs/AnonymousMethod8', 'AnonymousMethod8');
         expect(res.size).toBe(1);
@@ -162,7 +185,7 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
-    // 误报, 没有实现数组下标精度
+    // 未通过, 误报, 没有实现数组下标精度 FP
     it('Array-Like Structures/ArrayIndexNoLeak', () => {
         const res = runTaintAnalysis('Array-Like Structures/ArrayIndexNoLeak', 'ArrayIndexNoLeak');
         expect(res.size).toBe(0);
@@ -249,7 +272,7 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
-    // 未通过, 暂未映射 throwValue -> caughtValue
+    // 未通过, 暂未映射 throwValue -> caughtValue FN
     it('General Language Features/Exceptions4', () => {
         const res = runTaintAnalysis('General Language Features/Exceptions4', 'Exceptions4');
         expect(res.size).toBe(1);
@@ -290,7 +313,6 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
-    // 未通过
     it('General Language Features/StaticFieldInit', () => {
         const res = runTaintAnalysis('General Language Features/StaticFieldInit', 'StaticFieldInit');
         expect(res.size).toBe(1);
@@ -311,14 +333,16 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(2);
     })
 
+    // 未通过, CHA FP
     it('General Language Features/VirtualDispatch2', () => {
         const res = runTaintAnalysis('General Language Features/VirtualDispatch2', 'VirtualDispatch2');
-        expect(res.size).toBe(1);
+        expect(res.size).toBe(0);
     })
 
+    // 未通过, CHA FP
     it('General Language Features/VirtualDispatch3', () => {
         const res = runTaintAnalysis('General Language Features/VirtualDispatch3', 'VirtualDispatch3');
-        expect(res.size).toBe(1);
+        expect(res.size).toBe(0);
     })
 
     it('Lifecycle Modeling/ActivityLifecycle1', () => {
@@ -386,7 +410,6 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(0);
     })
 
-    // 未通过, 暂未识别鸿蒙的一些特殊注册型回调
     it('OpenHarmony Specific APIs/CallbackInSource', () => {
         const res = runTaintAnalysis('OpenHarmony Specific APIs/CallbackInSource', 'CallbackInSource');
         expect(res.size).toBe(1);
@@ -397,13 +420,12 @@ describe('HapBench Test', () => {
         expect(res.size).toBe(1);
     })
 
-    // 未通过, 暂未将 Want 参数视作 source
+    // 未通过, 暂未将 Want 参数视作 source FN
     it('OpenHarmony Specific APIs/DirectLeak-want', () => {
         const res = runTaintAnalysis('OpenHarmony Specific APIs/DirectLeak-want', 'DirectLeak-want');
         expect(res.size).toBe(1);
     })
 
-    // 未通过, 待补充 SourceSinkDefinition.json
     it('OpenHarmony Specific APIs/FileReadWrite', () => {
         const res = runTaintAnalysis('OpenHarmony Specific APIs/FileReadWrite', 'FileReadWrite');
         expect(res.size).toBe(1);

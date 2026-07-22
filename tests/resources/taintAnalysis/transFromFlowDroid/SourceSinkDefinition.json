@@ -1,78 +1,60 @@
 {
     "sources": [
         {
-            "methodName": "getDeviceId",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
-            "parameterTypes": [],
-            "returnType": "string",
-            "isStatic": true,
-            "paramIndex": -1
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager.[static]getDeviceId()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "getIMEI",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
-            "parameterTypes": [],
-            "returnType": "number",
-            "isStatic": true,
-            "paramIndex": -1
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts: TelephonyManager.[static]getIMEI()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "getIMSI",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager",
-            "parameterTypes": [],
-            "returnType": "number",
-            "isStatic": true,
-            "paramIndex": -1
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:TelephonyManager.[static]getIMSI()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "getLongitude",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:LocationManager",
-            "parameterTypes": [],
-            "returnType": "number",
-            "isStatic": true,
-            "paramIndex": -1
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:LocationManager.[static]getLongitude()",
+            "paramIndices": [
+                -1
+            ]
         },
         {
-            "methodName": "getLastKnownLocation",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:LocationManager",
-            "parameterTypes": [],
-            "returnType": "@transFromFlowDroid/UtilClasses.ts:AppLocation",
-            "isStatic": true,
-            "paramIndex": -1
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:LocationManager.[static]getLastKnownLocation()",
+            "paramIndices": [
+                -1
+            ]
         }
     ],
     "sinks": [
         {
-            "methodName": "publish",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
-            "parameterTypes": ["string"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager.publish(string)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "publishInt",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
-            "parameterTypes": ["number"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager.publishInt(number)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "publishBoolean",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
-            "parameterTypes": ["boolean"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager.publishBoolean(boolean)",
+            "paramIndices": [
+                0
+            ]
         },
         {
-            "methodName": "publishDouble",
-            "declaringClass": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager",
-            "parameterTypes": ["number"],
-            "returnType": "void",
-            "isStatic": false,
-            "paramIndices": [0]
+            "methodSigString": "@transFromFlowDroid/UtilClasses.ts:ConnectionManager.publishDouble(number)",
+            "paramIndices": [
+                0
+            ]
         }
     ]
 }

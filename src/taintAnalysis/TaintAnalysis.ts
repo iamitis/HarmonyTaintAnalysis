@@ -22,6 +22,28 @@ import { isAbility } from "./util";
 
 const logger = Logger.getLogger(LOG_MODULE_TYPE.TOOL, 'TaintAnalysis');
 
+class AnalysisMetrics {
+    /** 整个 analyze() 耗时 (ms) */
+    taintAnalysisTime: number = 0;
+    /** runDataflowAnalysis 耗时 (ms), 含 setup 和 result collection */
+    dataflowAnalysisTime: number = 0;
+    /** 纯 doSolve 耗时 (ms), 两个 solver 之和 */
+    solveTime: number = 0;
+    /** 活跃性分析耗时 (ms) */
+    livenessTime: number = 0;
+    /** 处理边总数 (两个 solver 之和) */
+    processEdgeCnt: number = 0;
+    taintSolverEdgeCnt: number = 0;
+    aliasSolverEdgeCnt: number = 0;
+    /** TaintSolver 边类型细分 */
+    taintSolverNormalEdgeCnt: number = 0;
+    taintSolverCallEdgeCnt: number = 0;
+    taintSolverReturnEdgeCnt: number = 0;
+    taintSolverPrunedEdgeCnt: number = 0;
+    // 生命周期建模时间，包括解析项目 收集组件和回调 构建 dummyMain
+    lifecycleModelingTime: number = 0;
+}
+
 export class TaintAnalysis {
     private scene: Scene;
 
@@ -40,8 +62,7 @@ export class TaintAnalysis {
 
     private taintAnalysisResult: Set<SourceToSinkInfo> = new Set();
 
-    private ifdsTime: number = 0;
-    private ifdsProcessEdgeCnt: number = 0;
+    private metrics: AnalysisMetrics = new AnalysisMetrics();
 
     constructor(scene: Scene, taintAnalysisConfig: TaintAnalysisConfig = new TaintAnalysisConfig()) {
         this.scene = scene;
@@ -113,19 +134,21 @@ export class TaintAnalysis {
      * 分析 app 主流程
      */
     public analyzeHarmonyApp(): void {
+        const t0 = Date.now();
         this.parseApp();
-
         this.collectComponents();
-
         this.collectCallbacks();
-
         this.createMainMethod();
-
+        const t1 = Date.now();
+        this.metrics.lifecycleModelingTime = t1 - t0;
         this.runDataflowAnalysis();
+        this.metrics.taintAnalysisTime = Date.now() - t0;
     }
 
     public analyzeDirectory(): void {
+        const t0 = Date.now();
         this.runDataflowAnalysis();
+        this.metrics.taintAnalysisTime = Date.now() - t0;
     }
 
     /**
@@ -373,10 +396,19 @@ export class TaintAnalysis {
 
             logger.info(`Found ${this.taintAnalysisResult.size} leaks`)
 
-            this.ifdsTime = Date.now() - startTime;
-            this.ifdsProcessEdgeCnt = taintSolver.getProcessEdgeCnt() + aliasSolver.getProcessEdgeCnt();
-            logger.info(`Taint analysis completed in ${this.ifdsTime}ms`);
-            logger.info(`Taint analysis processed ${this.ifdsProcessEdgeCnt} edges`);
+            const m = this.metrics;
+            m.livenessTime = taintSolver.getLivenessTime();
+            m.solveTime = taintSolver.getSolveTime();
+            m.taintSolverEdgeCnt = taintSolver.getProcessEdgeCnt();
+            m.aliasSolverEdgeCnt = aliasSolver.getProcessEdgeCnt();
+            m.taintSolverNormalEdgeCnt = taintSolver.getNormalEdgeCnt();
+            m.taintSolverCallEdgeCnt = taintSolver.getCallEdgeCnt();
+            m.taintSolverReturnEdgeCnt = taintSolver.getReturnEdgeCnt();
+            m.taintSolverPrunedEdgeCnt = taintSolver.getPrunedEdgeCnt();
+            m.processEdgeCnt = m.taintSolverEdgeCnt + m.aliasSolverEdgeCnt;
+            m.dataflowAnalysisTime = Date.now() - startTime;
+            logger.info(`Taint analysis completed in ${m.dataflowAnalysisTime}ms`);
+            logger.info(`Taint analysis processed ${m.processEdgeCnt} edges`);
 
         } catch (error) {
             const ifdsTime = Date.now() - startTime;
@@ -404,10 +436,65 @@ export class TaintAnalysis {
     }
 
     public getIfdsTime(): number {
-        return this.ifdsTime;
+        return this.metrics.dataflowAnalysisTime;
+    }
+
+    public getDataflowAnalysisTime(): number {
+        return this.metrics.dataflowAnalysisTime;
+    }
+
+    public getTaintAnalysisTime(): number {
+        return this.metrics.taintAnalysisTime;
+    }
+
+    public getSolveTime(): number {
+        return this.metrics.solveTime;
     }
 
     public getIfdsProcessEdgeCnt(): number {
-        return this.ifdsProcessEdgeCnt;
+        return this.metrics.processEdgeCnt;
+    }
+
+    public getLivenessTime(): number {
+        return this.metrics.livenessTime;
+    }
+
+    /** IFDS 求解耗时（不含活跃性分析） */
+    public getIfdsSolveTime(): number {
+        return this.metrics.solveTime - this.metrics.livenessTime;
+    }
+
+    public getTaintSolverEdgeCnt(): number {
+        return this.metrics.taintSolverEdgeCnt;
+    }
+
+    public getAliasSolverEdgeCnt(): number {
+        return this.metrics.aliasSolverEdgeCnt;
+    }
+
+    public getTaintSolverNormalEdgeCnt(): number { return this.metrics.taintSolverNormalEdgeCnt; }
+    public getTaintSolverCallEdgeCnt(): number { return this.metrics.taintSolverCallEdgeCnt; }
+    public getTaintSolverReturnEdgeCnt(): number { return this.metrics.taintSolverReturnEdgeCnt; }
+    public getTaintSolverPrunedEdgeCnt(): number { return this.metrics.taintSolverPrunedEdgeCnt; }
+
+    public getAbilityCnt(): number {
+        return this.abilities.length;
+    }
+
+    public getComponentCnt(): number {
+        let cnt = 0;
+        this.abilityToComponentsMap.forEach(components => cnt += components.size);
+        return cnt;
+    }
+
+    public getCallbackCnt(): number {
+        let cnt = 0;
+        this.componentToCallbacksMap.forEach(cbs => cnt += cbs.size);
+        this.builderToCallbacksMap.forEach(cbs => cnt += cbs.size);
+        return cnt;
+    }
+
+    public getLifecycleModelingTime(): number {
+        return this.metrics.lifecycleModelingTime;
     }
 }

@@ -21,5 +21,6 @@ export default defineConfig({
         coverage: {
             include: ['src/**'],
         },
+        silent: false,
     },
 });

@@ -1,0 +1,26 @@
+{
+  "src": [
+    "pages/Index",
+    "views/Home/Home",
+    "views/Home/ArticleInfo",
+    "views/Learn/Learn",
+    "views/Mine/Mine",
+    "views/Message/Message",
+    "views/Learn/Clock",
+    "views/Learn/LearnTool",
+    "views/Learn/LearnTarget",
+    "views/Learn/ClockRecord",
+    "views/Learn/LearnContent",
+    "views/Learn/InterviewContent",
+    "views/Message/MessageList",
+    "views/Mine/MineInfo",
+    "views/Mine/AboutUS",
+    "views/Mine/SetUp",
+    "pages/PrivacyPolicyPage",
+    "pages/LoginPage",
+    "pages/UserPolicyPage",
+    "pages/Advertising",
+    "views/Mine/MineLike",
+    "views/Mine/MineCollect"
+  ]
+}
